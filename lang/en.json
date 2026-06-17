@@ -10,7 +10,12 @@
                 "selectHex": "Sélection de hex",
                 "showPoints": "Afficher les Points de Cartographie",
                 "editPoints": "Incrémenter / décrémenter les PC (clic gauche +1, clic droit -1, sur le hex sélectionné)",
-                "aroundParty": "Incrémenter autour du Token Party"
+                "aroundParty": "Incrémenter autour du Token Party",
+                "resetPoints": "Remettre à 0 tous les PC de la scène"
+            },
+            "reset": {
+                "title": "Réinitialiser les Points de Cartographie",
+                "confirm": "Remettre à 0 tous les Points de Cartographie de cette scène ? Cette action est irréversible."
             },
             "noParty": "Sélectionne le Token Party (ou place-en un seul sur la scène)."
         }

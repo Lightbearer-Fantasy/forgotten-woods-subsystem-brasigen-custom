@@ -68,3 +68,26 @@ export function applyDeltas(scene, deltas) {
     if (Object.keys(updates).length === 0) return;
     return scene.update(updates);
 }
+
+/**
+ * Construit le payload scene.update effaçant tous les Points de Cartographie.
+ * Renvoie {} si la scène n'en porte aucun (no-op).
+ * @param {object} scene
+ * @returns {Record<string, any>}
+ */
+export function buildClearAll(scene) {
+    if (Object.keys(readPoints(scene)).length === 0) return {};
+    return { [`flags.${MODULE_ID}.-=${FLAG}`]: null };
+}
+
+/**
+ * Efface tous les PC de la scène et persiste (MJ uniquement). No-op si rien à effacer.
+ * @param {object} scene
+ * @returns {Promise|void}
+ */
+export function clearAllPoints(scene) {
+    if (!game.user.isGM || !scene) return;
+    const updates = buildClearAll(scene);
+    if (Object.keys(updates).length === 0) return;
+    return scene.update(updates);
+}

@@ -1,12 +1,13 @@
 import { isHexScene, isPartyToken } from "../utils/scene.js";
 import { coordsToOffset, offsetToKey, spacesInRange } from "../utils/hex.js";
-import { readPoints, applyDeltas } from "./mapping-points-store.js";
+import { readPoints, applyDeltas, clearAllPoints } from "./mapping-points-store.js";
 
 const CONTROL = "forgottenWoods";
 const TOOL_SELECT = "selectHex";
 const TOOL_SHOW = "showPoints";
 const TOOL_EDIT = "editPoints";
 const TOOL_PARTY = "aroundParty";
+const TOOL_RESET = "resetPoints";
 
 /**
  * Contrôleur de l'onglet « Hex Controls » (MJ, scène hexagonale).
@@ -75,6 +76,14 @@ export class MappingPointsController {
                     icon: "fa-solid fa-people-group",
                     button: true,
                     onChange: () => this.incrementAroundParty()
+                },
+                [TOOL_RESET]: {
+                    name: TOOL_RESET,
+                    order: 5,
+                    title: t("tools.resetPoints"),
+                    icon: "fa-solid fa-eraser",
+                    button: true,
+                    onChange: () => this.resetAllPoints()
                 }
             },
             activeTool: TOOL_SELECT
@@ -199,6 +208,20 @@ export class MappingPointsController {
             deltas.set(offsetToKey(offset), 1);
         }
         applyDeltas(this.scene, deltas);
+    }
+
+    // --- Remise à zéro de tous les PC de la scène ---
+
+    async resetAllPoints() {
+        if (!game.user.isGM || !isHexScene(this.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const confirmed = await foundry.applications.api.DialogV2.confirm({
+            window: { title: t("reset.title") },
+            content: `<p>${t("reset.confirm")}</p>`,
+            modal: true
+        });
+        if (!confirmed) return;
+        clearAllPoints(this.scene);
     }
 
     #resolvePartyToken() {

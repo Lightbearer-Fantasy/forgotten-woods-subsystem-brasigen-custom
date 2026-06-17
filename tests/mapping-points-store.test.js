@@ -4,6 +4,7 @@ import {
     pointsAt,
     clampedAdd,
     buildUpdate,
+    buildClearAll,
     MODULE_ID,
     FLAG
 } from "../scripts/mapping/mapping-points-store.js";
@@ -72,5 +73,21 @@ describe("buildUpdate", () => {
         expect(buildUpdate(scene, deltas)).toEqual({
             [`${flagBase}.-=3,3`]: null
         });
+    });
+});
+
+describe("buildClearAll", () => {
+    const flagBase = `flags.${MODULE_ID}`;
+
+    it("supprime tout le flag quand des PC existent", () => {
+        const scene = sceneWith({ "1,1": 2, "2,2": 4 });
+        expect(buildClearAll(scene)).toEqual({
+            [`${flagBase}.-=${FLAG}`]: null
+        });
+    });
+
+    it("renvoie {} quand il n'y a aucun PC (no-op)", () => {
+        expect(buildClearAll(sceneWith({}))).toEqual({});
+        expect(buildClearAll(sceneWith(undefined))).toEqual({});
     });
 });
