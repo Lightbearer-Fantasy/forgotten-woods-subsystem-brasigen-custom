@@ -25,7 +25,10 @@ Hooks.on("controlToken", (token, controlled) => hud?.onControlToken(token, contr
 Hooks.on("updateToken", (doc, changes) => hud?.onUpdateToken(doc, changes));
 Hooks.on("deleteToken", (doc) => hud?.onDeleteToken(doc));
 Hooks.on("canvasPan", () => hud?.onCanvasPan());
-Hooks.on("canvasReady", () => hud?.close());
+Hooks.on("canvasReady", () => {
+    hud?.activateCanvasListeners();
+    hud?.close();
+});
 
 // --- Système de Points de Cartographie (MJ) ---
 Hooks.on("getSceneControlButtons", (controls) => mapping?.getControls(controls));

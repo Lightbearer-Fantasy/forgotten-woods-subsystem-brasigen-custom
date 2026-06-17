@@ -8,6 +8,40 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     /** @type {Token|null} Token party actuellement ancré. */
     token = null;
 
+    /** Position du pointeur au dernier appui (pour distinguer clic vs drag). */
+    _downPos = null;
+    /** Vrai si le pointeur a été déplacé depuis l'appui → sélection marquee. */
+    _dragged = false;
+    /** Garde-fou : n'attache les écouteurs pointeur qu'une fois. */
+    _listenersBound = false;
+
+    /**
+     * Attache le suivi du pointeur sur l'élément canvas (idempotent).
+     * Permet de distinguer un clic direct d'une sélection large (marquee) :
+     * seul un clic doit ouvrir le HUD, jamais un drag de sélection.
+     */
+    activateCanvasListeners() {
+        const el = canvas?.app?.view ?? canvas?.app?.canvas;
+        if (!el || this._listenersBound) return;
+        this._listenersBound = true;
+        // Capture : on observe l'événement avant tout arrêt de propagation PIXI.
+        el.addEventListener("pointerdown", (event) => {
+            this._downPos = { x: event.clientX, y: event.clientY };
+            this._dragged = false;
+        }, { capture: true });
+        el.addEventListener("pointermove", (event) => {
+            if (!this._downPos) return;
+            const dx = event.clientX - this._downPos.x;
+            const dy = event.clientY - this._downPos.y;
+            if (dx * dx + dy * dy > 100) this._dragged = true; // seuil ~10px
+        }, { capture: true });
+        // _dragged n'est PAS remis à zéro ici : l'évaluation (microtask) qui suit
+        // le drop doit encore voir le drag. Il est remis à zéro au prochain appui.
+        el.addEventListener("pointerup", () => {
+            this._downPos = null;
+        }, { capture: true });
+    }
+
     static DEFAULT_OPTIONS = {
         id: "forgotten-woods-party-hud",
         classes: ["forgotten-woods", "fw-party-hud"],
@@ -93,8 +127,12 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         // Recalcule depuis la source de vérité : le HUD ne reste ouvert que
         // si un Token Party est effectivement contrôlé sur une scène hexagonale.
         // Couvre la désélection et le clic à côté (qui relâchent le contrôle).
-        // Comme le Token HUD natif : uniquement sur une sélection d'un seul token
-        // (une sélection large incluant le Party Token n'ouvre pas le HUD).
+        // Comme le Token HUD natif : une sélection large (marquee) n'ouvre jamais
+        // le HUD, même si elle n'englobe que le Token Party — seul un clic direct.
+        if (this._dragged) {
+            this.close();
+            return;
+        }
         const controlled = canvas?.tokens?.controlled ?? [];
         const active = controlled.length === 1 && isPartyToken(controlled[0]) ? controlled[0] : null;
         if (active && isHexScene(canvas?.scene)) {
