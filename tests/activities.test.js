@@ -60,3 +60,24 @@ describe("données d'activités", () => {
         }
     });
 });
+
+describe("textes d'activités v0.2.0", () => {
+    const byId = (id) => ALL.find((a) => a.id === id);
+
+    it("le libellé de map-area est « Cartographier la zone »", () => {
+        expect(byId("map-area").label).toBe("Cartographier la zone");
+    });
+
+    it("aucun chatText ne contient le placeholder « à venir »", () => {
+        for (const a of ALL) {
+            expect(a.chatText.toLowerCase()).not.toContain("à venir");
+        }
+    });
+
+    it("les textes clés sont présents", () => {
+        expect(byId("travel").chatText).toContain("Hex adjacent");
+        expect(byId("map-area").chatText).toContain("Point de Cartographie");
+        expect(byId("search").chatText).toContain("Le Hex gagne 1 PC");
+        expect(byId("cook").chatText).toContain("camp");
+    });
+});
