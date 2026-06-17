@@ -43,6 +43,38 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         if (this.token === token) this.close();
     }
 
+    _positionToToken() {
+        if (!this.token || !this.element) return;
+        const doc = this.token.document;
+        const gridSize = canvas.dimensions.size;
+        const worldX = doc.x + doc.width * gridSize;
+        const worldY = doc.y;
+        const point = canvas.stage.worldTransform.apply({ x: worldX, y: worldY });
+        Object.assign(this.element.style, {
+            left: `${point.x + 8}px`,
+            top: `${point.y}px`
+        });
+    }
+
+    _onRender(context, options) {
+        this._positionToToken();
+    }
+
+    onUpdateToken(doc, changes) {
+        if (this.token?.document !== doc) return;
+        if ("x" in changes || "y" in changes) {
+            this._positionToToken();
+        }
+    }
+
+    onDeleteToken(doc) {
+        if (this.token?.document === doc) this.close();
+    }
+
+    onCanvasPan() {
+        this._positionToToken();
+    }
+
     async close(options) {
         this.token = null;
         return super.close(options);
