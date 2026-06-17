@@ -5,9 +5,11 @@
             "individual": "Activités Individuelles"
         },
         "mapping": {
-            "control": "Points de Cartographie",
+            "control": "Hex Controls",
             "tools": {
-                "points": "Points de Cartographie (clic gauche +1, clic droit -1)",
+                "selectHex": "Sélection de hex",
+                "showPoints": "Afficher les Points de Cartographie",
+                "editPoints": "Incrémenter / décrémenter les PC (clic gauche +1, clic droit -1, sur le hex sélectionné)",
                 "aroundParty": "Incrémenter autour du Token Party"
             },
             "noParty": "Sélectionne le Token Party (ou place-en un seul sur la scène)."

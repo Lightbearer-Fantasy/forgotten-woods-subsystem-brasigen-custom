@@ -1,15 +1,18 @@
 import { PartyActivitiesHUD } from "./hud/party-activities-hud.js";
 import { MappingPointsController } from "./mapping/mapping-points-controller.js";
+import { HexSelection } from "./canvas/hex-selection.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
 let hud = null;
 let mapping = null;
+let hexSelection = null;
 
 Hooks.once("init", () => {
     hud = new PartyActivitiesHUD();
-    mapping = new MappingPointsController();
-    game.modules.get(MODULE_ID).api = { hud, mapping };
+    hexSelection = new HexSelection();
+    mapping = new MappingPointsController(hexSelection);
+    game.modules.get(MODULE_ID).api = { hud, mapping, hexSelection };
 });
 
 Hooks.once("setup", async () => {

@@ -3,17 +3,24 @@ import { coordsToOffset, offsetToKey, spacesInRange } from "../utils/hex.js";
 import { readPoints, applyDeltas } from "./mapping-points-store.js";
 
 const CONTROL = "forgottenWoods";
-const TOOL_POINTS = "points";
+const TOOL_SELECT = "selectHex";
+const TOOL_SHOW = "showPoints";
+const TOOL_EDIT = "editPoints";
 const TOOL_PARTY = "aroundParty";
 
 /**
- * Contrôleur du système de Points de Cartographie (MJ).
- * Outils de contrôle de scène + overlay des compteurs (visible seulement
- * quand l'outil "points" est actif) + incrément ciblé / par rayon.
+ * Contrôleur de l'onglet « Hex Controls » (MJ, scène hexagonale).
+ * 4 entrées : sélection de hex (radio, défaut), affichage des PC (toggle),
+ * incrément/décrément des PC (radio), incrément par proximité (bouton).
+ * Consomme un HexSelection autonome pour la sélection + la surbrillance.
  */
 export class MappingPointsController {
-    /** @type {boolean} */
-    #active = false;
+    /** @type {import("../canvas/hex-selection.js").HexSelection} */
+    #selection;
+    /** Outil radio actif du groupe : TOOL_SELECT | TOOL_EDIT | null. */
+    #activeTool = null;
+    /** État du toggle d'affichage des nombres. */
+    #showing = false;
     /** @type {PIXI.Container|null} */
     #overlay = null;
     /** @type {((event: any) => void)|null} */
@@ -21,75 +28,111 @@ export class MappingPointsController {
     /** @type {((event: Event) => void)|null} */
     #contextHandler = null;
 
+    /** @param {import("../canvas/hex-selection.js").HexSelection} selection */
+    constructor(selection) {
+        this.#selection = selection;
+    }
+
     get scene() {
         return canvas?.scene ?? null;
     }
 
-    /** Enregistre le groupe d'outils MJ. À appeler depuis getSceneControlButtons. */
+    /** Enregistre le groupe d'outils. À appeler depuis getSceneControlButtons. */
     getControls(controls) {
         if (!game.user.isGM || !isHexScene(canvas?.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
         controls[CONTROL] = {
             name: CONTROL,
-            title: game.i18n.localize("FORGOTTEN_WOODS.mapping.control"),
+            title: t("control"),
             icon: "fa-solid fa-map-location-dot",
             onChange: () => {},
             tools: {
-                [TOOL_POINTS]: {
-                    name: TOOL_POINTS,
-                    title: game.i18n.localize("FORGOTTEN_WOODS.mapping.tools.points"),
+                [TOOL_SELECT]: {
+                    name: TOOL_SELECT,
+                    order: 1,
+                    title: t("tools.selectHex"),
+                    icon: "fa-solid fa-location-crosshairs"
+                },
+                [TOOL_SHOW]: {
+                    name: TOOL_SHOW,
+                    order: 2,
+                    title: t("tools.showPoints"),
+                    icon: "fa-solid fa-list-ol",
+                    toggle: true,
+                    active: this.#showing,
+                    onChange: (event, active) => this.#onToggleShow(active)
+                },
+                [TOOL_EDIT]: {
+                    name: TOOL_EDIT,
+                    order: 3,
+                    title: t("tools.editPoints"),
                     icon: "fa-solid fa-hexagon-plus"
                 },
                 [TOOL_PARTY]: {
                     name: TOOL_PARTY,
-                    title: game.i18n.localize("FORGOTTEN_WOODS.mapping.tools.aroundParty"),
+                    order: 4,
+                    title: t("tools.aroundParty"),
                     icon: "fa-solid fa-people-group",
                     button: true,
                     onChange: () => this.incrementAroundParty()
                 }
             },
-            activeTool: TOOL_POINTS
+            activeTool: TOOL_SELECT
         };
     }
 
     /** Réagit au changement d'outil. À appeler depuis activateSceneControls. */
     onActivateControls(controls) {
-        const active =
-            controls?.control?.name === CONTROL && controls?.tool?.name === TOOL_POINTS;
-        if (active) this.#enable();
+        const isOurs = controls?.control?.name === CONTROL;
+        const tool = controls?.tool?.name;
+        this.#activeTool = isOurs ? tool : null;
+        if (isOurs && (tool === TOOL_SELECT || tool === TOOL_EDIT)) this.#enable();
         else this.#disable();
     }
 
-    /** Rafraîchit l'overlay si l'outil est actif (sur updateScene). */
+    /** Rafraîchit l'overlay si affiché (sur updateScene). */
     onUpdateScene(scene) {
-        if (this.#active && scene?.id === this.scene?.id) this.#renderOverlay();
+        if (this.#showing && this.#activeTool && scene?.id === this.scene?.id) {
+            this.#renderOverlay();
+        }
     }
 
     #enable() {
-        if (!this.#active) {
-            this.#active = true;
-            this.#attachListeners();
-        }
-        this.#renderOverlay();
+        this.#attachListeners();
+        this.#selection.showHighlight();
+        if (this.#showing) this.#renderOverlay();
+        else this.#clearOverlay();
     }
 
     #disable() {
-        this.#active = false;
         this.#detachListeners();
+        this.#selection.hideHighlight();
+        this.#selection.clear();
         this.#clearOverlay();
     }
 
     destroy() {
         this.#disable();
+        this.#selection.destroy();
+    }
+
+    // --- Toggle d'affichage des nombres ---
+
+    #onToggleShow(active) {
+        this.#showing = typeof active === "boolean" ? active : !this.#showing;
+        if (this.#showing && this.#activeTool) this.#renderOverlay();
+        else this.#clearOverlay();
     }
 
     // --- Écouteurs pointeur ---
 
     #attachListeners() {
+        if (this.#pointerHandler) return;
         this.#pointerHandler = (event) => this.#onPointerDown(event);
         canvas.stage.on("pointerdown", this.#pointerHandler);
-        // Empêche le menu contextuel pour permettre le décrément au clic droit.
+        // Désactive le menu contextuel pour permettre le clic droit = -1.
         this.#contextHandler = (event) => {
-            if (this.#active) event.preventDefault();
+            if (this.#activeTool) event.preventDefault();
         };
         (canvas.app.canvas ?? canvas.app.view).addEventListener("contextmenu", this.#contextHandler);
     }
@@ -106,17 +149,39 @@ export class MappingPointsController {
     }
 
     #onPointerDown(event) {
-        if (!this.#active || !game.user.isGM) return;
-        const target = event.target ?? event.srcElement;
-        if (!(target && target.id === "board")) return;
+        if (!game.user.isGM) return;
+        if (this.#activeTool !== TOOL_SELECT && this.#activeTool !== TOOL_EDIT) return;
         const button = event.data?.button ?? event.button;
-        if (button !== 0 && button !== 2) return; // gauche = +1, droit = -1
+        if (button !== 0 && button !== 2) return; // gauche / droit seulement
 
-        const coords = event.data.getLocalPosition(canvas.app.stage);
+        const coords = event.data?.getLocalPosition?.(canvas.app.stage)
+            ?? event.getLocalPosition?.(canvas.app.stage);
+        if (!coords) return;
         const offset = coordsToOffset(coords);
+        if (!this.#inBounds(offset)) return; // ignore les hex hors scène (padding)
+
+        if (this.#activeTool === TOOL_SELECT) {
+            if (button === 0) this.#selection.select(offset);
+            return;
+        }
+
+        // TOOL_EDIT : 1er clic sur un hex non sélectionné = sélection seule.
+        if (!this.#selection.has(offset)) {
+            this.#selection.select(offset);
+            return;
+        }
         const delta = button === 0 ? 1 : -1;
         applyDeltas(this.scene, new Map([[offsetToKey(offset), delta]]));
-        // Le re-render arrive via onUpdateScene après persistance.
+        // Le re-render de l'overlay arrive via onUpdateScene après persistance.
+    }
+
+    /** Vrai si le centre du hex est dans la zone de scène (hors padding). */
+    #inBounds(offset) {
+        const rect = canvas.dimensions?.sceneRect;
+        if (!rect) return true;
+        const { x, y } = canvas.grid.getCenterPoint(offset);
+        return x >= rect.x && x <= rect.x + rect.width
+            && y >= rect.y && y <= rect.y + rect.height;
     }
 
     // --- Incrément autour du Token Party ---
@@ -143,7 +208,7 @@ export class MappingPointsController {
         return partyTokens.length === 1 ? partyTokens[0] : null;
     }
 
-    // --- Overlay des compteurs ---
+    // --- Overlay des nombres ---
 
     #renderOverlay() {
         this.#clearOverlay();
