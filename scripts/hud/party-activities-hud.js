@@ -10,8 +10,7 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     static DEFAULT_OPTIONS = {
         id: "forgotten-woods-party-hud",
         classes: ["forgotten-woods", "fw-party-hud"],
-        window: { frame: false, positioned: false },
-        actions: {}
+        window: { frame: false, positioned: false }
     };
 
     static PARTS = {
@@ -37,7 +36,7 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         if (controlled) {
             if (isPartyToken(token) && isHexScene(canvas?.scene)) {
                 this.token = token;
-                this.render(true);
+                this.render({ force: true });
             }
             return;
         }
