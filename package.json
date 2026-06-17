@@ -5,9 +5,12 @@
     "type": "module",
     "scripts": {
         "test": "vitest run",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "pack": "node tools/release.mjs",
+        "release": "node tools/release.mjs --publish"
     },
     "devDependencies": {
+        "archiver": "^8.0.0",
         "vitest": "^2.1.0"
     }
 }
