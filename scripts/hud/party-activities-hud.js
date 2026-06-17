@@ -76,6 +76,20 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     }
 
     onControlToken() {
+        // Une sélection large (marquee, Ctrl+A) émet un controlToken par token,
+        // de façon synchrone. On diffère l'évaluation à la fin du tick pour ne
+        // juger que l'état FINAL de la sélection : sinon, si le Token Party est
+        // contrôlé en premier (seul à cet instant), un render({force}) async
+        // démarre et s'affiche malgré le close() des événements suivants.
+        if (this._controlPending) return;
+        this._controlPending = true;
+        Promise.resolve().then(() => {
+            this._controlPending = false;
+            this._evaluateControl();
+        });
+    }
+
+    _evaluateControl() {
         // Recalcule depuis la source de vérité : le HUD ne reste ouvert que
         // si un Token Party est effectivement contrôlé sur une scène hexagonale.
         // Couvre la désélection et le clic à côté (qui relâchent le contrôle).

@@ -20,8 +20,8 @@ export class MappingPointsController {
     #selection;
     /** Outil radio actif du groupe : TOOL_SELECT | TOOL_EDIT | null. */
     #activeTool = null;
-    /** État du toggle d'affichage des nombres. */
-    #showing = false;
+    /** État du toggle d'affichage des nombres (ON par défaut). */
+    #showing = true;
     /** @type {PIXI.Container|null} */
     #overlay = null;
     /** @type {((event: any) => void)|null} */
@@ -81,7 +81,7 @@ export class MappingPointsController {
                     name: TOOL_RESET,
                     order: 5,
                     title: t("tools.resetPoints"),
-                    icon: "fa-solid fa-eraser",
+                    icon: "fa-solid fa-trash",
                     button: true,
                     onChange: () => this.resetAllPoints()
                 }
