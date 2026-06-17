@@ -10,7 +10,11 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     static DEFAULT_OPTIONS = {
         id: "forgotten-woods-party-hud",
         classes: ["forgotten-woods", "fw-party-hud"],
-        window: { frame: false, positioned: false }
+        window: { frame: false, positioned: false },
+        actions: {
+            "send-to-chat": onSendToChat,
+            "roll-d20": onRollD20
+        }
     };
 
     static PARTS = {
@@ -79,4 +83,27 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         this.token = null;
         return super.close(options);
     }
+}
+
+// --- Handlers d'action (this === instance de PartyActivitiesHUD) ---
+
+function onSendToChat(event, target) {
+    const row = target.closest("[data-activity-id]");
+    const activity = this.findActivity(row?.dataset.activityId);
+    if (!activity) return;
+    return ChatMessage.create({
+        content: activity.chatText,
+        speaker: ChatMessage.getSpeaker({ token: this.token?.document })
+    });
+}
+
+async function onRollD20(event, target) {
+    const row = target.closest("[data-activity-id]");
+    const activity = this.findActivity(row?.dataset.activityId);
+    if (!activity) return;
+    const roll = await new Roll("1d20").evaluate();
+    return roll.toMessage({
+        flavor: activity.label,
+        speaker: ChatMessage.getSpeaker({ token: this.token?.document })
+    });
 }
