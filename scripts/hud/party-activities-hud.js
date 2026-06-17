@@ -38,7 +38,12 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         // _dragged n'est PAS remis à zéro ici : l'évaluation (microtask) qui suit
         // le drop doit encore voir le drag. Il est remis à zéro au prochain appui.
         el.addEventListener("pointerup", () => {
+            const wasDrag = this._dragged;
             this._downPos = null;
+            // Un clic propre (sans drag) ré-évalue, même si aucun controlToken
+            // n'a été émis : cliquer un Token Party déjà contrôlé (après une
+            // sélection large) doit ouvrir le HUD, comme le Token HUD natif.
+            if (!wasDrag) this._scheduleEvaluate();
         }, { capture: true });
     }
 
@@ -110,11 +115,16 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     }
 
     onControlToken() {
-        // Une sélection large (marquee, Ctrl+A) émet un controlToken par token,
-        // de façon synchrone. On diffère l'évaluation à la fin du tick pour ne
-        // juger que l'état FINAL de la sélection : sinon, si le Token Party est
-        // contrôlé en premier (seul à cet instant), un render({force}) async
-        // démarre et s'affiche malgré le close() des événements suivants.
+        this._scheduleEvaluate();
+    }
+
+    /**
+     * Planifie une évaluation unique en fin de tick (microtask).
+     * Une sélection large émet un controlToken par token, de façon synchrone :
+     * on ne juge que l'état FINAL de la sélection (et on évite le render async
+     * qui s'afficherait malgré le close() des événements suivants).
+     */
+    _scheduleEvaluate() {
         if (this._controlPending) return;
         this._controlPending = true;
         Promise.resolve().then(() => {
