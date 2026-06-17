@@ -1,12 +1,12 @@
 <div class="fw-inner">
     <section class="fw-panel" data-panel="group">
-        <header class="fw-panel-title">{{groupTitle}}</header>
+        <header class="fw-panel-title"><span class="fw-count fw-count-{{groupColor}}">{{groupCount}}</span> {{groupTitle}}</header>
         {{#each groupActivities as |activity|}}
         {{> fwActivityRow activity}}
         {{/each}}
     </section>
     <section class="fw-panel" data-panel="individual">
-        <header class="fw-panel-title">{{individualTitle}}</header>
+        <header class="fw-panel-title"><span class="fw-count fw-count-white">{{individualCount}}</span> {{individualTitle}}</header>
         {{#each individualActivities as |activity|}}
         {{> fwActivityRow activity}}
         {{/each}}

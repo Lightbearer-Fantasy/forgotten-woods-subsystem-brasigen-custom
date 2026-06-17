@@ -1,5 +1,6 @@
 import { isHexScene, isPartyToken } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
+import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -61,9 +62,14 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     async _prepareContext() {
         await this.constructor._ensureImages();
+        const actor = this.token?.actor ?? null;
+        const groupCount = groupActivityCount(slowestLandSpeed(actor));
         return {
             groupTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.group"),
             individualTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.individual"),
+            groupCount,
+            groupColor: groupCountColor(groupCount),
+            individualCount: characterCount(actor),
             groupActivities: GROUP_ACTIVITIES,
             individualActivities: INDIVIDUAL_ACTIVITIES
         };
