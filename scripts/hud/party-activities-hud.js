@@ -29,6 +29,9 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     static _imagesResolved = false;
 
+    /** Slug de l'action PF2e dont l'icône est appliquée à toutes les activités (provisoire). */
+    static REFERENCE_SLUG = "investigate";
+
     static async _ensureImages() {
         if (this._imagesResolved) return;
         this._imagesResolved = true;
@@ -44,16 +47,15 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             return;
         }
 
-        const imgBySlug = new Map();
-        for (const entry of index) {
-            const slug = entry.system?.slug ?? entry.name?.slugify?.({ strict: true });
-            if (slug && entry.img) imgBySlug.set(slug, entry.img);
-        }
+        // Pour le moment : une seule et même icône pour toutes les activités,
+        // celle d'une action PF2e de référence (cf. REFERENCE_SLUG).
+        const reference = index.find(
+            (e) => (e.system?.slug ?? e.name?.slugify?.({ strict: true })) === this.REFERENCE_SLUG
+        );
+        if (!reference?.img) return;
 
         for (const activity of [...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES]) {
-            if (activity.slug && imgBySlug.has(activity.slug)) {
-                activity.img = imgBySlug.get(activity.slug);
-            }
+            activity.img = reference.img;
         }
     }
 
@@ -67,15 +69,21 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         };
     }
 
-    onControlToken(token, controlled) {
-        if (controlled) {
-            if (isPartyToken(token) && isHexScene(canvas?.scene)) {
-                this.token = token;
-                this.render({ force: true });
+    onControlToken() {
+        // Recalcule depuis la source de vérité : le HUD ne reste ouvert que
+        // si un Token Party est effectivement contrôlé sur une scène hexagonale.
+        // Couvre la désélection et le clic à côté (qui relâchent le contrôle).
+        const active = canvas?.tokens?.controlled?.find((t) => isPartyToken(t));
+        if (active && isHexScene(canvas?.scene)) {
+            if (this.token === active && this.rendered) {
+                this._positionToToken();
+                return;
             }
-            return;
+            this.token = active;
+            this.render({ force: true });
+        } else {
+            this.close();
         }
-        if (this.token === token) this.close();
     }
 
     _positionToToken() {
@@ -83,13 +91,15 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         if (!canvas?.dimensions) return;
         const doc = this.token.document;
         const gridSize = canvas.dimensions.size;
-        const worldX = doc.x + doc.width * gridSize;
-        const worldY = doc.y;
-        const point = canvas.stage.worldTransform.apply({ x: worldX, y: worldY });
-        Object.assign(this.element.style, {
-            left: `${point.x + 8}px`,
-            top: `${point.y}px`
-        });
+        const m = canvas.stage.worldTransform;
+        // Ancre l'élément au centre-haut du token (coordonnées écran).
+        const topLeft = m.apply({ x: doc.x, y: doc.y });
+        const topCenter = m.apply({ x: doc.x + (doc.width * gridSize) / 2, y: doc.y });
+        const halfWidth = topCenter.x - topLeft.x;
+        // Le panneau Groupe se place à gauche, Individuelles à droite (via CSS).
+        this.element.style.left = `${topCenter.x}px`;
+        this.element.style.top = `${topCenter.y}px`;
+        this.element.style.setProperty("--fw-half", `${halfWidth}px`);
     }
 
     _onRender(context, options) {

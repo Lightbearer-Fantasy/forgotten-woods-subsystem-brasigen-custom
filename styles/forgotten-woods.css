@@ -1,20 +1,27 @@
 #forgotten-woods-party-hud {
     --fw-highlight: #ff8c1a;
+    /* Écart entre le bord du token et chaque panneau. */
+    --fw-gap: 10px;
+    /* Demi-largeur écran du token, fixée par le JS au moment du positionnement. */
+    --fw-half: 0px;
     position: fixed;
     z-index: 70;
+    /* L'élément racine est un point d'ancrage (centre-haut du token), taille nulle. */
     pointer-events: none;
     font-size: var(--font-size-14, 14px);
     color: #f0f0e6;
 }
 
+/* Le wrapper ne crée pas de boîte : les panneaux se positionnent
+   directement par rapport au point d'ancrage racine. */
 #forgotten-woods-party-hud .fw-inner {
-    display: flex;
-    gap: 0.5em;
-    align-items: flex-start;
-    pointer-events: all;
+    display: contents;
 }
 
 #forgotten-woods-party-hud .fw-panel {
+    position: absolute;
+    top: 0;
+    pointer-events: all;
     background: rgba(22, 22, 26, 0.95);
     border: 1px solid #6f6f6f;
     border-radius: 6px;
@@ -22,6 +29,16 @@
     padding: 0.4em;
     min-width: 12em;
     max-width: 16em;
+}
+
+/* Panneau Groupe : à gauche du token (son bord droit à gauche du token). */
+#forgotten-woods-party-hud .fw-panel[data-panel="group"] {
+    right: calc(var(--fw-half) + var(--fw-gap));
+}
+
+/* Panneau Individuelles : à droite du token. */
+#forgotten-woods-party-hud .fw-panel[data-panel="individual"] {
+    left: calc(var(--fw-half) + var(--fw-gap));
 }
 
 #forgotten-woods-party-hud .fw-panel-title {
