@@ -27,7 +27,38 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         return [...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES].find(a => a.id === id) ?? null;
     }
 
+    static _imagesResolved = false;
+
+    static async _ensureImages() {
+        if (this._imagesResolved) return;
+        this._imagesResolved = true;
+
+        const pack = game.packs.get("pf2e.actionspf2e");
+        if (!pack) return;
+
+        let index;
+        try {
+            index = await pack.getIndex({ fields: ["system.slug"] });
+        } catch (error) {
+            console.warn("forgotten-woods-brasigen | échec du chargement des actions PF2e", error);
+            return;
+        }
+
+        const imgBySlug = new Map();
+        for (const entry of index) {
+            const slug = entry.system?.slug ?? entry.name?.slugify?.({ strict: true });
+            if (slug && entry.img) imgBySlug.set(slug, entry.img);
+        }
+
+        for (const activity of [...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES]) {
+            if (activity.slug && imgBySlug.has(activity.slug)) {
+                activity.img = imgBySlug.get(activity.slug);
+            }
+        }
+    }
+
     async _prepareContext() {
+        await this.constructor._ensureImages();
         return {
             groupTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.group"),
             individualTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.individual"),
