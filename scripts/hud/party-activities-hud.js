@@ -92,13 +92,14 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         const doc = this.token.document;
         const gridSize = canvas.dimensions.size;
         const m = canvas.stage.worldTransform;
-        // Ancre l'élément au centre-haut du token (coordonnées écran).
-        const topLeft = m.apply({ x: doc.x, y: doc.y });
-        const topCenter = m.apply({ x: doc.x + (doc.width * gridSize) / 2, y: doc.y });
-        const halfWidth = topCenter.x - topLeft.x;
-        // Le panneau Groupe se place à gauche, Individuelles à droite (via CSS).
-        this.element.style.left = `${topCenter.x}px`;
-        this.element.style.top = `${topCenter.y}px`;
+        // Ancre l'élément au centre exact du token (horizontal + vertical).
+        const midX = doc.x + (doc.width * gridSize) / 2;
+        const midY = doc.y + (doc.height * gridSize) / 2;
+        const centerLeft = m.apply({ x: doc.x, y: midY });
+        const center = m.apply({ x: midX, y: midY });
+        const halfWidth = center.x - centerLeft.x;
+        this.element.style.left = `${center.x}px`;
+        this.element.style.top = `${center.y}px`;
         this.element.style.setProperty("--fw-half", `${halfWidth}px`);
     }
 
@@ -123,6 +124,8 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     async close(options) {
         this.token = null;
+        // Masque l'élément immédiatement pour éviter la latence visuelle de l'animation ApplicationV2.
+        if (this.element) this.element.style.display = "none";
         return super.close(options);
     }
 }

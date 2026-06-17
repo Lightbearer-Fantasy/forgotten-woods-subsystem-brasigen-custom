@@ -21,6 +21,7 @@
 #forgotten-woods-party-hud .fw-panel {
     position: absolute;
     top: 0;
+    transform: translateY(-50%);
     pointer-events: all;
     background: rgba(22, 22, 26, 0.95);
     border: 1px solid #6f6f6f;
