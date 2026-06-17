@@ -79,7 +79,10 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         // Recalcule depuis la source de vérité : le HUD ne reste ouvert que
         // si un Token Party est effectivement contrôlé sur une scène hexagonale.
         // Couvre la désélection et le clic à côté (qui relâchent le contrôle).
-        const active = canvas?.tokens?.controlled?.find((t) => isPartyToken(t));
+        // Comme le Token HUD natif : uniquement sur une sélection d'un seul token
+        // (une sélection large incluant le Party Token n'ouvre pas le HUD).
+        const controlled = canvas?.tokens?.controlled ?? [];
+        const active = controlled.length === 1 && isPartyToken(controlled[0]) ? controlled[0] : null;
         if (active && isHexScene(canvas?.scene)) {
             if (this.token === active && this.rendered) {
                 this._positionToToken();
@@ -115,8 +118,9 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     onUpdateToken(doc, changes) {
         if (this.token?.document !== doc) return;
+        // Comme le Token HUD natif : un déplacement du token ferme le HUD.
         if ("x" in changes || "y" in changes) {
-            this._positionToToken();
+            this.close();
         }
     }
 
