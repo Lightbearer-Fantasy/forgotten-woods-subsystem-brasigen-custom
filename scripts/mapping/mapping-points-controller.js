@@ -91,7 +91,7 @@ export class MappingPointsController {
         this.#contextHandler = (event) => {
             if (this.#active) event.preventDefault();
         };
-        canvas.app.view.addEventListener("contextmenu", this.#contextHandler);
+        (canvas.app.canvas ?? canvas.app.view).addEventListener("contextmenu", this.#contextHandler);
     }
 
     #detachListeners() {
@@ -100,14 +100,14 @@ export class MappingPointsController {
             this.#pointerHandler = null;
         }
         if (this.#contextHandler) {
-            canvas.app?.view?.removeEventListener("contextmenu", this.#contextHandler);
+            (canvas.app?.canvas ?? canvas.app?.view)?.removeEventListener("contextmenu", this.#contextHandler);
             this.#contextHandler = null;
         }
     }
 
     #onPointerDown(event) {
         if (!this.#active || !game.user.isGM) return;
-        const target = event.srcElement ?? event.target;
+        const target = event.target ?? event.srcElement;
         if (!(target && target.id === "board")) return;
         const button = event.data?.button ?? event.button;
         if (button !== 0 && button !== 2) return; // gauche = +1, droit = -1
