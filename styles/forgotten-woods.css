@@ -127,6 +127,7 @@
 #forgotten-woods-party-hud .fw-count {
     font-weight: 700;
     margin-right: 0.15em;
+    font-size: 1.1em;
 }
 #forgotten-woods-party-hud .fw-count-red { color: #c0392b; }
 #forgotten-woods-party-hud .fw-count-white { color: #ffffff; }
