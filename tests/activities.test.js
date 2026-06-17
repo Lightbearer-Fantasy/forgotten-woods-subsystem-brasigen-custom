@@ -1,0 +1,62 @@
+import { describe, it, expect } from "vitest";
+import {
+    GROUP_ACTIVITIES,
+    INDIVIDUAL_ACTIVITIES,
+    activitySortKey,
+    PLACEHOLDER_IMG
+} from "../scripts/data/activities.js";
+
+const ALL = [...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES];
+
+describe("activitySortKey", () => {
+    it("ignore le préfixe « Se » devant reposer", () => {
+        expect(activitySortKey("Se reposer")).toBe("reposer");
+    });
+    it("ignore le préfixe « S' » devant entraider", () => {
+        expect(activitySortKey("S'entraider")).toBe("entraider");
+    });
+    it("ne strippe pas un mot commençant par Se sans espace (Search)", () => {
+        expect(activitySortKey("Search")).toBe("search");
+    });
+});
+
+describe("données d'activités", () => {
+    it("contient 5 activités de groupe et 10 individuelles", () => {
+        expect(GROUP_ACTIVITIES).toHaveLength(5);
+        expect(INDIVIDUAL_ACTIVITIES).toHaveLength(10);
+    });
+
+    it("chaque activité a id, label, img, chatText non vides et une propriété slug", () => {
+        for (const a of ALL) {
+            expect(a.id, JSON.stringify(a)).toBeTruthy();
+            expect(a.label).toBeTruthy();
+            expect(a.img).toBeTruthy();
+            expect(a.chatText).toBeTruthy();
+            expect(a).toHaveProperty("slug");
+        }
+    });
+
+    it("les id sont uniques", () => {
+        const ids = ALL.map(a => a.id);
+        expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it("les chatText sont distincts pour chaque activité", () => {
+        const texts = ALL.map(a => a.chatText);
+        expect(new Set(texts).size).toBe(texts.length);
+    });
+
+    it("chaque panneau est trié par activitySortKey", () => {
+        for (const list of [GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES]) {
+            const keys = list.map(a => activitySortKey(a.label));
+            const sorted = [...keys].sort((x, y) => x.localeCompare(y));
+            expect(keys).toEqual(sorted);
+        }
+    });
+
+    it("toutes les activités custom utilisent l'image placeholder par défaut", () => {
+        for (const a of ALL) {
+            if (a.slug === null) expect(a.img).toBe(PLACEHOLDER_IMG);
+        }
+    });
+});
