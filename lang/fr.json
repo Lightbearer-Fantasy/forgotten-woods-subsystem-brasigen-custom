@@ -3,6 +3,14 @@
         "panel": {
             "group": "Activités de Groupe",
             "individual": "Activités Individuelles"
+        },
+        "mapping": {
+            "control": "Points de Cartographie",
+            "tools": {
+                "points": "Points de Cartographie (clic gauche +1, clic droit -1)",
+                "aroundParty": "Incrémenter autour du Token Party"
+            },
+            "noParty": "Sélectionne le Token Party (ou place-en un seul sur la scène)."
         }
     }
 }

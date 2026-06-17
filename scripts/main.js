@@ -1,12 +1,15 @@
 import { PartyActivitiesHUD } from "./hud/party-activities-hud.js";
+import { MappingPointsController } from "./mapping/mapping-points-controller.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
 let hud = null;
+let mapping = null;
 
 Hooks.once("init", () => {
     hud = new PartyActivitiesHUD();
-    game.modules.get(MODULE_ID).api = { hud };
+    mapping = new MappingPointsController();
+    game.modules.get(MODULE_ID).api = { hud, mapping };
 });
 
 Hooks.once("setup", async () => {
@@ -20,3 +23,9 @@ Hooks.on("updateToken", (doc, changes) => hud?.onUpdateToken(doc, changes));
 Hooks.on("deleteToken", (doc) => hud?.onDeleteToken(doc));
 Hooks.on("canvasPan", () => hud?.onCanvasPan());
 Hooks.on("canvasReady", () => hud?.close());
+
+// --- Système de Points de Cartographie (MJ) ---
+Hooks.on("getSceneControlButtons", (controls) => mapping?.getControls(controls));
+Hooks.on("activateSceneControls", (controls) => mapping?.onActivateControls(controls));
+Hooks.on("updateScene", (scene) => mapping?.onUpdateScene(scene));
+Hooks.on("canvasReady", () => mapping?.destroy());
