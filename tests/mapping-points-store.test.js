@@ -20,6 +20,11 @@ describe("clampedAdd", () => {
         expect(clampedAdd(1, -5)).toBe(0);
     });
     it("traite current absent comme 0", () => expect(clampedAdd(undefined, 1)).toBe(1));
+    it("plafonne à 4", () => {
+        expect(clampedAdd(4, 1)).toBe(4);
+        expect(clampedAdd(3, 5)).toBe(4);
+        expect(clampedAdd(2, 2)).toBe(4);
+    });
 });
 
 describe("readPoints / pointsAt", () => {
@@ -42,6 +47,14 @@ describe("buildUpdate", () => {
         expect(buildUpdate(scene, deltas)).toEqual({
             [`${flagBase}.1,1`]: 3,
             [`${flagBase}.2,2`]: 1
+        });
+    });
+
+    it("plafonne le compteur à 4", () => {
+        const scene = sceneWith({ "1,1": 4 });
+        const deltas = new Map([["1,1", 1]]);
+        expect(buildUpdate(scene, deltas)).toEqual({
+            [`${flagBase}.1,1`]: 4
         });
     });
 

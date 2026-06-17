@@ -2,6 +2,8 @@ import { offsetToKey } from "../utils/hex.js";
 
 export const MODULE_ID = "forgotten-woods-brasigen";
 export const FLAG = "mappingPoints";
+// Plafond de Points de Cartographie par hex : rien n'est prévu au-delà de 4.
+export const MAX_POINTS = 4;
 
 /**
  * Lit la carte des Points de Cartographie de la scène.
@@ -23,13 +25,13 @@ export function pointsAt(scene, offset) {
 }
 
 /**
- * Somme bornée à 0.
+ * Somme bornée à l'intervalle [0, MAX_POINTS].
  * @param {number} current
  * @param {number} delta
  * @returns {number}
  */
 export function clampedAdd(current, delta) {
-    return Math.max(0, (current ?? 0) + delta);
+    return Math.min(MAX_POINTS, Math.max(0, (current ?? 0) + delta));
 }
 
 /**
