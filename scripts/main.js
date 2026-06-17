@@ -10,7 +10,7 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("setup", async () => {
-    await foundry.applications.handlebars.loadTemplates({
+    await loadTemplates({
         fwActivityRow: `modules/${MODULE_ID}/templates/partials/activity-row.hbs`
     });
 });

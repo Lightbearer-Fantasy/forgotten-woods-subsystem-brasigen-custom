@@ -80,6 +80,7 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     _positionToToken() {
         if (!this.token || !this.element) return;
+        if (!canvas?.dimensions) return;
         const doc = this.token.document;
         const gridSize = canvas.dimensions.size;
         const worldX = doc.x + doc.width * gridSize;
