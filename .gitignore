@@ -1,0 +1,38 @@
+# =============================================================================
+# Liste blanche : SEUL le module FoundryVTT est suivi par git.
+# Tout est ignoré par défaut ; on ne ré-autorise QUE les fichiers du module.
+# Garantit qu'aucun matériel de référence ni secret (.mcp.json, tools/,
+# pf2e-hud/, references/, docs/) ne puisse être committé par accident.
+# =============================================================================
+
+# 1. Tout ignorer à la racine
+/*
+
+# 2. Ré-autoriser le module distribuable
+!/module.json
+!/scripts/
+!/templates/
+!/styles/
+!/lang/
+!/images/
+!/assets/
+!/packs/
+!/README.md
+!/LICENSE
+
+# 3. Ré-autoriser le scaffolding projet / tests
+!/.gitignore
+!/package.json
+!/package-lock.json
+!/vitest.config.js
+!/tests/
+
+# 4. Garde-fous : ces éléments restent ignorés en toutes circonstances
+node_modules/
+.mcp.json
+.env
+*.env
+*.key
+*-key.json
+sa-key.json
+secrets.json
