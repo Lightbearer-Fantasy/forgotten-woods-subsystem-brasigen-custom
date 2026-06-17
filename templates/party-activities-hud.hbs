@@ -1,0 +1,14 @@
+<div class="fw-inner">
+    <section class="fw-panel" data-panel="group">
+        <header class="fw-panel-title">{{groupTitle}}</header>
+        {{#each groupActivities as |activity|}}
+        {{> fwActivityRow activity}}
+        {{/each}}
+    </section>
+    <section class="fw-panel" data-panel="individual">
+        <header class="fw-panel-title">{{individualTitle}}</header>
+        {{#each individualActivities as |activity|}}
+        {{> fwActivityRow activity}}
+        {{/each}}
+    </section>
+</div>

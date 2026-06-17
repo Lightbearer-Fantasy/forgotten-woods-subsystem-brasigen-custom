@@ -1,0 +1,107 @@
+#forgotten-woods-party-hud {
+    --fw-highlight: #ff8c1a;
+    position: fixed;
+    z-index: 70;
+    pointer-events: none;
+    font-size: var(--font-size-14, 14px);
+    color: #f0f0e6;
+}
+
+#forgotten-woods-party-hud .fw-inner {
+    display: flex;
+    gap: 0.5em;
+    align-items: flex-start;
+    pointer-events: all;
+}
+
+#forgotten-woods-party-hud .fw-panel {
+    background: rgba(22, 22, 26, 0.95);
+    border: 1px solid #6f6f6f;
+    border-radius: 6px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+    padding: 0.4em;
+    min-width: 12em;
+    max-width: 16em;
+}
+
+#forgotten-woods-party-hud .fw-panel-title {
+    font-weight: bold;
+    padding: 0.1em 0.2em 0.3em;
+    border-bottom: 1px solid #55555a;
+    margin-bottom: 0.3em;
+}
+
+#forgotten-woods-party-hud .item.action {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.12em 0.2em;
+}
+
+#forgotten-woods-party-hud .item.action .image {
+    position: relative;
+    flex: 0 0 auto;
+    width: 1.8em;
+    height: 1.8em;
+    border: 1px solid #767676;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#forgotten-woods-party-hud .item.action .image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: none;
+    border-radius: 4px;
+}
+
+#forgotten-woods-party-hud .item.action .image i.chat {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+#forgotten-woods-party-hud .item.action .image:hover i.chat {
+    display: flex;
+}
+
+#forgotten-woods-party-hud .item.action .image:hover img {
+    opacity: 0;
+}
+
+#forgotten-woods-party-hud .item.action .name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#forgotten-woods-party-hud .item.action .name a {
+    color: inherit;
+    cursor: pointer;
+}
+
+#forgotten-woods-party-hud .item.action:hover .name a {
+    color: var(--fw-highlight);
+}
+
+#forgotten-woods-party-hud .item.action .controls {
+    display: none;
+    align-items: center;
+}
+
+#forgotten-woods-party-hud .item.action:hover .controls {
+    display: flex;
+}
+
+#forgotten-woods-party-hud .item.action .controls a {
+    color: inherit;
+    cursor: pointer;
+}
+
+#forgotten-woods-party-hud .item.action .controls a:hover {
+    color: var(--fw-highlight);
+}
