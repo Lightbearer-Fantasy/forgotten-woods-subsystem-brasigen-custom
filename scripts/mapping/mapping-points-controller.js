@@ -54,6 +54,8 @@ export class MappingPointsController {
     #painting = false;
     #paintMoved = false;
     #paintStartOffset = null;
+    /** Sens de la peinture, fixé selon l'état du hex de départ : "add" | "remove". */
+    #paintMode = "add";
     /** @type {Set<string>|null} */
     #paintStroke = null;
     /** @type {((event: any) => void)|null} */
@@ -320,11 +322,13 @@ export class MappingPointsController {
         if (this.#activeTool === TOOL_SELECT) {
             if (button === 0) {
                 // Démarre un trait : un simple clic (sans entrer dans d'autres hex)
-                // bascule le hex au relâchement ; un glissé peint (ajoute) les hex
-                // traversés. La décision clic/glissé est prise dans onPointerMove/Up.
+                // bascule le hex au relâchement ; un glissé peint les hex traversés.
+                // Le sens dépend du hex de départ : déjà sélectionné → désélection,
+                // sinon → sélection. La décision clic/glissé est prise dans move/up.
                 this.#painting = true;
                 this.#paintMoved = false;
                 this.#paintStartOffset = offset;
+                this.#paintMode = this.#selection.has(offset) ? "remove" : "add";
                 this.#paintStroke = new Set();
             }
             return;
@@ -355,11 +359,17 @@ export class MappingPointsController {
             // Entrée dans un nouveau hex → glissé : on peint le hex de départ aussi.
             this.#paintMoved = true;
             this.#paintStroke.add(startKey);
-            this.#selection.add(this.#paintStartOffset);
+            this.#paintApply(this.#paintStartOffset);
         }
         if (this.#paintStroke.has(key)) return;
         this.#paintStroke.add(key);
-        this.#selection.add(offset);
+        this.#paintApply(offset);
+    }
+
+    /** Applique le sens de peinture courant à un hex (ajout ou retrait). */
+    #paintApply(offset) {
+        if (this.#paintMode === "remove") this.#selection.remove(offset);
+        else this.#selection.add(offset);
     }
 
     /** Fin de trait : un clic simple (sans glissé) bascule le hex de départ. */
