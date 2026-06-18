@@ -14,7 +14,8 @@
                 "resetPoints": "Remettre à 0 tous les PC de la scène",
                 "showDC": "Afficher les DC de Hex",
                 "setDC": "Définir le DC des hex sélectionnés",
-                "resetDC": "Remettre à 0 tous les DC de la scène"
+                "resetDC": "Remettre à 0 tous les DC de la scène",
+                "setAspect": "Définir l'Aspect de la scène"
             },
             "reset": {
                 "title": "Réinitialiser les Points de Cartographie",
@@ -28,6 +29,10 @@
             "resetDC": {
                 "title": "Réinitialiser les DC de Hex",
                 "confirm": "Remettre à 0 tous les DC de cette scène ? Cette action est irréversible."
+            },
+            "setAspectPrompt": {
+                "title": "Aspect de la scène",
+                "label": "Aspect de cette scène (fixe le bonus de cartographie) :"
             },
             "noParty": "Sélectionne le Token Party (ou place-en un seul sur la scène)."
         },
@@ -46,7 +51,34 @@
                 "title": "Cartographie en cours",
                 "message": "Un autre membre de votre groupe est déjà en train de Cartographier la zone. Réessayez plus tard."
             },
-            "noGM": "Aucun MJ connecté : action impossible pour le moment."
+            "noGM": "Aucun MJ connecté : action impossible pour le moment.",
+            "noDC": "Aucun DC de zone n'est défini sur ce hex. Le MJ doit d'abord fixer le DC.",
+            "rollFlavor": "Cartographier la zone",
+            "skillPrompt": {
+                "title": "Cartographier la zone",
+                "label": "Choisissez la compétence à utiliser :",
+                "confirm": "Valider",
+                "abandon": "Quitter"
+            },
+            "waiting": {
+                "title": "En attente du groupe",
+                "message": "Les autres membres de votre groupe n'ont pas encore choisi une Compétence."
+            },
+            "modifiers": {
+                "aspect": "Aspect",
+                "overuse": "Sur-utilisation"
+            }
+        },
+        "skills": {
+            "crafting": "Crafting",
+            "society": "Society",
+            "nature": "Nature",
+            "survival": "Survival"
+        },
+        "aspects": {
+            "none": "Aucun",
+            "sauvage": "Aspect Sauvage",
+            "donjon": "Aspect du Donjon"
         }
     }
 }
