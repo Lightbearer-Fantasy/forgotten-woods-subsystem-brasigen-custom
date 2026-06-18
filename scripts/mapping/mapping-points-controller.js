@@ -1,7 +1,7 @@
 import { isHexScene, isPartyToken } from "../utils/scene.js";
 import { coordsToOffset, offsetToKey, spacesInRange } from "../utils/hex.js";
 import { readPoints, applyDeltas, clearAllPoints } from "./mapping-points-store.js";
-import { readDC } from "./mapping-dc-store.js";
+import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
 
 const CONTROL = "forgottenWoods";
 const TOOL_SELECT = "selectHex";
@@ -15,8 +15,10 @@ const TOOL_RESET_DC = "resetDC";
 
 /**
  * Contrôleur de l'onglet « Hex Controls » (MJ, scène hexagonale).
- * 4 entrées : sélection de hex (radio, défaut), affichage des PC (toggle),
- * incrément/décrément des PC (radio), incrément par proximité (bouton).
+ * 8 entrées : sélection de hex (radio, défaut), affichage des PC (toggle),
+ * incrément/décrément des PC (radio), affichage des DC (toggle),
+ * définir le DC (bouton), incrément par proximité (bouton),
+ * remise à zéro des PC (bouton), remise à zéro des DC (bouton).
  * Consomme un HexSelection autonome pour la sélection + la surbrillance.
  */
 export class MappingPointsController {
@@ -277,11 +279,45 @@ export class MappingPointsController {
         clearAllPoints(this.scene);
     }
 
-    /** Placeholder pour Task 6 : ouvre un prompt pour définir les DC. */
-    promptSetDC() {}
+    // --- Définition du DC des hex sélectionnés ---
 
-    /** Placeholder pour Task 6 : efface tous les DC de la scène. */
-    resetAllDC() {}
+    async promptSetDC() {
+        if (!game.user.isGM || !isHexScene(this.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const offsets = this.#selection.getAll();
+        if (offsets.length === 0) {
+            ui.notifications.warn(t("setDCPrompt.noSelection"));
+            return;
+        }
+        // Pré-remplissage avec le DC courant si un seul hex est sélectionné.
+        const initial = offsets.length === 1 ? dcAt(this.scene, offsets[0]) : 0;
+        const value = await foundry.applications.api.DialogV2.prompt({
+            window: { title: t("setDCPrompt.title") },
+            content: `<p>${t("setDCPrompt.label")}</p>`
+                + `<input type="number" name="dc" value="${initial}" min="0" step="1" autofocus>`,
+            ok: {
+                callback: (event, button) => Number(button.form.elements.dc.value)
+            },
+            modal: true
+        });
+        if (value == null || Number.isNaN(value)) return;
+        const keys = offsets.map((o) => offsetToKey(o));
+        setDC(this.scene, keys, Math.max(0, Math.trunc(value)));
+    }
+
+    // --- Remise à zéro de tous les DC de la scène ---
+
+    async resetAllDC() {
+        if (!game.user.isGM || !isHexScene(this.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const confirmed = await foundry.applications.api.DialogV2.confirm({
+            window: { title: t("resetDC.title") },
+            content: `<p>${t("resetDC.confirm")}</p>`,
+            modal: true
+        });
+        if (!confirmed) return;
+        clearAllDC(this.scene);
+    }
 
     #resolvePartyToken() {
         const controlled = canvas.tokens?.controlled?.find((t) => isPartyToken(t));
