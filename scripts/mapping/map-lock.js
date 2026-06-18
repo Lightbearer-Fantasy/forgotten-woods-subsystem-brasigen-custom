@@ -1,4 +1,7 @@
 import { applyDeltas } from "./mapping-points-store.js";
+import { SkillRound } from "./skill-round.js";
+import { openSkillPrompt, showWaiting } from "../hud/skill-prompt.js";
+import { rollMapSkill } from "./skill-roll.js";
 
 const CHANNEL = "module.forgotten-woods-brasigen";
 const TIMEOUT_MS = 120000;
@@ -7,6 +10,13 @@ const TIMEOUT_MS = 120000;
 let lock = null;
 /** Résolveurs en attente d'un lockResponse, côté client demandeur. @type {Map<string, Function>} */
 const pendingResolvers = new Map();
+
+/** Round actif côté MJ. @type {SkillRound|null} */
+let activeRound = null;
+/** Résolveurs de rollNow côté client : actorId -> Function. @type {Map<string, Function>} */
+const rollResolvers = new Map();
+/** Handle de la fenêtre d'attente côté client. */
+let waitingHandle = null;
 
 /**
  * Vrai si le verrou de cartographie est libre ou expiré.
@@ -76,6 +86,27 @@ function onSocketMessage(data) {
         }
         return;
     }
+    // Messages adressés à un utilisateur précis (client destinataire).
+    if (data?.type === "askSkill" && data.toUserId === game.user.id) {
+        openSkillPrompt(data.defaultSkill).then((skill) => {
+            if (skill == null) {
+                game.socket.emit(CHANNEL, { type: "skillAbandon", actorId: data.actorId });
+            } else {
+                game.socket.emit(CHANNEL, { type: "skillChosen", actorId: data.actorId, skill });
+                waitingHandle = showWaiting();
+            }
+        });
+        return;
+    }
+    if (data?.type === "rollNow" && data.toUserId === game.user.id) {
+        waitingHandle?.close();
+        waitingHandle = null;
+        const actor = game.actors.get(data.actorId);
+        rollMapSkill(actor, data.skill, data.dc, data.modifiers).then((degree) => {
+            game.socket.emit(CHANNEL, { type: "rollResult", actorId: data.actorId, degree });
+        });
+        return;
+    }
     // Requêtes : seul le MJ actif arbitre.
     if (!isLockArbiter()) return;
     switch (data?.type) {
@@ -97,6 +128,63 @@ function onSocketMessage(data) {
             if (lock?.userId === data.userId) lock = null;
             break;
         }
+        case "startRound": {
+            activeRound = new SkillRound(roundDeps());
+            activeRound.run({
+                sceneId: data.sceneId, tokenId: data.tokenId, offset: data.offset,
+                radius: data.radius, autoDelta: data.autoDelta, dc: data.dc
+            });
+            break;
+        }
+        case "skillChosen": {
+            activeRound?.onChosen(data.actorId, data.skill);
+            break;
+        }
+        case "skillAbandon": {
+            activeRound?.onAbandon(data.actorId);
+            break;
+        }
+        case "rollResult": {
+            const resolve = rollResolvers.get(data.actorId);
+            if (resolve) { rollResolvers.delete(data.actorId); resolve(data.degree); }
+            break;
+        }
+    }
+}
+
+/** Rafraîchit l'horodatage du verrou (arbitre, pendant un round). */
+export function refreshLockLocal() {
+    if (lock) lock.timestamp = Date.now();
+}
+
+/** Relâche inconditionnellement le verrou (fin de round, arbitre). */
+export function forceReleaseLocal() {
+    lock = null;
+}
+
+/** Dépendances injectées dans SkillRound côté MJ. */
+function roundDeps() {
+    return {
+        refreshLock: () => refreshLockLocal(),
+        releaseLock: () => forceReleaseLocal(),
+        askSkill: (ownerId, actorId, defaultSkill) =>
+            game.socket.emit(CHANNEL, { type: "askSkill", toUserId: ownerId, actorId, defaultSkill }),
+        rollNow: (ownerId, actorId, skill, dc, modifiers) => new Promise((resolve) => {
+            rollResolvers.set(actorId, resolve);
+            game.socket.emit(CHANNEL, { type: "rollNow", toUserId: ownerId, actorId, skill, dc, modifiers });
+        }),
+        promptLocal: (actorId, defaultSkill) => openSkillPrompt(defaultSkill),
+        rollLocal: (actor, skill, dc, modifiers) => rollMapSkill(actor, skill, dc, modifiers)
+    };
+}
+
+/** Démarre un round : émet au MJ, ou exécute localement si on est l'arbitre. */
+export function startRound(payload) {
+    if (isLockArbiter()) {
+        activeRound = new SkillRound(roundDeps());
+        activeRound.run(payload);
+    } else {
+        game.socket.emit(CHANNEL, { type: "startRound", ...payload });
     }
 }
 

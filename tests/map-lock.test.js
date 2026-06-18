@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { lockIsFree } from "../scripts/mapping/map-lock.js";
 
+
 describe("lockIsFree", () => {
     it("libre si aucun verrou", () => {
         expect(lockIsFree(null, 1000, 120000)).toBe(true);
@@ -14,5 +15,18 @@ describe("lockIsFree", () => {
     it("timeout par défaut = 120000", () => {
         expect(lockIsFree({ userId: "u", timestamp: 0 }, 130000)).toBe(true);
         expect(lockIsFree({ userId: "u", timestamp: 0 }, 100000)).toBe(false);
+    });
+});
+
+describe("heartbeat (lockIsFree avec timestamp rafraîchi)", () => {
+    it("un verrou récemment rafraîchi reste occupé", () => {
+        const now = 1_000_000;
+        const lock = { userId: "u1", timestamp: now - 1000 };
+        expect(lockIsFree(lock, now, 120000)).toBe(false);
+    });
+    it("un verrou non rafraîchi au-delà du timeout est libre", () => {
+        const now = 1_000_000;
+        const lock = { userId: "u1", timestamp: now - 130000 };
+        expect(lockIsFree(lock, now, 120000)).toBe(true);
     });
 });
