@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
     readPoints,
     pointsAt,
     clampedAdd,
     buildUpdate,
     buildClearAll,
+    buildRangeDeltas,
     MODULE_ID,
     FLAG
 } from "../scripts/mapping/mapping-points-store.js";
@@ -89,5 +90,29 @@ describe("buildClearAll", () => {
     it("renvoie {} quand il n'y a aucun PC (no-op)", () => {
         expect(buildClearAll(sceneWith({}))).toEqual({});
         expect(buildClearAll(sceneWith(undefined))).toEqual({});
+    });
+});
+
+describe("buildRangeDeltas", () => {
+    const fourNeighbours = ({ i, j }) => [
+        { i: i - 1, j }, { i: i + 1, j }, { i, j: j - 1 }, { i, j: j + 1 }
+    ];
+    beforeEach(() => {
+        globalThis.canvas = { grid: { getAdjacentOffsets: fourNeighbours } };
+    });
+    afterEach(() => {
+        delete globalThis.canvas;
+    });
+
+    it("rayon 1, delta 2 → 5 clés à +2", () => {
+        const deltas = buildRangeDeltas({ i: 0, j: 0 }, 1, 2);
+        expect(deltas.size).toBe(5);
+        expect(deltas.get("0,0")).toBe(2);
+        expect(deltas.get("1,0")).toBe(2);
+    });
+
+    it("delta <= 0 → Map vide", () => {
+        expect(buildRangeDeltas({ i: 0, j: 0 }, 2, 0).size).toBe(0);
+        expect(buildRangeDeltas({ i: 0, j: 0 }, 1, -1).size).toBe(0);
     });
 });

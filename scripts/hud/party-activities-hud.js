@@ -1,6 +1,7 @@
 import { isHexScene, isPartyToken } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
+import { MapAreaFlow } from "../mapping/map-area-flow.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -218,6 +219,10 @@ async function onRollD20(event, target) {
     const row = target.closest("[data-activity-id]");
     const activity = this.findActivity(row?.dataset.activityId);
     if (!activity) return;
+    // « Cartographier la zone » : flux d'automatisation (le jet 1d20 est émis en fin de flux).
+    if (activity.id === "map-area") {
+        return MapAreaFlow.start(this.token, this.token?.actor, activity.label);
+    }
     const roll = await new Roll("1d20").evaluate();
     return roll.toMessage({
         flavor: activity.label,

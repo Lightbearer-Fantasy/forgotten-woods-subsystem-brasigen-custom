@@ -1,4 +1,4 @@
-import { offsetToKey } from "../utils/hex.js";
+import { offsetToKey, spacesInRange } from "../utils/hex.js";
 
 export const MODULE_ID = "forgotten-woods-brasigen";
 export const FLAG = "mappingPoints";
@@ -54,6 +54,23 @@ export function buildUpdate(scene, deltas) {
         }
     }
     return updates;
+}
+
+/**
+ * Deltas { "i,j": delta } pour tous les hex à portée `radius` de `origin`.
+ * Renvoie une Map vide si delta <= 0 (rien à écrire).
+ * @param {{i: number, j: number}} origin
+ * @param {number} radius
+ * @param {number} delta
+ * @returns {Map<string, number>}
+ */
+export function buildRangeDeltas(origin, radius, delta) {
+    const deltas = new Map();
+    if (delta <= 0) return deltas;
+    for (const offset of spacesInRange(origin, radius)) {
+        deltas.set(offsetToKey(offset), delta);
+    }
+    return deltas;
 }
 
 /**

@@ -30,6 +30,23 @@
                 "confirm": "Remettre à 0 tous les DC de cette scène ? Cette action est irréversible."
             },
             "noParty": "Sélectionne le Token Party (ou place-en un seul sur la scène)."
+        },
+        "mapArea": {
+            "agPrompt": {
+                "title": "Cartographier la zone",
+                "label": "Choisissez le nombre d'Activités de Groupe que vous dépensez pour Cartographier la zone :"
+            },
+            "radiusPrompt": {
+                "title": "Rayon de repérage",
+                "label": "Voulez-vous augmenter le rayon de repérage de 1 Hex ? (une fois)",
+                "yes": "Oui",
+                "no": "Non"
+            },
+            "busy": {
+                "title": "Cartographie en cours",
+                "message": "Un autre membre de votre groupe est déjà en train de Cartographier la zone. Réessayez plus tard."
+            },
+            "noGM": "Aucun MJ connecté : action impossible pour le moment."
         }
     }
 }
