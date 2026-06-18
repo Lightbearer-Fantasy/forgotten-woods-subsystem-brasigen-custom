@@ -23,6 +23,7 @@ Hooks.once("setup", async () => {
 });
 
 Hooks.on("controlToken", (token, controlled) => hud?.onControlToken(token, controlled));
+Hooks.on("hoverToken", (token, hovered) => hud?.onHoverToken(token, hovered));
 Hooks.on("updateToken", (doc, changes) => hud?.onUpdateToken(doc, changes));
 Hooks.on("deleteToken", (doc) => hud?.onDeleteToken(doc));
 Hooks.on("canvasPan", () => hud?.onCanvasPan());

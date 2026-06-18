@@ -18,3 +18,25 @@ export function isHexScene(scene) {
 export function isPartyToken(token) {
     return token?.actor?.type === "party";
 }
+
+/**
+ * Détermine le Token Party à ancrer au HUD à partir de l'état du canvas.
+ *
+ * Deux chemins, car un joueur non-propriétaire ne PEUT PAS sélectionner
+ * (contrôler) le Token Party — `controlToken` ne se déclenche alors jamais :
+ *  - MJ / propriétaire : le Token Party doit être le seul token contrôlé
+ *    (une multi-sélection n'ouvre jamais le HUD, comme le Token HUD natif).
+ *  - Joueur : on détecte le clic direct par le survol (hook `hoverToken`),
+ *    à condition que ce Token Party ne soit pas déjà contrôlé (sinon ce
+ *    serait une multi-sélection MJ, qu'on continue d'ignorer).
+ *
+ * @param {object} [state]
+ * @param {Array}  [state.controlled]  Tokens actuellement contrôlés.
+ * @param {object|null} [state.hovered]  Token actuellement survolé, le cas échéant.
+ * @returns {object|null} le Token Party actif, ou null.
+ */
+export function activePartyToken({ controlled = [], hovered = null } = {}) {
+    if (controlled.length === 1 && isPartyToken(controlled[0])) return controlled[0];
+    if (hovered && isPartyToken(hovered) && !controlled.includes(hovered)) return hovered;
+    return null;
+}

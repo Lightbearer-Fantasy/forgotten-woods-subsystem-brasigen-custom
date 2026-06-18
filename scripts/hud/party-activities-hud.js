@@ -1,4 +1,4 @@
-import { isHexScene, isPartyToken } from "../utils/scene.js";
+import { isHexScene, activePartyToken } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
@@ -15,6 +15,12 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     _dragged = false;
     /** Garde-fou : n'attache les écouteurs pointeur qu'une fois. */
     _listenersBound = false;
+    /**
+     * Token actuellement survolé (hook `hoverToken`). Sert au joueur qui ne
+     * peut pas contrôler le Token Party : on détecte alors le clic direct par
+     * le survol, puisque `controlToken` ne se déclenche jamais pour lui.
+     */
+    _hovered = null;
 
     /**
      * Attache le suivi du pointeur sur l'élément canvas (idempotent).
@@ -120,6 +126,15 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     }
 
     /**
+     * Mémorise le token survolé (sans réévaluer : l'ouverture/fermeture reste
+     * pilotée par le clic via les écouteurs pointeur et par `controlToken`).
+     */
+    onHoverToken(token, hovered) {
+        if (hovered) this._hovered = token;
+        else if (this._hovered === token) this._hovered = null;
+    }
+
+    /**
      * Planifie une évaluation unique en fin de tick (microtask).
      * Une sélection large émet un controlToken par token, de façon synchrone :
      * on ne juge que l'état FINAL de la sélection (et on évite le render async
@@ -135,8 +150,9 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     }
 
     _evaluateControl() {
-        // Recalcule depuis la source de vérité : le HUD ne reste ouvert que
-        // si un Token Party est effectivement contrôlé sur une scène hexagonale.
+        // Recalcule depuis la source de vérité (cf. activePartyToken) : le HUD
+        // ne reste ouvert que pour un Token Party actif sur une scène hexagonale
+        // — contrôlé (MJ/propriétaire) ou survolé au clic (joueur non-propriétaire).
         // Couvre la désélection et le clic à côté (qui relâchent le contrôle).
         // Comme le Token HUD natif : une sélection large (marquee) n'ouvre jamais
         // le HUD, même si elle n'englobe que le Token Party — seul un clic direct.
@@ -144,8 +160,10 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             this.close();
             return;
         }
-        const controlled = canvas?.tokens?.controlled ?? [];
-        const active = controlled.length === 1 && isPartyToken(controlled[0]) ? controlled[0] : null;
+        const active = activePartyToken({
+            controlled: canvas?.tokens?.controlled ?? [],
+            hovered: this._hovered
+        });
         if (active && isHexScene(canvas?.scene)) {
             if (this.token === active && this.rendered) {
                 this._positionToToken();
