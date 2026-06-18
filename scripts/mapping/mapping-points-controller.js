@@ -2,6 +2,8 @@ import { isHexScene, isPartyToken } from "../utils/scene.js";
 import { coordsToOffset, offsetToKey, offsetsInRect } from "../utils/hex.js";
 import { readPoints, applyDeltas, clearAllPoints, buildRangeDeltas } from "./mapping-points-store.js";
 import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
+import { aspectOf, setAspect } from "./aspect-store.js";
+import { aspectOptions, aspectLabelKey } from "../data/aspects.js";
 
 const CONTROL = "forgottenWoods";
 const TOOL_SELECT = "selectHex";
@@ -12,6 +14,7 @@ const TOOL_RESET = "resetPoints";
 const TOOL_SHOW_DC = "showDC";
 const TOOL_SET_DC = "setDC";
 const TOOL_RESET_DC = "resetDC";
+const TOOL_SET_ASPECT = "setAspect";
 
 /**
  * États actifs des deux toggles d'affichage dérivés du mode courant.
@@ -143,6 +146,14 @@ export class MappingPointsController {
                     icon: "fa-solid fa-eraser",
                     button: true,
                     onChange: () => this.resetAllDC()
+                },
+                [TOOL_SET_ASPECT]: {
+                    name: TOOL_SET_ASPECT,
+                    order: 9,
+                    title: t("tools.setAspect"),
+                    icon: "fa-solid fa-mountain-sun",
+                    button: true,
+                    onChange: () => this.promptSetAspect()
                 }
             },
             activeTool: TOOL_SELECT
@@ -477,6 +488,26 @@ export class MappingPointsController {
         });
         if (!confirmed) return;
         clearAllDC(this.scene);
+    }
+
+    /** Menu de sélection de l'Aspect de la scène (MJ). */
+    async promptSetAspect() {
+        if (!game.user.isGM || !isHexScene(this.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const current = aspectOf(this.scene) ?? "";
+        const opts = aspectOptions().map(({ value, labelKey }) => {
+            const selected = value === current ? " selected" : "";
+            return `<option value="${value}"${selected}>${game.i18n.localize(labelKey)}</option>`;
+        }).join("");
+        const raw = await foundry.applications.api.DialogV2.prompt({
+            window: { title: t("setAspectPrompt.title") },
+            content: `<p>${t("setAspectPrompt.label")}</p>`
+                + `<select name="aspect" autofocus>${opts}</select>`,
+            ok: { callback: (event, button) => button.form.elements.aspect.value },
+            modal: true
+        });
+        if (raw == null) return;
+        setAspect(this.scene, raw || null);
     }
 
     #resolvePartyToken() {
