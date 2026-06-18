@@ -1,47 +1,78 @@
 /**
- * Sélection d'un hex sur le canvas, autonome (aucune dépendance aux Points
- * de Cartographie). Gère l'état "hex sélectionné", sa surbrillance, et notifie
- * les abonnés à chaque changement. Réutilisable pour de futures mécaniques.
+ * Sélection d'un ou plusieurs hex sur le canvas, autonome (aucune dépendance aux
+ * Points de Cartographie ni aux DC). Gère l'état "hex sélectionnés", leur
+ * surbrillance, et notifie les abonnés à chaque changement. Réutilisable.
  */
 const HIGHLIGHT_LAYER = "forgotten-woods-hex-selection";
 const HIGHLIGHT_COLOR = 0xff8c1a;
 
+const keyOf = (offset) => `${offset.i},${offset.j}`;
+
 export class HexSelection {
-    /** @type {{i: number, j: number}|null} */
-    #selected = null;
+    /** @type {Map<string, {i: number, j: number}>} */
+    #selected = new Map();
     /** @type {boolean} */
     #visible = false;
-    /** @type {((offset: {i: number, j: number}|null) => void)[]} */
+    /** @type {((offsets: {i: number, j: number}[]) => void)[]} */
     #listeners = [];
 
-    /** @returns {{i: number, j: number}|null} */
+    /** @returns {{i: number, j: number}|null} Premier offset sélectionné, ou null. */
     get() {
-        return this.#selected;
+        const first = this.#selected.values().next();
+        return first.done ? null : first.value;
+    }
+
+    /** @returns {{i: number, j: number}[]} Copie de la collection sélectionnée. */
+    getAll() {
+        return [...this.#selected.values()];
     }
 
     /** @param {{i: number, j: number}} offset @returns {boolean} */
     has(offset) {
-        return (
-            !!this.#selected &&
-            this.#selected.i === offset.i &&
-            this.#selected.j === offset.j
-        );
+        return this.#selected.has(keyOf(offset));
     }
 
-    /** @param {{i: number, j: number}} offset */
+    /** Sélection mono : vide la collection puis ajoute un seul hex. */
     select(offset) {
-        this.#selected = { i: offset.i, j: offset.j };
+        this.#selected = new Map([[keyOf(offset), { i: offset.i, j: offset.j }]]);
+        this.#render();
+        this.#notify();
+    }
+
+    /** Ajoute un hex à la collection (idempotent). */
+    add(offset) {
+        this.#selected.set(keyOf(offset), { i: offset.i, j: offset.j });
+        this.#render();
+        this.#notify();
+    }
+
+    /** Retire un hex de la collection. */
+    remove(offset) {
+        this.#selected.delete(keyOf(offset));
+        this.#render();
+        this.#notify();
+    }
+
+    /** Bascule l'appartenance d'un hex (multi-sélection). */
+    toggle(offset) {
+        if (this.#selected.has(keyOf(offset))) this.remove(offset);
+        else this.add(offset);
+    }
+
+    /** Remplace toute la collection par les offsets fournis. */
+    set(offsets) {
+        this.#selected = new Map(offsets.map((o) => [keyOf(o), { i: o.i, j: o.j }]));
         this.#render();
         this.#notify();
     }
 
     clear() {
-        this.#selected = null;
+        this.#selected = new Map();
         this.#render();
         this.#notify();
     }
 
-    /** @param {(offset: {i: number, j: number}|null) => void} cb */
+    /** @param {(offsets: {i: number, j: number}[]) => void} cb */
     onChange(cb) {
         this.#listeners.push(cb);
     }
@@ -58,14 +89,15 @@ export class HexSelection {
 
     destroy() {
         this.#visible = false;
-        this.#selected = null;
+        this.#selected = new Map();
         this.#listeners = [];
         const grid = globalThis.canvas?.interface?.grid;
         if (grid) grid.clearHighlightLayer(HIGHLIGHT_LAYER);
     }
 
     #notify() {
-        for (const cb of this.#listeners) cb(this.#selected);
+        const all = this.getAll();
+        for (const cb of this.#listeners) cb(all);
     }
 
     #render() {
@@ -75,14 +107,16 @@ export class HexSelection {
             grid.addHighlightLayer(HIGHLIGHT_LAYER);
         }
         grid.clearHighlightLayer(HIGHLIGHT_LAYER);
-        if (!this.#visible || !this.#selected) return;
-        const { x, y } = globalThis.canvas.grid.getTopLeftPoint(this.#selected);
-        grid.highlightPosition(HIGHLIGHT_LAYER, {
-            x,
-            y,
-            color: HIGHLIGHT_COLOR,
-            alpha: 0.35,
-            border: HIGHLIGHT_COLOR
-        });
+        if (!this.#visible) return;
+        for (const offset of this.#selected.values()) {
+            const { x, y } = globalThis.canvas.grid.getTopLeftPoint(offset);
+            grid.highlightPosition(HIGHLIGHT_LAYER, {
+                x,
+                y,
+                color: HIGHLIGHT_COLOR,
+                alpha: 0.35,
+                border: HIGHLIGHT_COLOR
+            });
+        }
     }
 }
