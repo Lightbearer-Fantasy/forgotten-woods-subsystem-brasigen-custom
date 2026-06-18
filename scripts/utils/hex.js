@@ -43,3 +43,25 @@ export function spacesInRange(originOffset, steps) {
     }
     return [...visited.values()];
 }
+
+/**
+ * Tous les offsets de hex dont le centre tombe dans le rectangle fourni
+ * (typiquement la zone de scène, hors padding). Parcourt la plage d'offsets
+ * couvrant le rectangle puis filtre par position du centre.
+ * @param {{x: number, y: number, width: number, height: number}} rect
+ * @returns {{i: number, j: number}[]}
+ */
+export function offsetsInRect(rect) {
+    const [i0, j0, i1, j1] = canvas.grid.getOffsetRange(rect);
+    const result = [];
+    for (let i = i0; i < i1; i++) {
+        for (let j = j0; j < j1; j++) {
+            const { x, y } = canvas.grid.getCenterPoint({ i, j });
+            if (x >= rect.x && x <= rect.x + rect.width
+                && y >= rect.y && y <= rect.y + rect.height) {
+                result.push({ i, j });
+            }
+        }
+    }
+    return result;
+}

@@ -1,5 +1,5 @@
 import { isHexScene, isPartyToken } from "../utils/scene.js";
-import { coordsToOffset, offsetToKey, spacesInRange } from "../utils/hex.js";
+import { coordsToOffset, offsetToKey, spacesInRange, offsetsInRect } from "../utils/hex.js";
 import { readPoints, applyDeltas, clearAllPoints } from "./mapping-points-store.js";
 import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
 
@@ -50,6 +50,16 @@ export class MappingPointsController {
     #rightDragged = false;
     /** @type {{el: EventTarget, down: Function, move: Function, up: Function}|null} */
     #rightHandlers = null;
+    /** Peinture de sélection au clic gauche maintenu (mode Sélection). */
+    #painting = false;
+    #paintMoved = false;
+    #paintStartOffset = null;
+    /** @type {Set<string>|null} */
+    #paintStroke = null;
+    /** @type {((event: any) => void)|null} */
+    #moveHandler = null;
+    /** @type {((event: any) => void)|null} */
+    #upHandler = null;
 
     /** @param {import("../canvas/hex-selection.js").HexSelection} selection */
     constructor(selection) {
@@ -223,6 +233,12 @@ export class MappingPointsController {
         if (this.#pointerHandler) return;
         this.#pointerHandler = (event) => this.#onPointerDown(event);
         canvas.stage.on("pointerdown", this.#pointerHandler);
+        // Peinture de sélection : clic gauche maintenu + déplacement.
+        this.#moveHandler = (event) => this.#onPointerMove(event);
+        this.#upHandler = (event) => this.#onPointerUp(event);
+        canvas.stage.on("pointermove", this.#moveHandler);
+        canvas.stage.on("pointerup", this.#upHandler);
+        canvas.stage.on("pointerupoutside", this.#upHandler);
         // Désactive le menu contextuel pour permettre le clic droit = -1.
         this.#contextHandler = (event) => {
             if (this.#activeTool) event.preventDefault();
@@ -261,6 +277,19 @@ export class MappingPointsController {
             canvas.stage?.off("pointerdown", this.#pointerHandler);
             this.#pointerHandler = null;
         }
+        if (this.#moveHandler) {
+            canvas.stage?.off("pointermove", this.#moveHandler);
+            this.#moveHandler = null;
+        }
+        if (this.#upHandler) {
+            canvas.stage?.off("pointerup", this.#upHandler);
+            canvas.stage?.off("pointerupoutside", this.#upHandler);
+            this.#upHandler = null;
+        }
+        this.#painting = false;
+        this.#paintMoved = false;
+        this.#paintStartOffset = null;
+        this.#paintStroke = null;
         if (this.#contextHandler) {
             (canvas.app?.canvas ?? canvas.app?.view)?.removeEventListener("contextmenu", this.#contextHandler);
             this.#contextHandler = null;
@@ -289,7 +318,15 @@ export class MappingPointsController {
         if (!this.#inBounds(offset)) return; // ignore les hex hors scène (padding)
 
         if (this.#activeTool === TOOL_SELECT) {
-            if (button === 0) this.#selection.toggle(offset); // multi-sélection
+            if (button === 0) {
+                // Démarre un trait : un simple clic (sans entrer dans d'autres hex)
+                // bascule le hex au relâchement ; un glissé peint (ajoute) les hex
+                // traversés. La décision clic/glissé est prise dans onPointerMove/Up.
+                this.#painting = true;
+                this.#paintMoved = false;
+                this.#paintStartOffset = offset;
+                this.#paintStroke = new Set();
+            }
             return;
         }
 
@@ -301,6 +338,40 @@ export class MappingPointsController {
         const delta = button === 0 ? 1 : -1;
         applyDeltas(this.scene, new Map([[offsetToKey(offset), delta]]));
         // Le re-render de l'overlay arrive via onUpdateScene après persistance.
+    }
+
+    /** Peinture de sélection : ajoute les hex traversés tant que le clic gauche est maintenu. */
+    #onPointerMove(event) {
+        if (!this.#painting) return;
+        const coords = event.data?.getLocalPosition?.(canvas.app.stage)
+            ?? event.getLocalPosition?.(canvas.app.stage);
+        if (!coords) return;
+        const offset = coordsToOffset(coords);
+        if (!this.#inBounds(offset)) return;
+        const key = offsetToKey(offset);
+        const startKey = offsetToKey(this.#paintStartOffset);
+        if (!this.#paintMoved) {
+            if (key === startKey) return; // encore sur le hex de départ : pas un glissé
+            // Entrée dans un nouveau hex → glissé : on peint le hex de départ aussi.
+            this.#paintMoved = true;
+            this.#paintStroke.add(startKey);
+            this.#selection.add(this.#paintStartOffset);
+        }
+        if (this.#paintStroke.has(key)) return;
+        this.#paintStroke.add(key);
+        this.#selection.add(offset);
+    }
+
+    /** Fin de trait : un clic simple (sans glissé) bascule le hex de départ. */
+    #onPointerUp() {
+        if (!this.#painting) return;
+        this.#painting = false;
+        if (!this.#paintMoved && this.#paintStartOffset) {
+            this.#selection.toggle(this.#paintStartOffset);
+        }
+        this.#paintMoved = false;
+        this.#paintStartOffset = null;
+        this.#paintStroke = null;
     }
 
     /** Vrai si le centre du hex est dans la zone de scène (hors padding). */
@@ -349,7 +420,16 @@ export class MappingPointsController {
         if (!game.user.isGM || !isHexScene(this.scene)) return;
         const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
         const offsets = this.#selection.getAll();
-        if (offsets.length === 0) {
+        let keys;
+        if (offsets.length > 0) {
+            keys = offsets.map((o) => offsetToKey(o));
+        } else if (Object.keys(readDC(this.scene)).length === 0) {
+            // Aucune sélection ET aucun DC encore défini : on établit une base de
+            // travail en appliquant la valeur à TOUS les hex de la scène
+            // (ajustables ensuite hex par hex avec les autres outils).
+            keys = this.#allSceneHexKeys();
+            if (keys.length === 0) return;
+        } else {
             ui.notifications.warn(t("setDCPrompt.noSelection"));
             return;
         }
@@ -369,8 +449,14 @@ export class MappingPointsController {
         if (raw == null || String(raw).trim() === "") return;
         const value = Number(raw);
         if (Number.isNaN(value)) return;
-        const keys = offsets.map((o) => offsetToKey(o));
         setDC(this.scene, keys, Math.max(0, Math.trunc(value)));
+    }
+
+    /** Clés "i,j" de tous les hex de la scène (centre dans la zone de scène). */
+    #allSceneHexKeys() {
+        const rect = canvas.dimensions?.sceneRect;
+        if (!rect) return [];
+        return offsetsInRect(rect).map(offsetToKey);
     }
 
     // --- Remise à zéro de tous les DC de la scène ---
