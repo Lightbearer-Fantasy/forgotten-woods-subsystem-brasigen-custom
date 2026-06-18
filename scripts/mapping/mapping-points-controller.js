@@ -94,9 +94,15 @@ export class MappingPointsController {
     onActivateControls(controls) {
         const isOurs = controls?.control?.name === CONTROL;
         const tool = controls?.tool?.name;
+        const previous = this.#activeTool;
         this.#activeTool = isOurs ? tool : null;
-        if (isOurs && (tool === TOOL_SELECT || tool === TOOL_EDIT)) this.#enable();
-        else this.#disable();
+        if (isOurs && (tool === TOOL_SELECT || tool === TOOL_EDIT)) {
+            // Passer en édition manuelle vide la multi-sélection (édition mono-hex).
+            if (tool === TOOL_EDIT && previous !== TOOL_EDIT) this.#selection.clear();
+            this.#enable();
+        } else {
+            this.#disable();
+        }
     }
 
     /** Rafraîchit l'overlay si affiché (sur updateScene). */
@@ -170,7 +176,7 @@ export class MappingPointsController {
         if (!this.#inBounds(offset)) return; // ignore les hex hors scène (padding)
 
         if (this.#activeTool === TOOL_SELECT) {
-            if (button === 0) this.#selection.select(offset);
+            if (button === 0) this.#selection.toggle(offset); // multi-sélection
             return;
         }
 
