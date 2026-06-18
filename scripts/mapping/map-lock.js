@@ -87,6 +87,7 @@ function onSocketMessage(data) {
             break;
         }
         case "applyDeltas": {
+            if (lock?.userId !== data.userId) break;
             const scene = game.scenes.get(data.sceneId);
             if (scene) applyDeltas(scene, new Map(Object.entries(data.deltas)));
             if (lock?.userId === data.userId) lock = null;
