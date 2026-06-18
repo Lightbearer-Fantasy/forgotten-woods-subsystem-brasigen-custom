@@ -1,6 +1,7 @@
 import { PartyActivitiesHUD } from "./hud/party-activities-hud.js";
 import { MappingPointsController } from "./mapping/mapping-points-controller.js";
 import { HexSelection } from "./canvas/hex-selection.js";
+import { registerSocket } from "./mapping/map-lock.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -29,6 +30,8 @@ Hooks.on("canvasReady", () => {
     hud?.activateCanvasListeners();
     hud?.close();
 });
+
+Hooks.once("ready", () => registerSocket());
 
 // --- Système de Points de Cartographie (MJ) ---
 Hooks.on("getSceneControlButtons", (controls) => mapping?.getControls(controls));
