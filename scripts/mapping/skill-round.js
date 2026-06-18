@@ -4,7 +4,6 @@ import { sumDeltas } from "./skill-outcome.js";
 import { aspectOf } from "./aspect-store.js";
 import { effectiveDefault, writeDefault } from "../data/skill-memory.js";
 import { buildSignedRangeDeltas, applyDeltas } from "./mapping-points-store.js";
-import { rollMapSkill } from "./skill-roll.js";
 
 /**
  * Associe chaque membre PJ à un propriétaire connecté (joueur), sinon null
@@ -68,7 +67,7 @@ export class SkillRound {
             const actor = members.find((m) => m.id === actorId);
             const def = effectiveDefault(actor);
             if (ownerId) this.deps.askSkill(ownerId, actorId, def);
-            else this.#promptOrphan(actorId, def); // MJ prend le relais
+            else void this.#promptOrphan(actorId, def); // fire-and-forget : résolution via onChosen/onAbandon
         }
         if (this.#pending.size === 0) this.#resolveAll();
         await allChosen;

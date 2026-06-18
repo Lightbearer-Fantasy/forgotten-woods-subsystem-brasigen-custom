@@ -21,5 +21,6 @@ export function tallySkills(choices) {
 export function malusFor(skill, tally) {
     const count = tally[skill] ?? 0;
     const excess = Math.max(0, count - 2);
+    // guard explicite : -2 * 0 === -0 en JS, toBe(0) échouerait sur Object.is
     return excess > 0 ? -2 * excess : 0;
 }
