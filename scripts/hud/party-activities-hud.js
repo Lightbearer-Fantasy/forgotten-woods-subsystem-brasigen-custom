@@ -246,7 +246,7 @@ async function onRollD20(event, target) {
     if (!activity) return;
     // « Cartographier la zone » : flux d'automatisation (le jet 1d20 est émis en fin de flux).
     if (activity.id === "map-area") {
-        return MapAreaFlow.start(this.token, this.token?.actor, activity.label);
+        return MapAreaFlow.start(this.token, this.token?.actor);
     }
     const roll = await new Roll("1d20").evaluate();
     return roll.toMessage({

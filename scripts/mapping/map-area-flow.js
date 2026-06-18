@@ -1,22 +1,21 @@
-import { autoIncrement, agOptions } from "./auto-increment.js";
-import { buildRangeDeltas, applyDeltas } from "./mapping-points-store.js";
+import { autoIncrement } from "./auto-increment.js";
 import { coordsToOffset } from "../utils/hex.js";
+import { dcAt } from "./mapping-dc-store.js";
 import { slowestLandSpeed, groupActivityCount } from "../hud/party-counts.js";
 import {
     isLockArbiter, tryAcquireLocal, releaseLocal,
-    requestLock, sendApplyDeltas, sendRelease
+    requestLock, sendRelease, startRound
 } from "./map-lock.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapArea.${key}`);
 
 export class MapAreaFlow {
     /**
-     * Déroule le flux « Cartographier la zone » pour le client qui clique.
+     * Déroule « Cartographier la zone » pour le client qui clique.
      * @param {Token} token  Token Party ancré au HUD
-     * @param {object} actor  acteur Party (pour le compte d'AG)
-     * @param {string} flavor  intitulé du jet 1d20 (label de l'activité)
+     * @param {object} actor  acteur Party
      */
-    static async start(token, actor, flavor) {
+    static async start(token, actor) {
         if (!token) return;
         const arbiter = isLockArbiter();
 
@@ -31,45 +30,37 @@ export class MapAreaFlow {
             });
             return;
         }
-
         const release = () => (arbiter ? releaseLocal() : sendRelease());
 
-        // 2. Prompt AG.
+        // 2. Prompt AG + rayon → autoDelta et radius (sans appliquer).
         const ag = groupActivityCount(slowestLandSpeed(actor));
         const choice = await this.#promptAG(ag);
-        if (choice == null) { release(); return; } // annulé → pas de jet
+        if (choice == null) { release(); return; }
 
-        // 3 & 4. Rayon + calcul des deltas (AG >= 2 uniquement).
-        let deltas = null;
+        let radius = 1;
+        let autoDelta = 0;
         if (choice >= 2) {
             const increased = await this.#promptRadius();
-            if (increased == null) { release(); return; } // annulé → pas de jet
-            const { radius, delta } = autoIncrement(choice, increased);
-            deltas = buildRangeDeltas(coordsToOffset(token.center), radius, delta);
+            if (increased == null) { release(); return; }
+            ({ radius, delta: autoDelta } = autoIncrement(choice, increased));
         }
 
-        // 4bis. Application + libération du verrou.
-        this.#commit(arbiter, deltas);
+        // 3. Garde Hex DC.
+        const scene = canvas.scene;
+        const offset = coordsToOffset(token.center);
+        const dc = dcAt(scene, offset);
+        if (!dc) { ui.notifications.warn(t("noDC")); release(); return; }
 
-        // 5. Jet 1d20 en fin de séquence.
-        await this.#roll(token, flavor);
+        // 4. Délégation au MJ (qui appliquera les PC et relâchera le verrou).
+        startRound({
+            sceneId: scene.id, tokenId: token.id, offset, radius, autoDelta, dc
+        });
     }
 
-    /** Applique les deltas (ou relâche seulement si rien à écrire), selon le rôle. */
-    static #commit(arbiter, deltas) {
-        if (deltas && deltas.size > 0) {
-            if (arbiter) { applyDeltas(canvas.scene, deltas); releaseLocal(); }
-            else sendApplyDeltas(canvas.scene.id, Object.fromEntries(deltas));
-        } else if (arbiter) {
-            releaseLocal();
-        } else {
-            sendRelease();
-        }
-    }
-
-    /** Prompt liste 1..ag. @returns {Promise<number|null>} null si annulé. */
+    /** Prompt liste 1..ag. @returns {Promise<number|null>} */
     static async #promptAG(ag) {
-        const opts = agOptions(ag).map((n) => `<option value="${n}">${n}</option>`).join("");
+        const opts = Array.from({ length: Math.max(0, ag) }, (_, k) => k + 1)
+            .map((n) => `<option value="${n}">${n}</option>`).join("");
         const raw = await foundry.applications.api.DialogV2.prompt({
             window: { title: t("agPrompt.title") },
             content: `<p>${t("agPrompt.label")}</p><select name="ag" autofocus>${opts}</select>`,
@@ -79,7 +70,7 @@ export class MapAreaFlow {
         return raw == null || Number.isNaN(raw) ? null : raw;
     }
 
-    /** Prompt Oui/Non. @returns {Promise<boolean|null>} null si fermé. */
+    /** Prompt Oui/Non. @returns {Promise<boolean|null>} */
     static async #promptRadius() {
         return foundry.applications.api.DialogV2.wait({
             window: { title: t("radiusPrompt.title") },
@@ -88,15 +79,6 @@ export class MapAreaFlow {
                 { action: "yes", label: t("radiusPrompt.yes"), callback: () => true },
                 { action: "no", label: t("radiusPrompt.no"), default: true, callback: () => false }
             ]
-        });
-    }
-
-    /** Jet 1d20 au chat (locuteur = Token Party). */
-    static async #roll(token, flavor) {
-        const roll = await new Roll("1d20").evaluate();
-        return roll.toMessage({
-            flavor,
-            speaker: ChatMessage.getSpeaker({ token: token?.document })
         });
     }
 }
