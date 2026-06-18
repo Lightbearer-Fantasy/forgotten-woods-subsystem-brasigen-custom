@@ -214,11 +214,17 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         this._positionToToken();
     }
 
-    async close(options) {
+    async close(options = {}) {
         this.token = null;
         // Masque l'élément immédiatement pour éviter la latence visuelle de l'animation ApplicationV2.
         if (this.element) this.element.style.display = "none";
-        return super.close(options);
+        // `animate: false` est CRUCIAL : sans lui, ApplicationV2#close lance une
+        // animation de minimisation et `await _awaitTransition(element, 1000)`.
+        // Notre élément frameless (déjà en display:none) n'a AUCUNE transition CSS,
+        // donc `transitionend` n'est jamais émis → l'attente va jusqu'au timeout de
+        // 1000 ms. Or render() et close() partagent le même Semaphore(1) : ce close
+        // bloquant retardait d'autant l'ouverture suivante du HUD (latence au clic).
+        return super.close({ ...options, animate: false });
     }
 }
 
