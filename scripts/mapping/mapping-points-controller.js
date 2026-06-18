@@ -14,6 +14,17 @@ const TOOL_SET_DC = "setDC";
 const TOOL_RESET_DC = "resetDC";
 
 /**
+ * États actifs des deux toggles d'affichage dérivés du mode courant.
+ * Invariant : au plus un toggle actif, et il correspond exactement au mode
+ * (exclusivité au niveau des boutons). Pur — testable hors Foundry.
+ * @param {"pc"|"dc"|"none"} displayMode
+ * @returns {{pc: boolean, dc: boolean}}
+ */
+export function toggleActiveStates(displayMode) {
+    return { pc: displayMode === "pc", dc: displayMode === "dc" };
+}
+
+/**
  * Contrôleur de l'onglet « Hex Controls » (MJ, scène hexagonale).
  * 8 entrées : sélection de hex (radio, défaut), affichage des PC (toggle),
  * incrément/décrément des PC (radio), affichage des DC (toggle),
@@ -166,19 +177,32 @@ export class MappingPointsController {
     #onTogglePC(active) {
         const on = typeof active === "boolean" ? active : this.#displayMode !== "pc";
         this.#displayMode = on ? "pc" : "none";
-        this.#refreshControls();
+        this.#syncToggleStates();
         this.#refreshOverlay();
     }
 
     #onToggleDC(active) {
         const on = typeof active === "boolean" ? active : this.#displayMode !== "dc";
         this.#displayMode = on ? "dc" : "none";
-        this.#refreshControls();
+        this.#syncToggleStates();
         this.#refreshOverlay();
     }
 
-    /** Redessine la barre d'outils pour refléter l'état actif des deux toggles. */
-    #refreshControls() {
+    /**
+     * Aligne l'état actif *vivant* des deux toggles sur #displayMode, puis
+     * redessine la barre. Indispensable : Foundry ne bascule que le toggle
+     * cliqué et `render()` ne ré-exécute pas getControls (pas de `reset`), donc
+     * sans cela l'autre toggle resterait allumé sans effet. Le template rend
+     * `aria-pressed` depuis `tool.active` (cloné au render), d'où l'écriture
+     * directe sur l'objet outil vivant — même pattern que `togglePalette`.
+     */
+    #syncToggleStates() {
+        const tools = ui.controls?.controls?.[CONTROL]?.tools;
+        if (tools) {
+            const states = toggleActiveStates(this.#displayMode);
+            if (tools[TOOL_SHOW]) tools[TOOL_SHOW].active = states.pc;
+            if (tools[TOOL_SHOW_DC]) tools[TOOL_SHOW_DC].active = states.dc;
+        }
         ui.controls?.render();
     }
 
