@@ -45,6 +45,11 @@ export class MappingPointsController {
     #pointerHandler = null;
     /** @type {((event: Event) => void)|null} */
     #contextHandler = null;
+    /** Suivi du clic droit en mode Sélection (clic court vs pan maintenu). */
+    #rightDownPos = null;
+    #rightDragged = false;
+    /** @type {{el: EventTarget, down: Function, move: Function, up: Function}|null} */
+    #rightHandlers = null;
 
     /** @param {import("../canvas/hex-selection.js").HexSelection} selection */
     constructor(selection) {
@@ -62,7 +67,7 @@ export class MappingPointsController {
         controls[CONTROL] = {
             name: CONTROL,
             title: t("control"),
-            icon: "fa-solid fa-map-location-dot",
+            icon: "fa-solid fa-compass-drafting",
             onChange: () => {},
             tools: {
                 [TOOL_SELECT]: {
@@ -222,7 +227,33 @@ export class MappingPointsController {
         this.#contextHandler = (event) => {
             if (this.#activeTool) event.preventDefault();
         };
-        (canvas.app.canvas ?? canvas.app.view).addEventListener("contextmenu", this.#contextHandler);
+        const el = canvas.app.canvas ?? canvas.app.view;
+        el.addEventListener("contextmenu", this.#contextHandler);
+        // Clic droit court (sans pan) en mode Sélection = tout désélectionner.
+        // On distingue clic vs pan par le déplacement (seuil ~10px), comme le
+        // Party HUD : un pan (clic droit maintenu + déplacement) ne désélectionne pas.
+        const down = (e) => {
+            if (e.button === 2) {
+                this.#rightDownPos = { x: e.clientX, y: e.clientY };
+                this.#rightDragged = false;
+            }
+        };
+        const move = (e) => {
+            if (!this.#rightDownPos) return;
+            const dx = e.clientX - this.#rightDownPos.x;
+            const dy = e.clientY - this.#rightDownPos.y;
+            if (dx * dx + dy * dy > 100) this.#rightDragged = true;
+        };
+        const up = (e) => {
+            if (e.button !== 2 || !this.#rightDownPos) return;
+            const dragged = this.#rightDragged;
+            this.#rightDownPos = null;
+            if (!dragged && this.#activeTool === TOOL_SELECT) this.#selection.clear();
+        };
+        el.addEventListener("pointerdown", down, { capture: true });
+        el.addEventListener("pointermove", move, { capture: true });
+        el.addEventListener("pointerup", up, { capture: true });
+        this.#rightHandlers = { el, down, move, up };
     }
 
     #detachListeners() {
@@ -234,6 +265,15 @@ export class MappingPointsController {
             (canvas.app?.canvas ?? canvas.app?.view)?.removeEventListener("contextmenu", this.#contextHandler);
             this.#contextHandler = null;
         }
+        if (this.#rightHandlers) {
+            const { el, down, move, up } = this.#rightHandlers;
+            el.removeEventListener("pointerdown", down, { capture: true });
+            el.removeEventListener("pointermove", move, { capture: true });
+            el.removeEventListener("pointerup", up, { capture: true });
+            this.#rightHandlers = null;
+        }
+        this.#rightDownPos = null;
+        this.#rightDragged = false;
     }
 
     #onPointerDown(event) {
@@ -313,18 +353,22 @@ export class MappingPointsController {
             ui.notifications.warn(t("setDCPrompt.noSelection"));
             return;
         }
-        // Pré-remplissage avec le DC courant si un seul hex est sélectionné.
-        const initial = offsets.length === 1 ? dcAt(this.scene, offsets[0]) : 0;
-        const value = await foundry.applications.api.DialogV2.prompt({
+        // Champ laissé vide : le DC courant (1 hex) ou 0 est montré en placeholder
+        // grisé, qui disparaît dès la saisie. Pas besoin d'effacer un 0 pré-rempli.
+        const placeholder = offsets.length === 1 ? dcAt(this.scene, offsets[0]) : 0;
+        const raw = await foundry.applications.api.DialogV2.prompt({
             window: { title: t("setDCPrompt.title") },
             content: `<p>${t("setDCPrompt.label")}</p>`
-                + `<input type="number" name="dc" value="${initial}" min="0" step="1" autofocus>`,
+                + `<input type="number" name="dc" placeholder="${placeholder}" min="0" step="1" autofocus>`,
             ok: {
-                callback: (event, button) => Number(button.form.elements.dc.value)
+                callback: (event, button) => button.form.elements.dc.value
             },
             modal: true
         });
-        if (value == null || Number.isNaN(value)) return;
+        // Dialogue fermé (null) ou champ vide ("") = aucune modification.
+        if (raw == null || String(raw).trim() === "") return;
+        const value = Number(raw);
+        if (Number.isNaN(value)) return;
         const keys = offsets.map((o) => offsetToKey(o));
         setDC(this.scene, keys, Math.max(0, Math.trunc(value)));
     }
