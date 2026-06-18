@@ -75,16 +75,15 @@
 }
 
 #forgotten-woods-party-hud .item.action .image i.chat {
+    /* Reproduit le mécanisme du Token HUD natif (pf2e-hud) : flex-center pur,
+       inset:0, sans transform. Le hack translateX de v0.3.6 (calibré sur un
+       repro CDN dont les métriques FontAwesome diffèrent de celles de Foundry)
+       décalait au contraire l'icône en jeu. */
     position: absolute;
     inset: 0;
     display: none;
     align-items: center;
     justify-content: center;
-    /* Le glyphe fa-message a un fort side-bearing à droite : son encre occupe
-       la moitié gauche de sa chasse, donc justify-content:center le pose à
-       gauche du centre. On recentre la bulle (valeur en em → invariante à
-       l'échelle, ~1px à 14px). */
-    transform: translateX(0.07em);
 }
 
 #forgotten-woods-party-hud .item.action .image:hover i.chat {

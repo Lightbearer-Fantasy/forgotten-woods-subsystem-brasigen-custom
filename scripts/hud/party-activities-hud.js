@@ -1,4 +1,4 @@
-import { isHexScene, activePartyToken } from "../utils/scene.js";
+import { isHexScene, activePartyToken, tokenAtPoint } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
@@ -16,9 +16,12 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     /** Garde-fou : n'attache les écouteurs pointeur qu'une fois. */
     _listenersBound = false;
     /**
-     * Token actuellement survolé (hook `hoverToken`). Sert au joueur qui ne
-     * peut pas contrôler le Token Party : on détecte alors le clic direct par
-     * le survol, puisque `controlToken` ne se déclenche jamais pour lui.
+     * Token Party sous le curseur AU MOMENT du dernier clic (hit-test
+     * déterministe via `tokenAtPoint`). Sert au joueur qui ne peut pas
+     * contrôler le Token Party : on détecte le clic direct par calcul
+     * géométrique, puisque `controlToken` ne se déclenche jamais pour lui.
+     * On n'utilise PLUS l'état de survol PIXI (`hoverToken`), que l'overlay
+     * HTML du HUD peut figer (→ le HUD ne se fermait pas au clic dans le vide).
      */
     _hovered = null;
 
@@ -50,7 +53,14 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             // Un clic propre (sans drag) ré-évalue, même si aucun controlToken
             // n'a été émis : cliquer un Token Party déjà contrôlé (après une
             // sélection large) doit ouvrir le HUD, comme le Token HUD natif.
-            if (!wasDrag) this._scheduleEvaluate();
+            if (wasDrag) return;
+            // Détermine le Token Party sous le curseur au moment du clic par
+            // hit-test (canvas.mousePosition est en coordonnées de scène, comme
+            // token.bounds). Cliquer dans le vide → null → fermeture ; un autre
+            // token → non-party → fermeture. Déterministe, contrairement à l'état
+            // de survol PIXI que l'overlay du HUD peut figer.
+            this._hovered = tokenAtPoint(canvas?.mousePosition, canvas?.tokens?.placeables ?? []);
+            this._scheduleEvaluate();
         }, { capture: true });
     }
 
@@ -123,15 +133,6 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     onControlToken() {
         this._scheduleEvaluate();
-    }
-
-    /**
-     * Mémorise le token survolé (sans réévaluer : l'ouverture/fermeture reste
-     * pilotée par le clic via les écouteurs pointeur et par `controlToken`).
-     */
-    onHoverToken(token, hovered) {
-        if (hovered) this._hovered = token;
-        else if (this._hovered === token) this._hovered = null;
     }
 
     /**

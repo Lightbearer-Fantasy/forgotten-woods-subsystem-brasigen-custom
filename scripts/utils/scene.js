@@ -26,17 +26,44 @@ export function isPartyToken(token) {
  * (contrôler) le Token Party — `controlToken` ne se déclenche alors jamais :
  *  - MJ / propriétaire : le Token Party doit être le seul token contrôlé
  *    (une multi-sélection n'ouvre jamais le HUD, comme le Token HUD natif).
- *  - Joueur : on détecte le clic direct par le survol (hook `hoverToken`),
- *    à condition que ce Token Party ne soit pas déjà contrôlé (sinon ce
- *    serait une multi-sélection MJ, qu'on continue d'ignorer).
+ *  - Joueur : on détecte le clic direct par hit-test du token sous le curseur
+ *    (cf. `tokenAtPoint`), à condition que ce Token Party ne soit pas déjà
+ *    contrôlé (sinon ce serait une multi-sélection MJ, qu'on continue d'ignorer).
  *
  * @param {object} [state]
  * @param {Array}  [state.controlled]  Tokens actuellement contrôlés.
- * @param {object|null} [state.hovered]  Token actuellement survolé, le cas échéant.
+ * @param {object|null} [state.hovered]  Token Party cliqué (hit-test), le cas échéant.
  * @returns {object|null} le Token Party actif, ou null.
  */
 export function activePartyToken({ controlled = [], hovered = null } = {}) {
     if (controlled.length === 1 && isPartyToken(controlled[0])) return controlled[0];
     if (hovered && isPartyToken(hovered) && !controlled.includes(hovered)) return hovered;
     return null;
+}
+
+/**
+ * Hit-test déterministe : renvoie le token dont les bornes (rectangle en
+ * coordonnées de scène) contiennent le point, sinon null.
+ *
+ * Sert au joueur non-propriétaire : au moment du clic, on détermine le Token
+ * Party sous le curseur par calcul géométrique plutôt qu'en se fiant à l'état
+ * de survol PIXI (`hoverToken`), que l'overlay HTML du HUD peut figer — le
+ * suivi de survol PIXI est interrompu tant que le curseur est au-dessus du HUD,
+ * si bien que `hoverToken(token, false)` peut ne pas se déclencher en sortant.
+ *
+ * Le rectangle est demi-ouvert (coin haut-gauche inclus, bords bas-droite
+ * exclus) pour éviter qu'un point sur une frontière n'appartienne à deux tokens.
+ *
+ * @param {{x:number,y:number}|null} point  Position en coordonnées de scène (cf. `canvas.mousePosition`).
+ * @param {Array} [tokens]  Tokens placeables candidats (cf. `canvas.tokens.placeables`).
+ * @returns {object|null} le premier token contenant le point, ou null.
+ */
+export function tokenAtPoint(point, tokens = []) {
+    if (!point) return null;
+    return tokens.find((t) => {
+        const b = t?.bounds;
+        return b
+            && point.x >= b.x && point.x < b.x + b.width
+            && point.y >= b.y && point.y < b.y + b.height;
+    }) ?? null;
 }

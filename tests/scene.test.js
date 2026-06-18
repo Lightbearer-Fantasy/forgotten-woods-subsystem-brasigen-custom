@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isHexScene, isPartyToken, activePartyToken } from "../scripts/utils/scene.js";
+import { isHexScene, isPartyToken, activePartyToken, tokenAtPoint } from "../scripts/utils/scene.js";
 
 const party = () => ({ actor: { type: "party" } });
 const pc = () => ({ actor: { type: "character" } });
@@ -75,5 +75,43 @@ describe("activePartyToken", () => {
     it("renvoie null sans contrôle ni survol", () => {
         expect(activePartyToken({ controlled: [], hovered: null })).toBeNull();
         expect(activePartyToken()).toBeNull();
+    });
+});
+
+describe("tokenAtPoint", () => {
+    // Token couvrant le rectangle [100,200) en x et [100,180) en y.
+    const token = (overrides = {}) => ({ bounds: { x: 100, y: 100, width: 100, height: 80 }, ...overrides });
+
+    it("renvoie le token dont les bornes contiennent le point", () => {
+        const t = token();
+        expect(tokenAtPoint({ x: 150, y: 140 }, [t])).toBe(t);
+    });
+
+    it("inclut le coin haut-gauche et exclut les bords bas-droite (demi-ouvert)", () => {
+        const t = token();
+        expect(tokenAtPoint({ x: 100, y: 100 }, [t])).toBe(t); // coin inclus
+        expect(tokenAtPoint({ x: 200, y: 140 }, [t])).toBeNull(); // bord droit exclu
+        expect(tokenAtPoint({ x: 150, y: 180 }, [t])).toBeNull(); // bord bas exclu
+    });
+
+    it("renvoie null quand le point est hors de tous les tokens", () => {
+        expect(tokenAtPoint({ x: 0, y: 0 }, [token()])).toBeNull();
+    });
+
+    it("renvoie le premier token contenant le point en cas de chevauchement", () => {
+        const a = token();
+        const b = token();
+        expect(tokenAtPoint({ x: 150, y: 140 }, [a, b])).toBe(a);
+    });
+
+    it("ignore les tokens sans bornes", () => {
+        const t = token();
+        expect(tokenAtPoint({ x: 150, y: 140 }, [{}, { bounds: null }, t])).toBe(t);
+    });
+
+    it("renvoie null pour un point absent ou une liste vide/absente", () => {
+        expect(tokenAtPoint(null, [token()])).toBeNull();
+        expect(tokenAtPoint({ x: 150, y: 140 }, [])).toBeNull();
+        expect(tokenAtPoint({ x: 150, y: 140 })).toBeNull();
     });
 });
