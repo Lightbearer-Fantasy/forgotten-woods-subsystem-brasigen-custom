@@ -1,6 +1,6 @@
 import { isHexScene, isPartyToken } from "../utils/scene.js";
-import { coordsToOffset, offsetToKey, spacesInRange, offsetsInRect } from "../utils/hex.js";
-import { readPoints, applyDeltas, clearAllPoints } from "./mapping-points-store.js";
+import { coordsToOffset, offsetToKey, offsetsInRect } from "../utils/hex.js";
+import { readPoints, applyDeltas, clearAllPoints, buildRangeDeltas } from "./mapping-points-store.js";
 import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
 
 const CONTROL = "forgottenWoods";
@@ -403,11 +403,7 @@ export class MappingPointsController {
             return;
         }
         const origin = coordsToOffset(token.center);
-        const deltas = new Map();
-        for (const offset of spacesInRange(origin, 1)) {
-            deltas.set(offsetToKey(offset), 1);
-        }
-        applyDeltas(this.scene, deltas);
+        applyDeltas(this.scene, buildRangeDeltas(origin, 1, 1));
     }
 
     // --- Remise à zéro de tous les PC de la scène ---
@@ -493,6 +489,7 @@ export class MappingPointsController {
     // --- Overlay des nombres ---
 
     #renderOverlay() {
+        if (!game.user.isGM) return; // confidentialité : jamais d'overlay côté joueur
         this.#clearOverlay();
         if (!this.scene || this.#displayMode === "none") return;
         const isDC = this.#displayMode === "dc";
