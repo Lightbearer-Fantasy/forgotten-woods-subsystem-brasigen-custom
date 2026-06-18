@@ -107,12 +107,13 @@
 }
 
 #forgotten-woods-party-hud .item.action .controls {
-    display: none;
+    display: flex;
     align-items: center;
+    visibility: hidden;
 }
 
 #forgotten-woods-party-hud .item.action:hover .controls {
-    display: flex;
+    visibility: visible;
 }
 
 #forgotten-woods-party-hud .item.action .controls a {
