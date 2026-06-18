@@ -1,6 +1,7 @@
 import { isHexScene, isPartyToken } from "../utils/scene.js";
 import { coordsToOffset, offsetToKey, spacesInRange } from "../utils/hex.js";
 import { readPoints, applyDeltas, clearAllPoints } from "./mapping-points-store.js";
+import { readDC } from "./mapping-dc-store.js";
 
 const CONTROL = "forgottenWoods";
 const TOOL_SELECT = "selectHex";
@@ -8,6 +9,9 @@ const TOOL_SHOW = "showPoints";
 const TOOL_EDIT = "editPoints";
 const TOOL_PARTY = "aroundParty";
 const TOOL_RESET = "resetPoints";
+const TOOL_SHOW_DC = "showDC";
+const TOOL_SET_DC = "setDC";
+const TOOL_RESET_DC = "resetDC";
 
 /**
  * Contrôleur de l'onglet « Hex Controls » (MJ, scène hexagonale).
@@ -20,8 +24,8 @@ export class MappingPointsController {
     #selection;
     /** Outil radio actif du groupe : TOOL_SELECT | TOOL_EDIT | null. */
     #activeTool = null;
-    /** État du toggle d'affichage des nombres (ON par défaut). */
-    #showing = true;
+    /** Mode d'affichage de l'overlay : "pc" | "dc" | "none". PC par défaut. */
+    #displayMode = "pc";
     /** @type {PIXI.Container|null} */
     #overlay = null;
     /** @type {((event: any) => void)|null} */
@@ -60,8 +64,8 @@ export class MappingPointsController {
                     title: t("tools.showPoints"),
                     icon: "fa-solid fa-list-ol",
                     toggle: true,
-                    active: this.#showing,
-                    onChange: (event, active) => this.#onToggleShow(active)
+                    active: this.#displayMode === "pc",
+                    onChange: (event, active) => this.#onTogglePC(active)
                 },
                 [TOOL_EDIT]: {
                     name: TOOL_EDIT,
@@ -69,9 +73,26 @@ export class MappingPointsController {
                     title: t("tools.editPoints"),
                     icon: "fa-solid fa-hexagon-plus"
                 },
+                [TOOL_SHOW_DC]: {
+                    name: TOOL_SHOW_DC,
+                    order: 4,
+                    title: t("tools.showDC"),
+                    icon: "fa-solid fa-flag-checkered",
+                    toggle: true,
+                    active: this.#displayMode === "dc",
+                    onChange: (event, active) => this.#onToggleDC(active)
+                },
+                [TOOL_SET_DC]: {
+                    name: TOOL_SET_DC,
+                    order: 5,
+                    title: t("tools.setDC"),
+                    icon: "fa-solid fa-pen-to-square",
+                    button: true,
+                    onChange: () => this.promptSetDC()
+                },
                 [TOOL_PARTY]: {
                     name: TOOL_PARTY,
-                    order: 4,
+                    order: 6,
                     title: t("tools.aroundParty"),
                     icon: "fa-solid fa-people-group",
                     button: true,
@@ -79,11 +100,19 @@ export class MappingPointsController {
                 },
                 [TOOL_RESET]: {
                     name: TOOL_RESET,
-                    order: 5,
+                    order: 7,
                     title: t("tools.resetPoints"),
                     icon: "fa-solid fa-trash",
                     button: true,
                     onChange: () => this.resetAllPoints()
+                },
+                [TOOL_RESET_DC]: {
+                    name: TOOL_RESET_DC,
+                    order: 8,
+                    title: t("tools.resetDC"),
+                    icon: "fa-solid fa-eraser",
+                    button: true,
+                    onChange: () => this.resetAllDC()
                 }
             },
             activeTool: TOOL_SELECT
@@ -107,7 +136,7 @@ export class MappingPointsController {
 
     /** Rafraîchit l'overlay si affiché (sur updateScene). */
     onUpdateScene(scene) {
-        if (this.#showing && this.#activeTool && scene?.id === this.scene?.id) {
+        if (this.#displayMode !== "none" && this.#activeTool && scene?.id === this.scene?.id) {
             this.#renderOverlay();
         }
     }
@@ -115,8 +144,7 @@ export class MappingPointsController {
     #enable() {
         this.#attachListeners();
         this.#selection.showHighlight();
-        if (this.#showing) this.#renderOverlay();
-        else this.#clearOverlay();
+        this.#refreshOverlay();
     }
 
     #disable() {
@@ -131,11 +159,30 @@ export class MappingPointsController {
         this.#selection.destroy();
     }
 
-    // --- Toggle d'affichage des nombres ---
+    // --- Toggles d'affichage (PC / DC mutuellement exclusifs) ---
 
-    #onToggleShow(active) {
-        this.#showing = typeof active === "boolean" ? active : !this.#showing;
-        if (this.#showing && this.#activeTool) this.#renderOverlay();
+    #onTogglePC(active) {
+        const on = typeof active === "boolean" ? active : this.#displayMode !== "pc";
+        this.#displayMode = on ? "pc" : "none";
+        this.#refreshControls();
+        this.#refreshOverlay();
+    }
+
+    #onToggleDC(active) {
+        const on = typeof active === "boolean" ? active : this.#displayMode !== "dc";
+        this.#displayMode = on ? "dc" : "none";
+        this.#refreshControls();
+        this.#refreshOverlay();
+    }
+
+    /** Redessine la barre d'outils pour refléter l'état actif des deux toggles. */
+    #refreshControls() {
+        ui.controls?.render();
+    }
+
+    /** (Re)dessine l'overlay selon le mode courant, ou l'efface. */
+    #refreshOverlay() {
+        if (this.#displayMode !== "none" && this.#activeTool) this.#renderOverlay();
         else this.#clearOverlay();
     }
 
@@ -230,6 +277,12 @@ export class MappingPointsController {
         clearAllPoints(this.scene);
     }
 
+    /** Placeholder pour Task 6 : ouvre un prompt pour définir les DC. */
+    promptSetDC() {}
+
+    /** Placeholder pour Task 6 : efface tous les DC de la scène. */
+    resetAllDC() {}
+
     #resolvePartyToken() {
         const controlled = canvas.tokens?.controlled?.find((t) => isPartyToken(t));
         if (controlled) return controlled;
@@ -241,17 +294,19 @@ export class MappingPointsController {
 
     #renderOverlay() {
         this.#clearOverlay();
-        if (!this.scene) return;
+        if (!this.scene || this.#displayMode === "none") return;
+        const isDC = this.#displayMode === "dc";
+        const data = isDC ? readDC(this.scene) : readPoints(this.scene);
+        const fill = isDC ? 0x5fd0ff : 0xffffff;
         const container = new PIXI.Container();
-        const points = readPoints(this.scene);
-        for (const [key, count] of Object.entries(points)) {
-            if (!count) continue;
+        for (const [key, value] of Object.entries(data)) {
+            if (!value) continue;
             const [i, j] = key.split(",").map(Number);
             const { x, y } = canvas.grid.getCenterPoint({ i, j });
-            const text = new PIXI.Text(String(count), {
+            const text = new PIXI.Text(isDC ? `DC ${value}` : String(value), {
                 fontFamily: "Signika, sans-serif",
                 fontSize: 28,
-                fill: 0xffffff,
+                fill,
                 stroke: 0x000000,
                 strokeThickness: 4,
                 align: "center"
