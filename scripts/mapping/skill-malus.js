@@ -20,6 +20,6 @@ export function tallySkills(choices) {
  */
 export function malusFor(skill, tally) {
     const count = tally[skill] ?? 0;
-    const excessCount = Math.max(0, count - 2);
-    return excessCount === 0 ? 0 : -2 * excessCount;
+    const excess = Math.max(0, count - 2);
+    return excess > 0 ? -2 * excess : 0;
 }
