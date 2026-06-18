@@ -74,6 +74,24 @@ export function buildRangeDeltas(origin, radius, delta) {
 }
 
 /**
+ * Comme buildRangeDeltas mais conserve les deltas négatifs (décrément).
+ * Renvoie une Map vide uniquement si delta === 0. Le clamp [0, MAX_POINTS]
+ * reste appliqué à l'écriture par buildUpdate.
+ * @param {{i: number, j: number}} origin
+ * @param {number} radius
+ * @param {number} delta
+ * @returns {Map<string, number>}
+ */
+export function buildSignedRangeDeltas(origin, radius, delta) {
+    const deltas = new Map();
+    if (delta === 0) return deltas;
+    for (const offset of spacesInRange(origin, radius)) {
+        deltas.set(offsetToKey(offset), delta);
+    }
+    return deltas;
+}
+
+/**
  * Applique des deltas et persiste (MJ uniquement). Ne fait rien si vide.
  * @param {object} scene
  * @param {Map<string, number>} deltas

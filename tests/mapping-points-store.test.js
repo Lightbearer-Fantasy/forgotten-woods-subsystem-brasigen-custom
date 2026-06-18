@@ -6,6 +6,7 @@ import {
     buildUpdate,
     buildClearAll,
     buildRangeDeltas,
+    buildSignedRangeDeltas,
     MODULE_ID,
     FLAG
 } from "../scripts/mapping/mapping-points-store.js";
@@ -114,5 +115,29 @@ describe("buildRangeDeltas", () => {
     it("delta <= 0 → Map vide", () => {
         expect(buildRangeDeltas({ i: 0, j: 0 }, 2, 0).size).toBe(0);
         expect(buildRangeDeltas({ i: 0, j: 0 }, 1, -1).size).toBe(0);
+    });
+});
+
+describe("buildSignedRangeDeltas", () => {
+    const fourNeighbours = ({ i, j }) => [
+        { i: i - 1, j }, { i: i + 1, j }, { i, j: j - 1 }, { i, j: j + 1 }
+    ];
+    beforeEach(() => {
+        globalThis.canvas = { grid: { getAdjacentOffsets: fourNeighbours } };
+    });
+    afterEach(() => {
+        delete globalThis.canvas;
+    });
+
+    it("conserve un delta négatif sur tout le rayon", () => {
+        const deltas = buildSignedRangeDeltas({ i: 0, j: 0 }, 1, -1);
+        expect(deltas.size).toBe(5);
+        expect(deltas.get("0,0")).toBe(-1);
+    });
+    it("delta 0 → Map vide (no-op)", () => {
+        expect(buildSignedRangeDeltas({ i: 0, j: 0 }, 2, 0).size).toBe(0);
+    });
+    it("delta positif fonctionne aussi", () => {
+        expect(buildSignedRangeDeltas({ i: 0, j: 0 }, 1, 3).get("0,0")).toBe(3);
     });
 });
