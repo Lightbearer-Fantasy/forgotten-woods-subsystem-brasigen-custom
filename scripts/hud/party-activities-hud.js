@@ -1,4 +1,4 @@
-import { isHexScene, activePartyToken, tokenAtPoint } from "../utils/scene.js";
+import { isHexScene, activePartyToken, tokenAtPoint, canvasClickOpensHud } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
@@ -54,6 +54,11 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             // n'a été émis : cliquer un Token Party déjà contrôlé (après une
             // sélection large) doit ouvrir le HUD, comme le Token HUD natif.
             if (wasDrag) return;
+            // Gate sur l'outil actif, comme le Token HUD natif : un clic émis
+            // alors qu'un outil Hex Controls (selectHex/editPoints…) est actif ne
+            // doit jamais ouvrir le Party HUD. Sinon, en mode Sélection de hex,
+            // cliquer le hex du Token Party l'ouvrait (≠ Token Actor, qui reste muet).
+            if (!canvasClickOpensHud(game?.activeTool)) return;
             // Détermine le Token Party sous le curseur au moment du clic par
             // hit-test (canvas.mousePosition est en coordonnées de scène, comme
             // token.bounds). Cliquer dans le vide → null → fermeture ; un autre

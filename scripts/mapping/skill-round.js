@@ -79,8 +79,14 @@ export class SkillRound {
         const results = await this.#rollAll(members, participants, aspect, tally, ctx.dc);
 
         // 4. Agrégation et application unique.
-        const total = ctx.autoDelta + sumDeltas(results);
+        const rolled = sumDeltas(results);
+        const total = ctx.autoDelta + rolled;
         const deltas = buildSignedRangeDeltas(ctx.offset, ctx.radius, total);
+        // DIAGNOSTIC bug 2 (décrémentation) — à retirer après identification.
+        console.debug("FW|SkillRound", {
+            results, autoDelta: ctx.autoDelta, rolled, total,
+            radius: ctx.radius, deltasSize: deltas.size, willApply: deltas.size > 0
+        });
         if (deltas.size > 0) applyDeltas(scene, deltas);
 
         // 5. Mémorisation des choix et libération.

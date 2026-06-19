@@ -34,5 +34,14 @@ export async function rollMapSkill(actor, skill, dc, modifiers) {
     // Degré de réussite : PF2E expose un index 0..3. Selon la version, il se
     // trouve sur roll.degreeOfSuccess (nombre) ou roll.options.degreeOfSuccess.
     const n = roll?.degreeOfSuccess ?? roll?.options?.degreeOfSuccess;
-    return typeof n === "number" ? degreeKeyFromNumber(n) : "";
+    const key = typeof n === "number" ? degreeKeyFromNumber(n) : "";
+    // DIAGNOSTIC bug 2 (décrémentation) — à retirer après identification.
+    console.debug("FW|rollMapSkill", {
+        skill, dc,
+        rollType: roll?.constructor?.name,
+        degreeOfSuccess: roll?.degreeOfSuccess,
+        optionsDegree: roll?.options?.degreeOfSuccess,
+        n, key
+    });
+    return key;
 }

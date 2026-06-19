@@ -42,6 +42,22 @@ export function activePartyToken({ controlled = [], hovered = null } = {}) {
 }
 
 /**
+ * Vrai si un clic canvas doit pouvoir ouvrir le Party HUD, selon l'outil actif.
+ *
+ * Reproduit le comportement du Token HUD natif de PF2E HUD, qui ne réagit au
+ * survol/clic que lorsque l'outil sélectionné est la sélection de jetons
+ * (`game.activeTool === "select"`). Sur un outil Hex Controls (`selectHex`,
+ * `editPoints`, …) — ou tout autre contrôle — le HUD ne doit pas s'ouvrir,
+ * exactement comme le Token HUD du Token Actor ne s'ouvre pas dans ce mode.
+ *
+ * @param {string|null|undefined} activeTool  cf. `game.activeTool`
+ * @returns {boolean}
+ */
+export function canvasClickOpensHud(activeTool) {
+    return activeTool === "select";
+}
+
+/**
  * Hit-test déterministe : renvoie le token dont les bornes (rectangle en
  * coordonnées de scène) contiennent le point, sinon null.
  *

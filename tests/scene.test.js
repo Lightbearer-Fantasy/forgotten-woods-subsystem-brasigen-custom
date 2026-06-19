@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isHexScene, isPartyToken, activePartyToken, tokenAtPoint } from "../scripts/utils/scene.js";
+import { isHexScene, isPartyToken, activePartyToken, tokenAtPoint, canvasClickOpensHud } from "../scripts/utils/scene.js";
 
 const party = () => ({ actor: { type: "party" } });
 const pc = () => ({ actor: { type: "character" } });
@@ -75,6 +75,23 @@ describe("activePartyToken", () => {
     it("renvoie null sans contrôle ni survol", () => {
         expect(activePartyToken({ controlled: [], hovered: null })).toBeNull();
         expect(activePartyToken()).toBeNull();
+    });
+});
+
+describe("canvasClickOpensHud", () => {
+    it("autorise l'ouverture quand l'outil actif est la sélection de jetons", () => {
+        expect(canvasClickOpensHud("select")).toBe(true);
+    });
+
+    it("bloque l'ouverture sur un outil Hex Controls (selectHex / editPoints)", () => {
+        expect(canvasClickOpensHud("selectHex")).toBe(false);
+        expect(canvasClickOpensHud("editPoints")).toBe(false);
+    });
+
+    it("bloque l'ouverture pour tout autre outil ou un outil absent", () => {
+        expect(canvasClickOpensHud("ruler")).toBe(false);
+        expect(canvasClickOpensHud(undefined)).toBe(false);
+        expect(canvasClickOpensHud(null)).toBe(false);
     });
 });
 
