@@ -69,6 +69,13 @@
                 "overuse": "Sur-utilisation"
             }
         },
+        "skillCheck": {
+            "noDC": "Aucun DC de zone n'est défini sur ce hex. Le MJ doit d'abord fixer le DC.",
+            "prompt": {
+                "title": "Jet de compétence",
+                "label": "Choisissez la compétence à utiliser :"
+            }
+        },
         "skills": {
             "crafting": "Crafting",
             "society": "Society",
