@@ -107,4 +107,39 @@ describe("contenu reformaté PF2E", () => {
         expect(byId("cook").traits).toEqual(["exploration", "manipulate"]);
         expect(byId("treat-wounds").traits).toEqual(["exploration", "healing", "manipulate"]);
     });
+
+    it("les activités de zone ont check.skills + vsHexDC:true", () => {
+        expect(byId("hunt-and-gather").check).toEqual({ skills: ["nature", "survival"], vsHexDC: true });
+        expect(byId("search").check).toEqual({ skills: ["perception", "stealth", "survival"], vsHexDC: true });
+        expect(byId("cook").check).toEqual({ skills: ["crafting", "cooking-lore"], vsHexDC: true });
+    });
+
+    it("les placeholders (Treat Wounds/Craft/Investigate) ont check.skills sans vsHexDC", () => {
+        expect(byId("treat-wounds").check.skills).toEqual(["medicine"]);
+        expect(byId("treat-wounds").check.vsHexDC).toBeUndefined();
+        expect(byId("repair").check.skills).toEqual(["crafting"]);
+        expect(byId("repair").check.vsHexDC).toBeUndefined();
+        expect(byId("investigate").check.skills).toContain("nature");
+        expect(byId("investigate").check.vsHexDC).toBeUndefined();
+    });
+
+    it("map-area n'a pas de champ check (routé vers MapAreaFlow)", () => {
+        expect(byId("map-area").check).toBeUndefined();
+    });
+
+    it("les activités sans jet n'ont pas de champ check", () => {
+        for (const id of ["make-camp", "travel", "rest", "hustle", "avoid-notice", "defend", "aid", "scout"]) {
+            expect(byId(id).check, id).toBeUndefined();
+        }
+    });
+
+    it("les descriptions de zone contiennent les @Check attendus", () => {
+        expect(byId("map-area").description).toContain("@Check[crafting]");
+        expect(byId("map-area").description).toContain("@Check[survival]");
+        expect(byId("hunt-and-gather").description).toContain("@Check[nature]");
+        expect(byId("hunt-and-gather").description).toContain("@Check[survival]");
+        expect(byId("search").description).toContain("@Check[perception]");
+        expect(byId("cook").description).toContain("@Check[crafting]");
+        expect(byId("cook").description).toContain("@Check[cooking-lore]");
+    });
 });

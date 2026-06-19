@@ -23,7 +23,7 @@ export const GROUP_ACTIVITIES = [
         img: PLACEHOLDER_IMG,
         traits: ["exploration", "concentrate"],
         description:
-            "Vous prenez le temps de faire du repérage et de cartographier toutes les Hex adjacentes. Chaque aventurier doit effectuer un jet de Crafting, Society, Nature ou Survival (au choix) contre le DC de la zone. Chaque fois qu'un Skill est utilisé plus de 2 fois, le DC pour ce Skill subit une pénalité sans type de -2 cumulable. En fonction de l'Aspect, certains jets peuvent voir leur DC diminué, comme Nature dans l'Aspect Sauvage ou Society dans l'Aspect du Donjon, ou augmenté, comme Nature dans l'Aspect de Cendres. Le nombre de PC sur une Hex détermine la qualité de la carte effectuée. Pour chaque Activité de Groupe que vous dépensez au-delà de 1 pour Cartographier la zone, vous pouvez soit augmenter le rayon de repérage de 1 Hex (une fois) ou gagner automatiquement 1 PC (cumulable). Vous ne pouvez pas découvrir une nouvelle Ancre à distance si vous n'entendez pas le Chant." +
+            "Vous prenez le temps de faire du repérage et de cartographier toutes les Hex adjacentes. Chaque aventurier doit effectuer un @Check[crafting], @Check[society], @Check[nature] ou @Check[survival] (au choix) contre le DC de la zone. Chaque fois qu'un Skill est utilisé plus de 2 fois, le DC pour ce Skill subit une pénalité sans type de -2 cumulable. En fonction de l'Aspect, certains jets peuvent voir leur DC diminué, comme Nature dans l'Aspect Sauvage ou Society dans l'Aspect du Donjon, ou augmenté, comme Nature dans l'Aspect de Cendres. Le nombre de PC sur une Hex détermine la qualité de la carte effectuée. Pour chaque Activité de Groupe que vous dépensez au-delà de 1 pour Cartographier la zone, vous pouvez soit augmenter le rayon de repérage de 1 Hex (une fois) ou gagner automatiquement 1 PC (cumulable). Vous ne pouvez pas découvrir une nouvelle Ancre à distance si vous n'entendez pas le Chant." +
             "<ul>" +
             "<li><strong>1 PC :</strong> Vous ne parvenez pas à réaliser une carte satisfaisante des environs. Si vous avez une carte partielle de la zone, vous parvenez tout de même à révéler la position de ses points de repères si elles se trouvent sur ces Hex.</li>" +
             "<li><strong>2 PC :</strong> Vous repérez approximativement ce qui se trouve sur les Hex alentours. Le DC de toute activité ayant lieu sur ces Hex est réduit de 2, et vous révélez toutes les créatures non cachées et tous les points d'intérêt non secrets sur ces Hex. Vous pouvez Monter le camp sur ces Hex.</li>" +
@@ -92,11 +92,12 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: PLACEHOLDER_IMG,
         traits: ["exploration"],
         description:
-            "Vous essayez de trouver des ingrédients frais sur le trajet. Effectuez un jet de Nature ou de Survie contre le DC de la zone.",
+            "Vous essayez de trouver des ingrédients frais sur le trajet. Effectuez un @Check[nature] ou @Check[survival] contre le DC de la zone.",
         outcomes: {
             criticalSuccess: "Vous trouvez 3 ingrédients frais.",
             success: "Vous trouvez 2 ingrédients frais."
-        }
+        },
+        check: { skills: ["nature", "survival"], vsHexDC: true }
     },
     {
         id: "repair",
@@ -105,7 +106,8 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: PLACEHOLDER_IMG,
         traits: ["exploration", "manipulate"],
         description:
-            "Fonctionne comme les activités Craft ou Repair, et vous pouvez Craft ou Repair un item ou un batch de 4 items par Activité. Une Réussite réduit le coût de Craft de 10% et une Réussie Critique de 20%."
+            "Fonctionne comme les activités Craft ou Repair, et vous pouvez Craft ou Repair un item ou un batch de 4 items par Activité. Une Réussite réduit le coût de Craft de 10% et une Réussie Critique de 20%.",
+        check: { skills: ["crafting"] }
     },
     {
         id: "cook",
@@ -114,11 +116,12 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: PLACEHOLDER_IMG,
         traits: ["exploration", "manipulate"],
         description:
-            "Nécessite un camp. Vous cuisinez des ingrédients frais pour vous remplir la panse et galvaniser le moral de vos compagnons. En cas d'échec, vous ne parvenez pas à cuisiner un plat satisfaisant mais vous économisez les ingrédients frais.",
+            "Nécessite un camp. Vous cuisinez des ingrédients frais. Effectuez un @Check[crafting] ou @Check[cooking-lore] contre le DC de la zone (les ingrédients disponibles dépendent de la zone et influent sur la difficulté de la recette). En cas d'échec, vous économisez les ingrédients frais.",
         outcomes: {
             criticalSuccess: "Comme la Réussite, et vous gagnez un bonus sans type de +1 au prochain jet d'attaque, de sauvegarde ou de compétence que vous effectuez le lendemain.",
             success: "Vous gagnez une Activité de Groupe supplémentaire le lendemain."
-        }
+        },
+        check: { skills: ["crafting", "cooking-lore"], vsHexDC: true }
     },
     {
         id: "defend",
@@ -145,7 +148,8 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: PLACEHOLDER_IMG,
         traits: ["exploration", "secret"],
         description:
-            "Permet de Recall Knowledge deux fois, sur n'importe quel élément d'un Hex révélé. Par exemple les créatures présentes sur un Hex sont-elles hostiles ? Existe-t-il un lieu à proximité de ce Hex ayant davantage d'ingrédients frais que la moyenne ? Certains résultats du RK pourront finir documentés dans la Bibliothèque de la Guilde (comme l'obtention d'informations sur une créature)."
+            "Permet de Recall Knowledge deux fois, sur n'importe quel élément d'un Hex révélé. Par exemple les créatures présentes sur un Hex sont-elles hostiles ? Existe-t-il un lieu à proximité de ce Hex ayant davantage d'ingrédients frais que la moyenne ? Certains résultats du RK pourront finir documentés dans la Bibliothèque de la Guilde (comme l'obtention d'informations sur une créature).",
+        check: { skills: ["arcana", "crafting", "medicine", "nature", "occultism", "religion", "society"] }
     },
     {
         id: "scout",
@@ -163,11 +167,12 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: PLACEHOLDER_IMG,
         traits: ["exploration", "concentrate"],
         description:
-            "Choisissez un Hex adjacent. Vous faites un jet de Perception, Stealth ou Survival contre le DC de la zone pour essayer de glaner des informations dans la zone. Le Hex gagne des PC comme pour Cartographier la zone. Si vous avez la Boussole de Courant, vous apprenez si une Ancre se trouve sur le Hex ou à proximité du Hex.",
+            "Choisissez un Hex adjacent. Vous faites un @Check[perception], @Check[stealth] ou @Check[survival] contre le DC de la zone pour essayer de glaner des informations dans la zone. Le Hex gagne des PC comme pour Cartographier la zone. Si vous avez la Boussole de Courant, vous apprenez si une Ancre se trouve sur le Hex ou à proximité du Hex.",
         outcomes: {
             criticalSuccess: "Le Hex gagne 2 PC.",
             success: "Le Hex gagne 1 PC."
-        }
+        },
+        check: { skills: ["perception", "stealth", "survival"], vsHexDC: true }
     },
     {
         id: "treat-wounds",
@@ -176,6 +181,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: PLACEHOLDER_IMG,
         traits: ["exploration", "healing", "manipulate"],
         description:
-            "Vous pouvez Treat Wounds chaque aventurier. Comme d'habitude, vous lancez un jet distinct pour chaque aventurier. Si vous avez Ward Medic, vous pouvez choisir de lancer un seul jet et appliquer le résultat à tous les aventuriers. Si vous avez Continuous Recovery, vous pouvez Treat Wounds deux fois chaque aventurier."
+            "Vous pouvez Treat Wounds chaque aventurier. Comme d'habitude, vous lancez un jet distinct pour chaque aventurier. Si vous avez Ward Medic, vous pouvez choisir de lancer un seul jet et appliquer le résultat à tous les aventuriers. Si vous avez Continuous Recovery, vous pouvez Treat Wounds deux fois chaque aventurier.",
+        check: { skills: ["medicine"] }
     }
 ];
