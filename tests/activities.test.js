@@ -5,6 +5,7 @@ import {
     activitySortKey,
     PLACEHOLDER_IMG
 } from "../scripts/data/activities.js";
+import { renderActivityHtml } from "../scripts/data/activity-render.js";
 
 const ALL = [...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES];
 
@@ -26,14 +27,19 @@ describe("données d'activités", () => {
         expect(INDIVIDUAL_ACTIVITIES).toHaveLength(10);
     });
 
-    it("chaque activité a id, label, img, chatText non vides et une propriété slug", () => {
+    it("chaque activité a id, label, img, traits (array), description, et une propriété slug", () => {
         for (const a of ALL) {
             expect(a.id, JSON.stringify(a)).toBeTruthy();
             expect(a.label).toBeTruthy();
             expect(a.img).toBeTruthy();
-            expect(a.chatText).toBeTruthy();
+            expect(Array.isArray(a.traits), a.id).toBe(true);
+            expect(a.description, a.id).toBeTruthy();
             expect(a).toHaveProperty("slug");
         }
+    });
+
+    it("plus aucune activité ne porte de champ chatText", () => {
+        for (const a of ALL) expect(a, a.id).not.toHaveProperty("chatText");
     });
 
     it("les id sont uniques", () => {
@@ -41,8 +47,8 @@ describe("données d'activités", () => {
         expect(new Set(ids).size).toBe(ids.length);
     });
 
-    it("les chatText sont distincts pour chaque activité", () => {
-        const texts = ALL.map(a => a.chatText);
+    it("les descriptions sont distinctes pour chaque activité", () => {
+        const texts = ALL.map(a => a.description);
         expect(new Set(texts).size).toBe(texts.length);
     });
 
@@ -61,23 +67,44 @@ describe("données d'activités", () => {
     });
 });
 
-describe("textes d'activités v0.2.0", () => {
+describe("contenu reformaté PF2E", () => {
     const byId = (id) => ALL.find((a) => a.id === id);
 
     it("le libellé de map-area est « Cartographier la zone »", () => {
         expect(byId("map-area").label).toBe("Cartographier la zone");
     });
 
-    it("aucun chatText ne contient le placeholder « à venir »", () => {
+    it("aucune description ne contient le placeholder « à venir »", () => {
         for (const a of ALL) {
-            expect(a.chatText.toLowerCase()).not.toContain("à venir");
+            expect(a.description.toLowerCase()).not.toContain("à venir");
         }
     });
 
-    it("les textes clés sont présents", () => {
-        expect(byId("travel").chatText).toContain("Hex adjacent");
-        expect(byId("map-area").chatText).toContain("Point de Cartographie");
-        expect(byId("search").chatText).toContain("Le Hex gagne 1 PC");
-        expect(byId("cook").chatText).toContain("camp");
+    it("les textes clés sont présents (via le rendu)", () => {
+        expect(renderActivityHtml(byId("travel"))).toContain("Hex adjacent");
+        expect(renderActivityHtml(byId("map-area"))).toContain("Point de Cartographie");
+        expect(renderActivityHtml(byId("search"))).toContain("Le Hex gagne 1 PC");
+        expect(renderActivityHtml(byId("cook"))).toContain("camp");
+    });
+
+    it("map-area expose ses degrés sans afficher d'Échec (0 PC = aucun effet)", () => {
+        const o = byId("map-area").outcomes;
+        expect(o.criticalSuccess).toBeTruthy();
+        expect(o.success).toBeTruthy();
+        expect(o.criticalFailure).toBeTruthy();
+        expect(o.failure).toBeUndefined();
+    });
+
+    it("search, hunt-and-gather et cook n'affichent pas d'Échec", () => {
+        for (const id of ["search", "hunt-and-gather", "cook"]) {
+            expect(byId(id).outcomes.failure, id).toBeUndefined();
+        }
+    });
+
+    it("les traits attendus sont en place (EN)", () => {
+        expect(byId("map-area").traits).toEqual(["exploration", "concentrate"]);
+        expect(byId("travel").traits).toEqual(["exploration", "move"]);
+        expect(byId("cook").traits).toEqual(["exploration", "manipulate"]);
+        expect(byId("treat-wounds").traits).toEqual(["exploration", "healing", "manipulate"]);
     });
 });
