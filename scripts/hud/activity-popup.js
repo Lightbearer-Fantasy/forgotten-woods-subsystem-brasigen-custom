@@ -14,9 +14,15 @@ export class ActivityPopup extends HandlebarsApplicationMixin(ApplicationV2) {
         this.activity = activity;
     }
 
+    /** Largeur par défaut, et largeur élargie des activités au texte très long. */
+    static WIDTH = 320;
+    static WIDE_WIDTH = 640;
+    static WIDE_IDS = new Set(["map-area"]);
+
     static DEFAULT_OPTIONS = {
         classes: ["forgotten-woods", "fw-activity-popup"],
-        window: { positioned: true, resizable: false, minimizable: true, frame: true },
+        // resizable: true → le joueur peut étirer la fenêtre si besoin.
+        window: { positioned: true, resizable: true, minimizable: true, frame: true },
         position: { width: 320 }
     };
 
@@ -39,7 +45,13 @@ export class ActivityPopup extends HandlebarsApplicationMixin(ApplicationV2) {
             existing.bringToFront();
             return existing;
         }
-        const popup = new ActivityPopup(activity, { id: `fw-activity-popup-${activity.id}` });
+        const width = ActivityPopup.WIDE_IDS.has(activity.id)
+            ? ActivityPopup.WIDE_WIDTH
+            : ActivityPopup.WIDTH;
+        const popup = new ActivityPopup(activity, {
+            id: `fw-activity-popup-${activity.id}`,
+            position: { width }
+        });
         ActivityPopup.#open.set(activity.id, popup);
         popup.render({ force: true });
         return popup;

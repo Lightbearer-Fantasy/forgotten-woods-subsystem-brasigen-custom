@@ -149,14 +149,14 @@
 /* --- Contenu formaté d'activité (chat + popup) ---
    Les badges de traits (.tags.paizo-style .tag) et les boutons @Check
    (.inline-check) héritent du CSS GLOBAL de PF2E : rien à styler ici. */
-.item-summary .fw-activity-title {
-    margin: 0 0 0.25rem;
-    font-weight: 700;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    padding-bottom: 0.15rem;
-}
 .item-summary .description {
     margin: 0.35rem 0;
+}
+/* Filet de séparation entre les degrés et le texte, visible sur fond sombre. */
+.item-summary hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 0.5rem 0;
 }
 .item-summary .fw-outcomes {
     margin-top: 0.4rem;

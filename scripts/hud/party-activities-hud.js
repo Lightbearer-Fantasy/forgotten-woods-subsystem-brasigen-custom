@@ -239,13 +239,27 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
 // --- Handlers d'action (this === instance de PartyActivitiesHUD) ---
 
+/**
+ * Acteur qui lance réellement un jet d'activité : le personnage assigné du
+ * JOUEUR qui clique, et non l'acteur du Token Party (qui ne possède pas les
+ * compétences des PJ → jet impossible / mauvaise compétence). Repli sur un
+ * token contrôlé puis le Token Party (cas du MJ sans personnage assigné).
+ */
+function rollingActor(hud) {
+    return game.user.character ?? canvas?.tokens?.controlled?.[0]?.actor ?? hud.token?.actor ?? null;
+}
+
 async function onSendToChat(event, target) {
     const row = target.closest("[data-activity-id]");
     const activity = this.findActivity(row?.dataset.activityId);
     if (!activity) return;
     return ChatMessage.create({
         content: await enrichActivityHtml(activity),
-        speaker: ChatMessage.getSpeaker({ token: this.token?.document })
+        // Flavor = titre de la carte (l'en-tête de fenêtre n'existe pas en chat).
+        flavor: activity.label,
+        // Alias seul, SANS acteur : un @Check cliqué dans la carte se résout
+        // alors sur le personnage du joueur qui clique (pas sur le Token Party).
+        speaker: { alias: this.token?.name ?? game.i18n.localize("FORGOTTEN_WOODS.panel.group") }
     });
 }
 
@@ -265,9 +279,10 @@ async function onRollD20(event, target) {
         return MapAreaFlow.start(this.token, this.token?.actor);
     }
     // Activité « à check » : jet de compétence (vs Hex DC si zone, sinon simple),
-    // sans application de PC.
+    // sans application de PC. Le jet est porté par le personnage du joueur qui
+    // clique, pas par l'acteur du Token Party.
     if (activity.check?.skills) {
-        return SkillCheckFlow.start(this.token, this.token?.actor, activity);
+        return SkillCheckFlow.start(this.token, rollingActor(this), activity);
     }
     // Activité sans jet : placeholder 1d20.
     const roll = await new Roll("1d20").evaluate();

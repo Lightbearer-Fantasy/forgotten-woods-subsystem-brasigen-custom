@@ -4,8 +4,10 @@ import { renderActivityHtml } from "../scripts/data/activity-render.js";
 describe("renderActivityHtml", () => {
     const base = { label: "Voyager", traits: ["exploration", "move"], description: "Vous progressez." };
 
-    it("rend le titre depuis label", () => {
-        expect(renderActivityHtml(base)).toContain('<h3 class="fw-activity-title">Voyager</h3>');
+    it("ne rend AUCUN titre dans le corps (titre = en-tête/flavor, évite le doublon)", () => {
+        const html = renderActivityHtml(base);
+        expect(html).not.toContain("fw-activity-title");
+        expect(html).not.toContain("<h3");
     });
 
     it("enveloppe le tout dans .item-summary", () => {
@@ -39,7 +41,7 @@ describe("renderActivityHtml", () => {
             label: "X", traits: [], description: "d",
             outcomes: { criticalSuccess: "2 PC.", success: "1 PC.", criticalFailure: "−1 PC." }
         });
-        expect(html).toContain('<div class="fw-outcomes">');
+        expect(html).toContain('<hr /><div class="fw-outcomes">');
         expect(html).toContain("<p><strong>Réussite critique</strong> 2 PC.</p>");
         expect(html).toContain("<p><strong>Réussite</strong> 1 PC.</p>");
         expect(html).toContain("<p><strong>Échec critique</strong> −1 PC.</p>");
@@ -52,6 +54,8 @@ describe("renderActivityHtml", () => {
         });
         expect(html).not.toContain("<strong>Échec</strong>");
         expect(html).not.toContain("<strong>Échec critique</strong>");
-        expect(renderActivityHtml({ label: "X", traits: [], description: "d" })).not.toContain("fw-outcomes");
+        const noOutcomes = renderActivityHtml({ label: "X", traits: [], description: "d" });
+        expect(noOutcomes).not.toContain("fw-outcomes");
+        expect(noOutcomes).not.toContain("<hr");
     });
 });

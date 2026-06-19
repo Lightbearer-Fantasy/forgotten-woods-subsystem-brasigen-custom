@@ -12,8 +12,10 @@ function traitTooltipKey(slug) {
 }
 
 /**
- * Balisage natif PF2E d'une activité (mime le rendu Token HUD) : titre + badges
- * de traits `.tag` + description + degrés. Source unique de vérité (chat + popup).
+ * Balisage natif PF2E d'une activité (mime le rendu Token HUD) : badges de
+ * traits `.tag` + description + degrés. Source unique de vérité (chat + popup).
+ * Le titre n'est PAS rendu ici : il provient de l'en-tête de fenêtre (popup) ou
+ * du flavor (chat), pour éviter le doublon de titre au-dessus des traits.
  * Pure — aucun accès Foundry. La description peut contenir de la syntaxe `@Check[...]`
  * littérale, enrichie plus tard par la couche Foundry (`enrichActivityHtml`).
  * @param {{label:string, traits?:string[], description?:string,
@@ -21,7 +23,7 @@ function traitTooltipKey(slug) {
  * @returns {string} HTML
  */
 export function renderActivityHtml(activity) {
-    const parts = [`<h3 class="fw-activity-title">${activity.label}</h3>`];
+    const parts = [];
 
     const traits = activity.traits ?? [];
     if (traits.length) {
@@ -41,7 +43,8 @@ export function renderActivityHtml(activity) {
             .filter((k) => outcomes[k])
             .map((k) => `<p><strong>${DEGREE_LABELS[k]}</strong> ${outcomes[k]}</p>`)
             .join("");
-        if (lines) parts.push(`<div class="fw-outcomes">${lines}</div>`);
+        // <hr /> sépare visuellement les degrés du texte normal (façon PF2E).
+        if (lines) parts.push(`<hr /><div class="fw-outcomes">${lines}</div>`);
     }
 
     return `<div class="item-summary">${parts.join("")}</div>`;
