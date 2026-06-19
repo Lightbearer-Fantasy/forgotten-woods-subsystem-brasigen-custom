@@ -2,7 +2,8 @@ import { isHexScene, activePartyToken, tokenAtPoint, canvasClickOpensHud } from 
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
-import { renderActivityHtml } from "../data/activity-render.js";
+import { enrichActivityHtml } from "./activity-enrich.js";
+import { SkillCheckFlow } from "../mapping/skill-check-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -238,12 +239,12 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
 // --- Handlers d'action (this === instance de PartyActivitiesHUD) ---
 
-function onSendToChat(event, target) {
+async function onSendToChat(event, target) {
     const row = target.closest("[data-activity-id]");
     const activity = this.findActivity(row?.dataset.activityId);
     if (!activity) return;
     return ChatMessage.create({
-        content: renderActivityHtml(activity),
+        content: await enrichActivityHtml(activity),
         speaker: ChatMessage.getSpeaker({ token: this.token?.document })
     });
 }
@@ -259,10 +260,16 @@ async function onRollD20(event, target) {
     const row = target.closest("[data-activity-id]");
     const activity = this.findActivity(row?.dataset.activityId);
     if (!activity) return;
-    // « Cartographier la zone » : flux d'automatisation (le jet 1d20 est émis en fin de flux).
+    // « Cartographier la zone » : flux complet (verrou + round MJ + PC).
     if (activity.id === "map-area") {
         return MapAreaFlow.start(this.token, this.token?.actor);
     }
+    // Activité « à check » : jet de compétence (vs Hex DC si zone, sinon simple),
+    // sans application de PC.
+    if (activity.check?.skills) {
+        return SkillCheckFlow.start(this.token, this.token?.actor, activity);
+    }
+    // Activité sans jet : placeholder 1d20.
     const roll = await new Roll("1d20").evaluate();
     return roll.toMessage({
         flavor: activity.label,

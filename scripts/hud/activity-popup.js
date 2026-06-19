@@ -1,4 +1,4 @@
-import { renderActivityHtml } from "../data/activity-render.js";
+import { enrichActivityHtml } from "./activity-enrich.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -28,8 +28,8 @@ export class ActivityPopup extends HandlebarsApplicationMixin(ApplicationV2) {
         return this.activity?.label ?? "";
     }
 
-    _prepareContext() {
-        return { content: renderActivityHtml(this.activity) };
+    async _prepareContext() {
+        return { content: await enrichActivityHtml(this.activity) };
     }
 
     /** Ouvre le popup d'une activité, ou ramène l'existant au premier plan. */
