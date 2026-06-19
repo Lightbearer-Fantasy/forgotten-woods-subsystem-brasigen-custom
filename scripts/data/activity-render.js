@@ -6,11 +6,16 @@ const DEGREE_LABELS = {
 };
 const DEGREE_ORDER = ["criticalSuccess", "success", "failure", "criticalFailure"];
 
+/** Clé de description PF2E d'un trait : "exploration" -> "PF2E.TraitDescriptionExploration". */
+function traitTooltipKey(slug) {
+    return `PF2E.TraitDescription${slug.charAt(0).toUpperCase()}${slug.slice(1)}`;
+}
+
 /**
- * Balisage standard PF2E d'une activité : titre + badges de traits + description
- * + lignes de degrés de réussite. Source unique de vérité (chat + popup).
- * Pure — aucun accès Foundry. Une clé d'outcomes (ou tout le bloc) absente est
- * omise ; un degré sans effet n'est simplement pas fourni dans les données.
+ * Balisage natif PF2E d'une activité (mime le rendu Token HUD) : titre + badges
+ * de traits `.tag` + description + degrés. Source unique de vérité (chat + popup).
+ * Pure — aucun accès Foundry. La description peut contenir de la syntaxe `@Check[...]`
+ * littérale, enrichie plus tard par la couche Foundry (`enrichActivityHtml`).
  * @param {{label:string, traits?:string[], description?:string,
  *          outcomes?:Record<string,string>}} activity
  * @returns {string} HTML
@@ -20,12 +25,14 @@ export function renderActivityHtml(activity) {
 
     const traits = activity.traits ?? [];
     if (traits.length) {
-        const badges = traits.map((t) => `<span class="fw-trait">${t}</span>`).join("");
-        parts.push(`<div class="fw-traits">${badges}</div>`);
+        const badges = traits.map((t) =>
+            `<span class="tag" data-trait="${t}" data-tooltip="${traitTooltipKey(t)}">${t}</span>`
+        ).join("");
+        parts.push(`<div class="tags paizo-style">${badges}</div>`);
     }
 
     if (activity.description) {
-        parts.push(`<div class="fw-activity-desc">${activity.description}</div>`);
+        parts.push(`<div class="description">${activity.description}</div>`);
     }
 
     const outcomes = activity.outcomes;
@@ -37,5 +44,5 @@ export function renderActivityHtml(activity) {
         if (lines) parts.push(`<div class="fw-outcomes">${lines}</div>`);
     }
 
-    return `<div class="fw-activity">${parts.join("")}</div>`;
+    return `<div class="item-summary">${parts.join("")}</div>`;
 }

@@ -8,21 +8,30 @@ describe("renderActivityHtml", () => {
         expect(renderActivityHtml(base)).toContain('<h3 class="fw-activity-title">Voyager</h3>');
     });
 
-    it("rend une rangée de badges de traits", () => {
+    it("enveloppe le tout dans .item-summary", () => {
+        expect(renderActivityHtml(base)).toMatch(/^<div class="item-summary">.*<\/div>$/s);
+    });
+
+    it("rend les badges de traits natifs PF2E (tags paizo-style + tag[data-trait])", () => {
         const html = renderActivityHtml(base);
-        expect(html).toContain('<div class="fw-traits">');
-        expect(html).toContain('<span class="fw-trait">exploration</span>');
-        expect(html).toContain('<span class="fw-trait">move</span>');
+        expect(html).toContain('<div class="tags paizo-style">');
+        expect(html).toContain('<span class="tag" data-trait="exploration" data-tooltip="PF2E.TraitDescriptionExploration">exploration</span>');
+        expect(html).toContain('<span class="tag" data-trait="move" data-tooltip="PF2E.TraitDescriptionMove">move</span>');
     });
 
     it("omet la rangée de traits quand traits est vide ou absent", () => {
-        expect(renderActivityHtml({ label: "X", traits: [], description: "d" })).not.toContain("fw-traits");
-        expect(renderActivityHtml({ label: "X", description: "d" })).not.toContain("fw-traits");
+        expect(renderActivityHtml({ label: "X", traits: [], description: "d" })).not.toContain("tags paizo-style");
+        expect(renderActivityHtml({ label: "X", description: "d" })).not.toContain("tags paizo-style");
     });
 
-    it("rend la description en préservant le HTML inline", () => {
+    it("rend la description dans .description en préservant le HTML inline", () => {
         const html = renderActivityHtml({ label: "X", traits: [], description: "a<ul><li>b</li></ul>" });
-        expect(html).toContain('<div class="fw-activity-desc">a<ul><li>b</li></ul></div>');
+        expect(html).toContain('<div class="description">a<ul><li>b</li></ul></div>');
+    });
+
+    it("préserve la syntaxe @Check littérale dans la description", () => {
+        const html = renderActivityHtml({ label: "X", traits: [], description: "Faites un @Check[nature] ici." });
+        expect(html).toContain("@Check[nature]");
     });
 
     it("rend le bloc d'outcomes avec les libellés FR", () => {
@@ -44,9 +53,5 @@ describe("renderActivityHtml", () => {
         expect(html).not.toContain("<strong>Échec</strong>");
         expect(html).not.toContain("<strong>Échec critique</strong>");
         expect(renderActivityHtml({ label: "X", traits: [], description: "d" })).not.toContain("fw-outcomes");
-    });
-
-    it("enveloppe le tout dans .fw-activity", () => {
-        expect(renderActivityHtml(base)).toMatch(/^<div class="fw-activity">.*<\/div>$/s);
     });
 });
