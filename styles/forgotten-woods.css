@@ -145,3 +145,46 @@
 /* Overlay hex : couleur PC = #ffffff, couleur DC = #5fd0ff (0x5fd0ff).
    Ces couleurs sont appliquées côté PIXI (mapping-points-controller.js),
    non via CSS. */
+
+/* --- Contenu formaté d'activité (chat + popup) --- */
+.fw-activity .fw-activity-title {
+    margin: 0 0 0.25rem;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+    padding-bottom: 0.15rem;
+}
+.fw-activity .fw-traits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin: 0.25rem 0;
+}
+.fw-activity .fw-trait {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #f5f0e6;
+    background: #5e0000;
+    border: 1px solid #d4c8a0;
+    border-radius: 2px;
+}
+.fw-activity .fw-activity-desc {
+    margin: 0.35rem 0;
+}
+.fw-activity .fw-outcomes {
+    margin-top: 0.4rem;
+}
+.fw-activity .fw-outcomes p {
+    margin: 0.2rem 0;
+}
+.fw-activity .fw-outcomes strong {
+    color: #5e0000;
+}
+
+/* --- Fenêtre popup de description --- */
+.fw-activity-popup .fw-activity-popup-body {
+    padding: 0.5rem 0.65rem;
+    line-height: 1.35;
+}
