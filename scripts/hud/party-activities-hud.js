@@ -2,6 +2,8 @@ import { isHexScene, activePartyToken, tokenAtPoint, canvasClickOpensHud } from 
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
+import { renderActivityHtml } from "../data/activity-render.js";
+import { ActivityPopup } from "./activity-popup.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -75,7 +77,8 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         window: { frame: false, positioned: false },
         actions: {
             "send-to-chat": onSendToChat,
-            "roll-d20": onRollD20
+            "roll-d20": onRollD20,
+            "open-description": onOpenDescription
         }
     };
 
@@ -240,9 +243,16 @@ function onSendToChat(event, target) {
     const activity = this.findActivity(row?.dataset.activityId);
     if (!activity) return;
     return ChatMessage.create({
-        content: activity.chatText,
+        content: renderActivityHtml(activity),
         speaker: ChatMessage.getSpeaker({ token: this.token?.document })
     });
+}
+
+function onOpenDescription(event, target) {
+    const row = target.closest("[data-activity-id]");
+    const activity = this.findActivity(row?.dataset.activityId);
+    if (!activity) return;
+    ActivityPopup.open(activity);
 }
 
 async function onRollD20(event, target) {
