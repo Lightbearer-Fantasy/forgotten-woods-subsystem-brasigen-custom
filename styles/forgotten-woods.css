@@ -146,45 +146,32 @@
    Ces couleurs sont appliquées côté PIXI (mapping-points-controller.js),
    non via CSS. */
 
-/* --- Contenu formaté d'activité (chat + popup) --- */
-.fw-activity .fw-activity-title {
+/* --- Contenu formaté d'activité (chat + popup) ---
+   Les badges de traits (.tags.paizo-style .tag) et les boutons @Check
+   (.inline-check) héritent du CSS GLOBAL de PF2E : rien à styler ici. */
+.item-summary .fw-activity-title {
     margin: 0 0 0.25rem;
     font-weight: 700;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     padding-bottom: 0.15rem;
 }
-.fw-activity .fw-traits {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    margin: 0.25rem 0;
-}
-.fw-activity .fw-trait {
-    display: inline-block;
-    padding: 1px 6px;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: #f5f0e6;
-    background: #5e0000;
-    border: 1px solid #d4c8a0;
-    border-radius: 2px;
-}
-.fw-activity .fw-activity-desc {
+.item-summary .description {
     margin: 0.35rem 0;
 }
-.fw-activity .fw-outcomes {
+.item-summary .fw-outcomes {
     margin-top: 0.4rem;
 }
-.fw-activity .fw-outcomes p {
+.item-summary .fw-outcomes p {
     margin: 0.2rem 0;
 }
-.fw-activity .fw-outcomes strong {
-    color: #5e0000;
-}
 
-/* --- Fenêtre popup de description --- */
+/* --- Fenêtre popup de description : thème sombre, façon Token HUD --- */
 .fw-activity-popup .fw-activity-popup-body {
     padding: 0.5rem 0.65rem;
     line-height: 1.35;
+    background: url("../../../ui/denim075.png") repeat #4d4d4d;
+    color: #efe6d8;
+}
+.fw-activity-popup .window-content {
+    padding: 0;
 }
