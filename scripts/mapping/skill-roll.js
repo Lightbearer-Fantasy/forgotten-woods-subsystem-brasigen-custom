@@ -1,6 +1,17 @@
 import { degreeKeyFromNumber } from "./skill-outcome.js";
 
 /**
+ * Résout la statistique PF2E d'un slug. En PF2E 8.x la Perception n'est pas
+ * dans `actor.skills` mais exposée séparément en `actor.perception`.
+ * @param {object} actor
+ * @param {string} skill  slug PF2E
+ * @returns {object|undefined} la statistique (avec `.roll`) ou undefined
+ */
+export function resolveSkillStatistic(actor, skill) {
+    return skill === "perception" ? actor?.perception : actor?.skills?.[skill];
+}
+
+/**
  * Convertit nos modificateurs en instances PF2E sans type, libellées.
  * @param {{source: string, modifier: number}[]} modifiers
  * @returns {object[]}
@@ -25,7 +36,7 @@ export function buildPf2eModifiers(modifiers) {
  * @returns {Promise<string>} clé d'outcome ("success"…) ou ""
  */
 export async function rollMapSkill(actor, skill, dc, modifiers) {
-    const statistic = actor?.skills?.[skill];
+    const statistic = resolveSkillStatistic(actor, skill);
     if (!statistic) return "";
     const rollOptions = {
         modifiers: buildPf2eModifiers(modifiers),

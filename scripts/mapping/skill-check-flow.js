@@ -1,6 +1,6 @@
 import { coordsToOffset } from "../utils/hex.js";
 import { dcAt } from "./mapping-dc-store.js";
-import { rollMapSkill } from "./skill-roll.js";
+import { rollMapSkill, resolveSkillStatistic } from "./skill-roll.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.skillCheck.${key}`);
 
@@ -30,6 +30,7 @@ export class SkillCheckFlow {
 
         const skill = skills.length === 1 ? skills[0] : await this.#promptSkill(skills);
         if (!skill) return;
+        if (!resolveSkillStatistic(actor, skill)) { ui.notifications.warn(t("noSkill")); return; }
 
         let dc = null;
         if (activity.check.vsHexDC) {
