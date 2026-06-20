@@ -41,7 +41,7 @@ export const GROUP_ACTIVITIES = [
         id: "hustle",
         label: "S'empresser",
         slug: null,
-        img: "icons/skills/movement/figure-running-gray.webp",
+        img: "systems/pf2e/icons/spells/longstrider.webp",
         traits: ["exploration", "move"],
         description:
             "Vous cessez d'avancer prudemment et accélérez la marche. Vous devez utiliser toutes vos Activités de Groupe pour Vous empresser. Quand vous le faites, chaque Activité de Groupe vous permet de Voyager deux fois. Typiquement, vous parcourez le double de la distance habituelle. À l'issue, vous devenez Fatigued et perdez deux Activités de Groupe jusqu'à ce que vous vous reposiez."
@@ -68,7 +68,7 @@ export const GROUP_ACTIVITIES = [
         id: "travel",
         label: "Voyager",
         slug: null,
-        img: "icons/skills/movement/figure-running-gray.webp",
+        img: "systems/pf2e/icons/spells/synchronise-steps.webp",
         traits: ["exploration", "move"],
         description:
             "Vous progressez en direction d'un Hex adjacent. Dans la forêt du Bois de l'Oubli, chaque Hex est traversé en une activité de Voyage. Traverser un Hex avec du terrain difficile, comme la montagne ou les marécages, nécessite 2 activités de Voyage, et au contraire sur une route bitumée ou un espace dégagé, vous pouvez traverser 2 Hex en 1 activité de Voyage. En arrivant sur un Hex, vous révélez si le Hex abrite une créature non caché ou un point d'intérêt non secret, et vous identifiez automatiquement les terrains des Hex adjacents. Vous révélez automatiquement une Ancre en arrivant sur sa Hex si avez une Boussole de Courant ou si vous entendez le Chant. De la même manière, la Boussole de Courant indique automatiquement si une Ancre se trouve sur une Hex adjacente."
@@ -112,7 +112,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         id: "defend",
         label: "Défendre",
         slug: "defend",
-        img: "icons/environment/settlement/watchtower-wood-simple.webp",
+        img: "systems/pf2e/icons/spells/inspire-defense.webp",
         traits: ["exploration"],
         description:
             "Vous commencez toute Rencontre avec le bouclier levé et votre réaction. La nuit au camp, si une embuscade nocturne survient, vous montez la garde, vous empêchant vous et vos compagnons d'être surpris."
