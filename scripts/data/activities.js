@@ -41,8 +41,7 @@ export const GROUP_ACTIVITIES = [
         id: "hustle",
         label: "S'empresser",
         slug: null,
-        img: PLACEHOLDER_IMG,
-        iconAction: "balance",
+        img: "icons/skills/movement/figure-running-gray.webp",
         traits: ["exploration", "move"],
         description:
             "Vous cessez d'avancer prudemment et accélérez la marche. Vous devez utiliser toutes vos Activités de Groupe pour Vous empresser. Quand vous le faites, chaque Activité de Groupe vous permet de Voyager deux fois. Typiquement, vous parcourez le double de la distance habituelle. À l'issue, vous devenez Fatigued et perdez deux Activités de Groupe jusqu'à ce que vous vous reposiez."
@@ -69,8 +68,7 @@ export const GROUP_ACTIVITIES = [
         id: "travel",
         label: "Voyager",
         slug: null,
-        img: PLACEHOLDER_IMG,
-        iconAction: "balance",
+        img: "icons/skills/movement/figure-running-gray.webp",
         traits: ["exploration", "move"],
         description:
             "Vous progressez en direction d'un Hex adjacent. Dans la forêt du Bois de l'Oubli, chaque Hex est traversé en une activité de Voyage. Traverser un Hex avec du terrain difficile, comme la montagne ou les marécages, nécessite 2 activités de Voyage, et au contraire sur une route bitumée ou un espace dégagé, vous pouvez traverser 2 Hex en 1 activité de Voyage. En arrivant sur un Hex, vous révélez si le Hex abrite une créature non caché ou un point d'intérêt non secret, et vous identifiez automatiquement les terrains des Hex adjacents. Vous révélez automatiquement une Ancre en arrivant sur sa Hex si avez une Boussole de Courant ou si vous entendez le Chant. De la même manière, la Boussole de Courant indique automatiquement si une Ancre se trouve sur une Hex adjacente."
@@ -123,8 +121,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         id: "avoid-notice",
         label: "Échapper aux regards",
         slug: "avoid-notice",
-        img: PLACEHOLDER_IMG,
-        iconAction: "avoid-notice",
+        img: "icons/magic/perception/shadow-stealth-eyes-purple.webp",
         traits: ["exploration"],
         description:
             "Vous et les membres de votre groupe qui le souhaitent peuvent effectuer leur jet d'initiative avec leur Stealth."
@@ -133,8 +130,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         id: "investigate",
         label: "Enquêter",
         slug: "investigate",
-        img: PLACEHOLDER_IMG,
-        iconAction: "recall-knowledge",
+        img: "systems/pf2e/icons/spells/brain-drain.webp",
         traits: ["exploration", "secret"],
         description:
             "Permet de @Action[recall-knowledge]{Recall Knowledge} deux fois, sur n'importe quel élément d'un Hex révélé. Par exemple les créatures présentes sur un Hex sont-elles hostiles ? Existe-t-il un lieu à proximité de ce Hex ayant davantage d'ingrédients frais que la moyenne ? Certains résultats du RK pourront finir documentés dans la Bibliothèque de la Guilde (comme l'obtention d'informations sur une créature)."
@@ -208,11 +204,9 @@ export const INDIVIDUAL_ACTIVITIES = [
         id: "treat-wounds",
         label: "Soigner les blessures",
         slug: "treat-wounds",
-        img: PLACEHOLDER_IMG,
-        iconAction: "treat-wounds",
+        img: "icons/magic/life/cross-embers-glow-yellow-purple.webp",
         traits: ["exploration", "healing", "manipulate"],
         description:
-            "Vous pouvez @Action[treat-wounds]{Treat Wounds} chaque aventurier. Comme d'habitude, vous lancez un jet distinct pour chaque aventurier. Si vous avez Ward Medic, vous pouvez choisir de lancer un seul jet et appliquer le résultat à tous les aventuriers. Si vous avez Continuous Recovery, vous pouvez Treat Wounds deux fois chaque aventurier.",
-        check: { skills: ["medicine"] }
+            "Vous pouvez @Action[treat-wounds]{Treat Wounds} chaque aventurier. Comme d'habitude, vous lancez un jet distinct pour chaque aventurier. Si vous avez Ward Medic, vous pouvez choisir de lancer un seul jet et appliquer le résultat à tous les aventuriers. Si vous avez Continuous Recovery, vous pouvez Treat Wounds deux fois chaque aventurier."
     }
 ];

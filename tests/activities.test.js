@@ -2,8 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
     GROUP_ACTIVITIES,
     INDIVIDUAL_ACTIVITIES,
-    activitySortKey,
-    PLACEHOLDER_IMG
+    activitySortKey
 } from "../scripts/data/activities.js";
 import { renderActivityHtml } from "../scripts/data/activity-render.js";
 
@@ -60,18 +59,10 @@ describe("données d'activités", () => {
         }
     });
 
-    it("les activités à iconAction utilisent le placeholder en img (résolu au runtime)", () => {
-        const withIcon = ALL.filter(a => a.iconAction);
-        expect(withIcon.map(a => a.id).sort()).toEqual(
-            ["avoid-notice", "hustle", "investigate", "travel", "treat-wounds"].sort()
-        );
-        for (const a of withIcon) expect(a.img, a.id).toBe(PLACEHOLDER_IMG);
-    });
-
-    it("les activités sans iconAction portent un chemin d'icône littéral (≠ placeholder)", () => {
-        for (const a of ALL.filter(a => !a.iconAction)) {
-            expect(a.img, a.id).not.toBe(PLACEHOLDER_IMG);
-            expect(a.img, a.id).toMatch(/^icons\//);
+    it("chaque activité a une icône littérale non vide (chemins core ou pf2e)", () => {
+        for (const a of ALL) {
+            expect(a.img, a.id).toBeTruthy();
+            expect(a.img, a.id).toMatch(/^(?:icons|systems)\//);
         }
     });
 });
@@ -118,8 +109,8 @@ describe("marqueurs @Action (liens @UUID inline)", () => {
         expect(byId("treat-wounds").description).toContain("@Action[treat-wounds]{Treat Wounds}");
         expect(byId("investigate").description).toContain("@Action[recall-knowledge]{Recall Knowledge}");
         expect(byId("aid").description).toContain("@Action[aid]{Aid}");
-        expect(byId("craft").description).toContain("@Action[craft]{créer}");
-        expect(byId("repair").description).toContain("@Action[repair]{réparer}");
+        expect(byId("craft").description).toContain("@Action[craft]{Fabriquer}");
+        expect(byId("repair").description).toContain("@Action[repair]{Réparer}");
     });
     it("les activités sans action nommée n'ont pas de marqueur", () => {
         for (const id of ["defend", "scout", "avoid-notice", "search", "map-area"]) {
@@ -175,13 +166,9 @@ describe("contenu reformaté PF2E", () => {
         expect(byId("cook").check).toEqual({ skills: ["crafting", "cooking-lore"], vsHexDC: true });
     });
 
-    it("treat-wounds garde check.skills:[medicine] sans vsHexDC", () => {
-        expect(byId("treat-wounds").check.skills).toEqual(["medicine"]);
-        expect(byId("treat-wounds").check.vsHexDC).toBeUndefined();
-    });
-
-    it("investigate, craft et repair n'ont pas de champ check (routés par id)", () => {
+    it("investigate, treat-wounds, craft et repair n'ont pas de champ check (routés par id)", () => {
         expect(byId("investigate").check).toBeUndefined();
+        expect(byId("treat-wounds").check).toBeUndefined();
         expect(byId("craft").check).toBeUndefined();
         expect(byId("repair").check).toBeUndefined();
     });

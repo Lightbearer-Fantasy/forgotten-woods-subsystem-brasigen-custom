@@ -73,6 +73,7 @@
             "noDC": "Aucun DC de zone n'est défini sur ce hex. Le MJ doit d'abord fixer le DC.",
             "noSkill": "Ce personnage ne possède pas cette compétence. Choisissez-en une autre.",
             "noRK": "Le flux Recall Knowledge de PF2E HUD est indisponible. Vérifiez que le module PF2E HUD est actif.",
+            "noTreatWounds": "Le flux Treat Wounds de PF2E HUD est indisponible. Vérifiez que le module PF2E HUD est actif.",
             "prompt": {
                 "title": "Jet de compétence",
                 "label": "Choisissez la compétence à utiliser :"

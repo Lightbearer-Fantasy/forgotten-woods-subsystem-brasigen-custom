@@ -1,11 +1,11 @@
 import { isHexScene, activePartyToken, tokenAtPoint, canvasClickOpensHud } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
-import { loadActionMaps, applyActivityIcons } from "../data/activity-actions.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
 import { enrichActivityHtml } from "./activity-enrich.js";
 import { SkillCheckFlow } from "../mapping/skill-check-flow.js";
 import { RecallKnowledgeFlow } from "../mapping/recall-knowledge-flow.js";
+import { TreatWoundsFlow } from "../mapping/treat-wounds-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -95,17 +95,7 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         return [...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES].find(a => a.id === id) ?? null;
     }
 
-    static _imagesResolved = false;
-
-    static async _ensureImages() {
-        if (this._imagesResolved) return;
-        this._imagesResolved = true;
-        const { imgBySlug } = await loadActionMaps();
-        applyActivityIcons([...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES], imgBySlug);
-    }
-
     async _prepareContext() {
-        await this.constructor._ensureImages();
         const actor = this.token?.actor ?? null;
         const groupCount = groupActivityCount(slowestLandSpeed(actor));
         return {
@@ -262,6 +252,10 @@ async function onRollD20(event, target) {
     // Enquêter : deux Recall Knowledge (API pf2e-hud), sur le perso du joueur.
     if (activity.id === "investigate") {
         return RecallKnowledgeFlow.start(actor);
+    }
+    // Soigner les blessures : action Treat Wounds (API pf2e-hud), sur le perso du joueur.
+    if (activity.id === "treat-wounds") {
+        return TreatWoundsFlow.start(actor);
     }
     // Réparer : action Repair du système PF2E.
     if (activity.id === "repair") {
