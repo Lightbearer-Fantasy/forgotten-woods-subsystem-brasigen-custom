@@ -5,6 +5,7 @@ import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount }
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
 import { enrichActivityHtml } from "./activity-enrich.js";
 import { SkillCheckFlow } from "../mapping/skill-check-flow.js";
+import { RecallKnowledgeFlow } from "../mapping/recall-knowledge-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -252,15 +253,32 @@ async function onRollD20(event, target) {
     const row = target.closest("[data-activity-id]");
     const activity = this.findActivity(row?.dataset.activityId);
     if (!activity) return;
-    // « Cartographier la zone » : flux complet (verrou + round MJ + PC).
+    const actor = rollingActor(this);
+
+    // Cartographier la zone : flux complet (verrou + round MJ + PC).
     if (activity.id === "map-area") {
         return MapAreaFlow.start(this.token, this.token?.actor);
+    }
+    // Enquêter : deux Recall Knowledge (API pf2e-hud), sur le perso du joueur.
+    if (activity.id === "investigate") {
+        return RecallKnowledgeFlow.start(actor);
+    }
+    // Réparer : action Repair du système PF2E.
+    if (activity.id === "repair") {
+        return game.pf2e.actions.repair({ event, actors: [actor] });
+    }
+    // Fabriquer : action Craft du système PF2E (déclenchée comme la liste de skills
+    // du Token HUD). game.pf2e.actions.craft attend { event, actors, item? } ;
+    // sans item présélectionné, l'action ouvre son propre dialogue.
+    if (activity.id === "craft") {
+        return game.pf2e.actions.craft?.({ event, actors: [actor] })
+            ?? ui.notifications.warn(game.i18n.localize("FORGOTTEN_WOODS.skillCheck.noRK"));
     }
     // Activité « à check » : jet de compétence (vs Hex DC si zone, sinon simple),
     // sans application de PC. Le jet est porté par le personnage du joueur qui
     // clique, pas par l'acteur du Token Party.
-    if (activity.check?.skills) {
-        return SkillCheckFlow.start(this.token, rollingActor(this), activity);
+    if (activity.check?.skills || activity.check?.allSkills) {
+        return SkillCheckFlow.start(this.token, actor, activity);
     }
     // Activité sans jet : placeholder 1d20.
     const roll = await new Roll("1d20").evaluate();
