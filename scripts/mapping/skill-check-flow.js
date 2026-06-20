@@ -1,6 +1,7 @@
 import { coordsToOffset } from "../utils/hex.js";
 import { dcAt } from "./mapping-dc-store.js";
 import { rollMapSkill, resolveSkillStatistic } from "./skill-roll.js";
+import { actorSkillChoices } from "../data/activity-actions.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.skillCheck.${key}`);
 
@@ -25,10 +26,15 @@ export class SkillCheckFlow {
      */
     static async start(token, actor, activity) {
         if (!token || !actor) return;
-        const skills = activity?.check?.skills ?? [];
-        if (!skills.length) return;
 
-        const skill = skills.length === 1 ? skills[0] : await this.#promptSkill(skills);
+        // Liste des choix : toutes les compétences/lores de l'acteur (allSkills)
+        // ou la liste fixe de l'activité.
+        const choices = activity?.check?.allSkills
+            ? actorSkillChoices(actor)
+            : (activity?.check?.skills ?? []).map((s) => ({ value: s, label: skillLabel(s) }));
+        if (!choices.length) return;
+
+        const skill = choices.length === 1 ? choices[0].value : await this.#promptSkill(choices);
         if (!skill) return;
         if (!resolveSkillStatistic(actor, skill)) { ui.notifications.warn(t("noSkill")); return; }
 
@@ -41,9 +47,9 @@ export class SkillCheckFlow {
         await rollMapSkill(actor, skill, dc, []);
     }
 
-    /** Prompt de choix de compétence. @returns {Promise<string|null>} slug ou null. */
-    static async #promptSkill(skills) {
-        const opts = skills.map((s) => `<option value="${s}">${skillLabel(s)}</option>`).join("");
+    /** Prompt de choix de compétence. @param {{value,label}[]} choices */
+    static async #promptSkill(choices) {
+        const opts = choices.map((c) => `<option value="${c.value}">${c.label}</option>`).join("");
         return foundry.applications.api.DialogV2.prompt({
             window: { title: t("prompt.title") },
             content: `<p>${t("prompt.label")}</p><select name="skill" autofocus>${opts}</select>`,
