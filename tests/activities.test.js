@@ -22,9 +22,9 @@ describe("activitySortKey", () => {
 });
 
 describe("données d'activités", () => {
-    it("contient 5 activités de groupe et 10 individuelles", () => {
+    it("contient 5 activités de groupe et 12 individuelles", () => {
         expect(GROUP_ACTIVITIES).toHaveLength(5);
-        expect(INDIVIDUAL_ACTIVITIES).toHaveLength(10);
+        expect(INDIVIDUAL_ACTIVITIES).toHaveLength(12);
     });
 
     it("chaque activité a id, label, img, traits (array), description, et une propriété slug", () => {
@@ -60,9 +60,70 @@ describe("données d'activités", () => {
         }
     });
 
-    it("toutes les activités custom utilisent l'image placeholder par défaut", () => {
-        for (const a of ALL) {
-            if (a.slug === null) expect(a.img).toBe(PLACEHOLDER_IMG);
+    it("les activités à iconAction utilisent le placeholder en img (résolu au runtime)", () => {
+        const withIcon = ALL.filter(a => a.iconAction);
+        expect(withIcon.map(a => a.id).sort()).toEqual(
+            ["avoid-notice", "hustle", "investigate", "travel", "treat-wounds"].sort()
+        );
+        for (const a of withIcon) expect(a.img, a.id).toBe(PLACEHOLDER_IMG);
+    });
+
+    it("les activités sans iconAction portent un chemin d'icône littéral (≠ placeholder)", () => {
+        for (const a of ALL.filter(a => !a.iconAction)) {
+            expect(a.img, a.id).not.toBe(PLACEHOLDER_IMG);
+            expect(a.img, a.id).toMatch(/^icons\//);
+        }
+    });
+});
+
+describe("renommages et nouvelles activités v0.5", () => {
+    const byId = (id) => ALL.find((a) => a.id === id);
+
+    it("applique les libellés français v0.5", () => {
+        expect(byId("avoid-notice").label).toBe("Échapper aux regards");
+        expect(byId("defend").label).toBe("Défendre");
+        expect(byId("investigate").label).toBe("Enquêter");
+        expect(byId("scout").label).toBe("Partir en reconnaissance");
+        expect(byId("search").label).toBe("Fouiller");
+        expect(byId("treat-wounds").label).toBe("Soigner les blessures");
+        expect(byId("hustle").label).toBe("S'empresser");
+        expect(byId("aid").label).toBe("S'entraider");
+    });
+
+    it("scinde craft et repair en deux activités distinctes", () => {
+        expect(byId("craft").label).toBe("Fabriquer");
+        expect(byId("craft").slug).toBe("craft");
+        expect(byId("repair").label).toBe("Réparer");
+        expect(byId("repair").slug).toBe("repair");
+    });
+
+    it("ajoute Récupérer des matériaux (gather-materials)", () => {
+        const g = byId("gather-materials");
+        expect(g.label).toBe("Récupérer des matériaux");
+        expect(g.check).toEqual({ allSkills: true, vsHexDC: true });
+        expect(g.outcomes.failure).toBe("Vous revenez bredouille.");
+        expect(g.outcomes.success).toContain("2 matériaux");
+        expect(g.outcomes.criticalSuccess).toContain("3 matériaux");
+    });
+
+    it("le texte de S'empresser ne mentionne plus « Presser le Pas »", () => {
+        expect(byId("hustle").description).not.toContain("Presser");
+        expect(byId("hustle").description).toContain("Vous empresser");
+    });
+});
+
+describe("marqueurs @Action (liens @UUID inline)", () => {
+    const byId = (id) => ALL.find((a) => a.id === id);
+    it("place le marqueur d'action sur le mot voulu", () => {
+        expect(byId("treat-wounds").description).toContain("@Action[treat-wounds]{Treat Wounds}");
+        expect(byId("investigate").description).toContain("@Action[recall-knowledge]{Recall Knowledge}");
+        expect(byId("aid").description).toContain("@Action[aid]{Aid}");
+        expect(byId("craft").description).toContain("@Action[craft]{créer}");
+        expect(byId("repair").description).toContain("@Action[repair]{réparer}");
+    });
+    it("les activités sans action nommée n'ont pas de marqueur", () => {
+        for (const id of ["defend", "scout", "avoid-notice", "search", "map-area"]) {
+            expect(byId(id).description, id).not.toContain("@Action[");
         }
     });
 });
@@ -114,13 +175,15 @@ describe("contenu reformaté PF2E", () => {
         expect(byId("cook").check).toEqual({ skills: ["crafting", "cooking-lore"], vsHexDC: true });
     });
 
-    it("les placeholders (Treat Wounds/Craft/Investigate) ont check.skills sans vsHexDC", () => {
+    it("treat-wounds garde check.skills:[medicine] sans vsHexDC", () => {
         expect(byId("treat-wounds").check.skills).toEqual(["medicine"]);
         expect(byId("treat-wounds").check.vsHexDC).toBeUndefined();
-        expect(byId("repair").check.skills).toEqual(["crafting"]);
-        expect(byId("repair").check.vsHexDC).toBeUndefined();
-        expect(byId("investigate").check.skills).toContain("nature");
-        expect(byId("investigate").check.vsHexDC).toBeUndefined();
+    });
+
+    it("investigate, craft et repair n'ont pas de champ check (routés par id)", () => {
+        expect(byId("investigate").check).toBeUndefined();
+        expect(byId("craft").check).toBeUndefined();
+        expect(byId("repair").check).toBeUndefined();
     });
 
     it("map-area n'a pas de champ check (routé vers MapAreaFlow)", () => {
