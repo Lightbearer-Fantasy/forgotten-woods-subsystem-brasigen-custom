@@ -1,5 +1,6 @@
 import { isHexScene, activePartyToken, tokenAtPoint, canvasClickOpensHud } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
+import { loadActionMaps, applyActivityIcons } from "../data/activity-actions.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
 import { enrichActivityHtml } from "./activity-enrich.js";
@@ -95,34 +96,11 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     static _imagesResolved = false;
 
-    /** Slug de l'action PF2e dont l'icône est appliquée à toutes les activités (provisoire). */
-    static REFERENCE_SLUG = "investigate";
-
     static async _ensureImages() {
         if (this._imagesResolved) return;
         this._imagesResolved = true;
-
-        const pack = game.packs.get("pf2e.actionspf2e");
-        if (!pack) return;
-
-        let index;
-        try {
-            index = await pack.getIndex({ fields: ["system.slug"] });
-        } catch (error) {
-            console.warn("forgotten-woods-brasigen | échec du chargement des actions PF2e", error);
-            return;
-        }
-
-        // Pour le moment : une seule et même icône pour toutes les activités,
-        // celle d'une action PF2e de référence (cf. REFERENCE_SLUG).
-        const reference = index.find(
-            (e) => (e.system?.slug ?? e.name?.slugify?.({ strict: true })) === this.REFERENCE_SLUG
-        );
-        if (!reference?.img) return;
-
-        for (const activity of [...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES]) {
-            activity.img = reference.img;
-        }
+        const { imgBySlug } = await loadActionMaps();
+        applyActivityIcons([...GROUP_ACTIVITIES, ...INDIVIDUAL_ACTIVITIES], imgBySlug);
     }
 
     async _prepareContext() {

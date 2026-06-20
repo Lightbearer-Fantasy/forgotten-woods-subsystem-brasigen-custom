@@ -1,12 +1,14 @@
 import { renderActivityHtml } from "../data/activity-render.js";
+import { loadActionMaps, resolveActionMarkers } from "../data/activity-actions.js";
 
 /**
- * Rend une activité puis enrichit le HTML via PF2E/Foundry : la syntaxe
- * `@Check[...]` devient des boutons de jet cliquables, colorés par trait
- * (rendu identique au Token HUD). IO — validé en jeu.
+ * Rend une activité, résout les marqueurs `@Action` en `@UUID`, puis enrichit
+ * via PF2E/Foundry (les `@Check`/`@UUID` deviennent cliquables). IO — validé en jeu.
  * @param {object} activity
- * @returns {Promise<string>} HTML enrichi
+ * @returns {Promise<string>}
  */
 export async function enrichActivityHtml(activity) {
-    return foundry.applications.ux.TextEditor.implementation.enrichHTML(renderActivityHtml(activity));
+    const { uuidBySlug } = await loadActionMaps();
+    const html = resolveActionMarkers(renderActivityHtml(activity), uuidBySlug);
+    return foundry.applications.ux.TextEditor.implementation.enrichHTML(html);
 }
