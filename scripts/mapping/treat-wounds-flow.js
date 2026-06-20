@@ -7,11 +7,11 @@ export class TreatWoundsFlow {
     /** @param {object} actor  personnage du joueur qui clique */
     static async start(actor) {
         if (!actor) return;
-        const treatWounds = game.hud?.api?.actions?.treatWounds;
+        const treatWounds = game.pf2e?.actions?.treatWounds;
         if (typeof treatWounds !== "function") {
             ui.notifications.warn(game.i18n.localize("FORGOTTEN_WOODS.skillCheck.noTreatWounds"));
             return;
         }
-        await treatWounds(actor);
+        await treatWounds({ actors: actor });
     }
 }
