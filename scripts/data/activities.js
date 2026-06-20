@@ -155,7 +155,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: "icons/tools/hand/hammer-cobbler-steel.webp",
         traits: ["exploration", "manipulate"],
         description:
-            "Nécessite un camp. Vous utilisez des matériaux récupérés au cours de votre exploration pour @Action[craft]{créer} un objet dont vous avez la recette de votre niveau ou moins."
+            "Nécessite un camp. Vous utilisez des matériaux récupérés au cours de votre exploration pour @Action[craft]{Fabriquer} un objet dont vous avez la recette de votre niveau ou moins."
     },
     {
         id: "search",
@@ -202,7 +202,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: "icons/tools/smithing/anvil.webp",
         traits: ["exploration", "manipulate"],
         description:
-            "Vous prenez le temps de @Action[repair]{réparer} un équipement endommagé. Si vous avez un camp, vous pouvez réparer une fois supplémentaire."
+            "Vous prenez le temps de @Action[repair]{Réparer} un équipement endommagé. Si vous avez un camp, vous pouvez réparer une fois supplémentaire."
     },
     {
         id: "treat-wounds",

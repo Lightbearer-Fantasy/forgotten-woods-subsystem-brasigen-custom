@@ -8,7 +8,7 @@ export class RecallKnowledgeFlow {
     /** @param {object} actor  personnage du joueur qui clique */
     static async start(actor) {
         if (!actor) return;
-        const roll = game.modules.get("pf2e-hud")?.api?.actions?.rollRecallKnowledge;
+        const roll = game.hud?.api?.actions?.rollRecallKnowledge;
         if (typeof roll !== "function") {
             ui.notifications.warn(game.i18n.localize("FORGOTTEN_WOODS.skillCheck.noRK"));
             return;

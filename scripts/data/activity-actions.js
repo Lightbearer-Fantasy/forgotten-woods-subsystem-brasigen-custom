@@ -23,13 +23,26 @@ export function buildActionMaps(indexEntries) {
 }
 
 /**
+ * Icônes custom que pf2e-hud substitue aux icônes de compendium pour certaines actions.
+ * Source : map statique dans pf2e-hud/scripts/main.js (minifié).
+ */
+const PF2E_HUD_ICON_OVERRIDES = {
+    "recall-knowledge": "icons/spells/brain-drain.webp",
+    "treat-wounds":     "icons/spells/delay-affliction.webp",
+};
+
+/**
  * Applique l'icône d'action résolue aux activités portant `iconAction`.
+ * Priorité : overrides pf2e-hud > compendium (imgBySlug).
  * @param {Array} activities
  * @param {Record<string,string>} imgBySlug
  */
 export function applyActivityIcons(activities, imgBySlug) {
     for (const a of activities) {
-        if (a.iconAction && imgBySlug[a.iconAction]) a.img = imgBySlug[a.iconAction];
+        if (!a.iconAction) continue;
+        const override = PF2E_HUD_ICON_OVERRIDES[a.iconAction];
+        if (override) { a.img = override; continue; }
+        if (imgBySlug[a.iconAction]) a.img = imgBySlug[a.iconAction];
     }
 }
 
