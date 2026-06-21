@@ -1,7 +1,7 @@
 import { setCamp } from "./camp-store.js";
 import { restHealAmount } from "./rest-heal.js";
 import { resourceAmountForOutcome } from "./resource-amount.js";
-import { addOrIncrement, RESOURCE_LABELS } from "./gpc-bridge.js";
+import { addOrIncrement } from "./gpc-bridge.js";
 
 const CHANNEL = "module.forgotten-woods-brasigen";
 const t = (key, data) => game.i18n.format(`FORGOTTEN_WOODS.gm.${key}`, data ?? {});
