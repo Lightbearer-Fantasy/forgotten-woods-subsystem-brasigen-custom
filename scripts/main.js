@@ -2,6 +2,7 @@ import { PartyActivitiesHUD } from "./hud/party-activities-hud.js";
 import { MappingPointsController } from "./mapping/mapping-points-controller.js";
 import { HexSelection } from "./canvas/hex-selection.js";
 import { registerSocket } from "./mapping/map-lock.js";
+import { registerResourceClocks } from "./mapping/gpc-bridge.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -10,6 +11,7 @@ let mapping = null;
 let hexSelection = null;
 
 Hooks.once("init", () => {
+    registerResourceClocks();
     hud = new PartyActivitiesHUD();
     hexSelection = new HexSelection();
     mapping = new MappingPointsController(hexSelection);
