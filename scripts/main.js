@@ -3,6 +3,7 @@ import { MappingPointsController } from "./mapping/mapping-points-controller.js"
 import { HexSelection } from "./canvas/hex-selection.js";
 import { registerSocket } from "./mapping/map-lock.js";
 import { registerResourceClocks } from "./mapping/gpc-bridge.js";
+import { registerGmActions } from "./mapping/gm-actions.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -33,7 +34,7 @@ Hooks.on("canvasReady", () => {
     hud?.close();
 });
 
-Hooks.once("ready", () => registerSocket());
+Hooks.once("ready", () => { registerSocket(); registerGmActions(); });
 
 // --- Système de Points de Cartographie (MJ) ---
 Hooks.on("getSceneControlButtons", (controls) => mapping?.getControls(controls));
