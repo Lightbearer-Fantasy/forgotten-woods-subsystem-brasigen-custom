@@ -8,7 +8,7 @@ const CAMP_TINT = 0xe02020;
 /** Taille du symbole, en fraction de la taille de grille (petit, lisible au-dessus du token). */
 const CAMP_SCALE = 0.3;
 /** Décalage vertical vers le haut du Hex, en fraction de la taille de grille. */
-const CAMP_TOP_OFFSET = 0.36;
+const CAMP_TOP_OFFSET = 0.47;
 
 /** @type {PIXI.Container|null} */
 let overlay = null;
