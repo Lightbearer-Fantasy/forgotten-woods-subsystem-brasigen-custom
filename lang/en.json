@@ -15,7 +15,8 @@
                 "showDC": "Afficher les DC de Hex",
                 "setDC": "Définir le DC des hex sélectionnés",
                 "resetDC": "Remettre à 0 tous les DC de la scène",
-                "setAspect": "Définir l'Aspect de la scène"
+                "setAspect": "Définir l'Aspect de la scène",
+                "resetCamps": "Démonter tous les camps"
             },
             "reset": {
                 "title": "Réinitialiser les Points de Cartographie",
@@ -34,7 +35,33 @@
                 "title": "Aspect de la scène",
                 "label": "Aspect de cette scène (fixe le bonus de cartographie) :"
             },
-            "noParty": "Sélectionne le Token Party (ou place-en un seul sur la scène)."
+            "noParty": "Sélectionne le Token Party (ou place-en un seul sur la scène).",
+            "resetCamps": {
+                "title": "Démonter les camps",
+                "confirm": "Démonter tous les camps de la scène ?"
+            }
+        },
+        "makeCamp": {
+            "title": "Monter le camp",
+            "confirm": "Voulez-vous Monter le camp ici ?",
+            "notEnoughPC": "Pas assez de Points de Cartographie pour monter le camp ici (2 minimum)."
+        },
+        "rest": {
+            "title": "Se reposer",
+            "confirm": "Voulez-vous vous Reposer avec vos compagnons ?"
+        },
+        "gm": {
+            "madeCamp": "Les Joueurs Montent le camp.",
+            "rested": "Les Joueurs se Reposent.",
+            "resourceTitle": "Ressources d'exploration",
+            "resourcePrompt": "Un membre du Party a effectué {activity} avec sa compétence {skill}. Prendre en compte le résultat de l'activité et ajouter les ressources correspondantes ? Pour rappel le résultat est {outcome}.",
+            "outcome": {
+                "criticalSuccess": "succès critique",
+                "success": "succès",
+                "failure": "échec",
+                "criticalFailure": "échec critique",
+                "none": "indéterminé"
+            }
         },
         "mapArea": {
             "agPrompt": {

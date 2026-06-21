@@ -4,6 +4,7 @@ import { readPoints, applyDeltas, clearAllPoints, buildRangeDeltas } from "./map
 import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
 import { aspectOf, setAspect } from "./aspect-store.js";
 import { aspectOptions, aspectLabelKey } from "../data/aspects.js";
+import { clearAllCamps } from "./camp-store.js";
 
 const CONTROL = "forgottenWoods";
 const TOOL_SELECT = "selectHex";
@@ -15,6 +16,7 @@ const TOOL_SHOW_DC = "showDC";
 const TOOL_SET_DC = "setDC";
 const TOOL_RESET_DC = "resetDC";
 const TOOL_SET_ASPECT = "setAspect";
+const TOOL_RESET_CAMPS = "resetCamps";
 
 /**
  * États actifs des deux toggles d'affichage dérivés du mode courant.
@@ -154,6 +156,14 @@ export class MappingPointsController {
                     icon: "fa-solid fa-mountain-sun",
                     button: true,
                     onChange: () => this.promptSetAspect()
+                },
+                [TOOL_RESET_CAMPS]: {
+                    name: TOOL_RESET_CAMPS,
+                    order: 10,
+                    title: t("tools.resetCamps"),
+                    icon: "fa-solid fa-campground",
+                    button: true,
+                    onChange: () => this.resetAllCamps()
                 }
             },
             activeTool: TOOL_SELECT
@@ -429,6 +439,20 @@ export class MappingPointsController {
         });
         if (!confirmed) return;
         clearAllPoints(this.scene);
+    }
+
+    // --- Démontage de tous les camps de la scène ---
+
+    async resetAllCamps() {
+        if (!game.user.isGM || !isHexScene(this.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const confirmed = await foundry.applications.api.DialogV2.confirm({
+            window: { title: t("resetCamps.title") },
+            content: `<p>${t("resetCamps.confirm")}</p>`,
+            modal: true
+        });
+        if (!confirmed) return;
+        clearAllCamps(this.scene);
     }
 
     // --- Définition du DC des hex sélectionnés ---
