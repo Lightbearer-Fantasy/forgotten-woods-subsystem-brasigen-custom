@@ -6,6 +6,7 @@ import { enrichActivityHtml } from "./activity-enrich.js";
 import { SkillCheckFlow } from "../mapping/skill-check-flow.js";
 import { RecallKnowledgeFlow } from "../mapping/recall-knowledge-flow.js";
 import { TreatWoundsFlow } from "../mapping/treat-wounds-flow.js";
+import { MakeCampFlow } from "../mapping/make-camp-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -248,6 +249,10 @@ async function onRollD20(event, target) {
     // Cartographier la zone : flux complet (verrou + round MJ + PC).
     if (activity.id === "map-area") {
         return MapAreaFlow.start(this.token, this.token?.actor);
+    }
+    // Monter le camp : vérif PC + confirmation + pose côté MJ.
+    if (activity.id === "make-camp") {
+        return MakeCampFlow.start(this.token);
     }
     // Enquêter : deux Recall Knowledge (API pf2e-hud), sur le perso du joueur.
     if (activity.id === "investigate") {
