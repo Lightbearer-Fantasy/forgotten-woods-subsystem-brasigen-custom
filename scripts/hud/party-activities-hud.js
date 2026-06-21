@@ -109,6 +109,7 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         const campPresent = scene && offset ? campAt(scene, offset) : false;
         const character = game.user.character ?? null;
         const ctx = {
+            isGM: game.user.isGM,
             hasCharacter: !!character,
             craftingTrained: (character?.skills?.crafting?.rank ?? 0) >= 1,
             medicineTrained: (character?.skills?.medicine?.rank ?? 0) >= 1,
@@ -125,7 +126,10 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             groupColor: groupCountColor(groupCount),
             individualCount: baseIndividual + (campPresent ? 2 : 0),
             groupActivities: withDisabled(GROUP_ACTIVITIES),
-            individualActivities: withDisabled(INDIVIDUAL_ACTIVITIES)
+            individualActivities: withDisabled(INDIVIDUAL_ACTIVITIES),
+            campPresent,
+            campImg: GROUP_ACTIVITIES.find((a) => a.id === "make-camp")?.img ?? null,
+            campLabel: game.i18n.localize("FORGOTTEN_WOODS.panel.campPresent")
         };
     }
 

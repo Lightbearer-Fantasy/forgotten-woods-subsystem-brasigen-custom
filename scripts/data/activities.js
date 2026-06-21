@@ -90,7 +90,8 @@ export const INDIVIDUAL_ACTIVITIES = [
             "Vous essayez de trouver des ingrédients frais sur le trajet. Effectuez un @Check[nature] ou @Check[survival] contre le DC de la zone.",
         outcomes: {
             criticalSuccess: "Vous trouvez 3 ingrédients frais.",
-            success: "Vous trouvez 2 ingrédients frais."
+            success: "Vous trouvez 2 ingrédients frais.",
+            criticalFailure: "Vous ramenez un ingrédient moisi qui vous force à trier ceux que vous avez déjà ramenés. Vous perdez 1 ingrédient frais."
         },
         check: { skills: ["nature", "survival"], vsHexDC: true },
         resource: "ingredients"
@@ -188,7 +189,8 @@ export const INDIVIDUAL_ACTIVITIES = [
         outcomes: {
             criticalSuccess: "Vous trouvez 3 matériaux de fabrication.",
             success: "Vous trouvez 2 matériaux de fabrication.",
-            failure: "Vous revenez bredouille."
+            failure: "Vous revenez bredouille.",
+            criticalFailure: "Vous ramenez un matériau de fabrication pourri qui vous force à trier ceux que vous avez déjà ramenés. Vous perdez 1 matériau de fabrication."
         },
         check: { allSkills: true, vsHexDC: true },
         resource: "materials"

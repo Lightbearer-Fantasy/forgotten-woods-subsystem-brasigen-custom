@@ -11,8 +11,8 @@ describe("resourceAmountForOutcome", () => {
     it("échec → 0", () => {
         expect(resourceAmountForOutcome("failure")).toBe(0);
     });
-    it("échec critique → 0", () => {
-        expect(resourceAmountForOutcome("criticalFailure")).toBe(0);
+    it("échec critique → -1 (perte d'une ressource)", () => {
+        expect(resourceAmountForOutcome("criticalFailure")).toBe(-1);
     });
     it("outcome inconnu ou vide → 0", () => {
         expect(resourceAmountForOutcome("")).toBe(0);

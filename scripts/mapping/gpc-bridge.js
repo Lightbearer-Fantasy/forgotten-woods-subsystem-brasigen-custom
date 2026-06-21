@@ -40,23 +40,35 @@ export function counterValue(resourceKey) {
 }
 
 /**
- * Ajoute `amount` au compteur de la ressource ; le crée s'il n'existe pas.
- * No-op si amount <= 0 (n'instancie pas un compteur vide). MJ uniquement.
+ * Plafond des compteurs de ressources (type GPC "points" : max autorisé 99).
+ * Sans `max` explicite, GPC applique DEFAULT_CLOCK.max = 4 et plafonne la valeur
+ * à 4 ; on force donc 99 à la création ET à la mise à jour (répare les compteurs
+ * créés avant ce correctif et coincés à 4).
+ */
+const POINTS_MAX = 99;
+
+/**
+ * Applique une variation `amount` au compteur de la ressource ; le crée si besoin.
+ * Variation négative tolérée (échec critique) : la valeur est plancher à 0 et un
+ * compteur inexistant n'est pas instancié pour une perte. No-op si amount === 0.
+ * MJ uniquement.
  * @param {"ingredients"|"materials"} resourceKey
- * @param {number} amount
+ * @param {number} amount  variation (peut être négative)
  */
 export function addOrIncrement(resourceKey, amount) {
-    if (!game.user.isGM || amount <= 0 || !window.clockDatabase) return;
+    if (!game.user.isGM || amount === 0 || !window.clockDatabase) return;
     const id = storedClockId(resourceKey);
     const existing = id ? activeClocks()[id] : null;
     if (existing) {
-        window.clockDatabase.update({ id, value: (existing.value ?? 0) + amount });
+        const next = Math.max(0, (existing.value ?? 0) + amount);
+        window.clockDatabase.update({ id, value: next, max: POINTS_MAX });
         return;
     }
+    if (amount < 0) return; // rien à retirer : ne pas créer un compteur pour une perte
     const newId = foundry.utils.randomID();
     window.clockDatabase.addClock({
         id: newId, type: "points", name: RESOURCE_LABELS[resourceKey],
-        value: amount, private: false
+        value: amount, max: POINTS_MAX, private: false
     });
     const map = { ...(game.settings.get(MODULE_ID, SETTING) ?? {}) };
     map[resourceKey] = newId;

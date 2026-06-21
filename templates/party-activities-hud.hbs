@@ -4,6 +4,12 @@
         {{#each groupActivities as |activity|}}
         {{> fwActivityRow activity}}
         {{/each}}
+        {{#if campPresent}}
+        <div class="fw-camp-line">
+            <img class="fw-camp-icon" src="{{campImg}}" alt="">
+            <span>{{campLabel}}</span>
+        </div>
+        {{/if}}
     </section>
     <section class="fw-panel" data-panel="individual">
         <header class="fw-panel-title"><span class="fw-count fw-count-white">{{individualCount}}</span> {{individualTitle}}</header>

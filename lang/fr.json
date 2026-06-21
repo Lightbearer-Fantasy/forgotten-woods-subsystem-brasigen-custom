@@ -2,7 +2,8 @@
     "FORGOTTEN_WOODS": {
         "panel": {
             "group": "Activités de Groupe",
-            "individual": "Activités Individuelles"
+            "individual": "Activités Individuelles",
+            "campPresent": "Un camp est monté sur ce Hex."
         },
         "mapping": {
             "control": "Hex Controls",

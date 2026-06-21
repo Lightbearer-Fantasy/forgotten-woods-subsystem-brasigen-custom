@@ -44,4 +44,11 @@ describe("activityDisabled", () => {
     it("activité quelconque jamais grisée", () => {
         expect(activityDisabled({ id: "scout" }, { ...base, campPresent: false })).toBe(false);
     });
+    it("MJ (isGM) : jamais grisé, même sans camp ni proficiency ni ingrédients", () => {
+        const gm = { ...base, isGM: true, campPresent: false, craftingTrained: false, medicineTrained: false, ingredientCount: 0 };
+        expect(activityDisabled({ id: "craft" }, gm)).toBe(false);
+        expect(activityDisabled({ id: "cook" }, gm)).toBe(false);
+        expect(activityDisabled({ id: "rest" }, gm)).toBe(false);
+        expect(activityDisabled({ id: "treat-wounds" }, gm)).toBe(false);
+    });
 });

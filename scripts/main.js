@@ -4,6 +4,7 @@ import { HexSelection } from "./canvas/hex-selection.js";
 import { registerSocket } from "./mapping/map-lock.js";
 import { registerResourceClocks } from "./mapping/gpc-bridge.js";
 import { registerGmActions } from "./mapping/gm-actions.js";
+import { renderCampOverlay } from "./canvas/camp-overlay.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -41,3 +42,9 @@ Hooks.on("getSceneControlButtons", (controls) => mapping?.getControls(controls))
 Hooks.on("activateSceneControls", (controls) => mapping?.onActivateControls(controls));
 Hooks.on("updateScene", (scene) => mapping?.onUpdateScene(scene));
 Hooks.on("canvasReady", () => mapping?.destroy());
+
+// --- Marqueurs de camp sur la scène (visibles par tous) ---
+Hooks.on("canvasReady", () => renderCampOverlay());
+Hooks.on("updateScene", (scene) => {
+    if (scene?.id === canvas?.scene?.id) renderCampOverlay();
+});

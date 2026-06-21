@@ -185,3 +185,22 @@
     cursor: default;
     pointer-events: none;
 }
+
+/* Ligne informative « camp présent » sous le panneau Activités de Groupe.
+   Simple label (pas de d20 ni de survol), texte orange, séparé par un filet. */
+#forgotten-woods-party-hud .fw-camp-line {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    margin-top: 0.3em;
+    padding: 0.3em 0.2em 0.1em;
+    border-top: 1px solid #55555a;
+    color: #ff8c1a;
+    font-weight: bold;
+}
+#forgotten-woods-party-hud .fw-camp-line .fw-camp-icon {
+    width: 1.4em;
+    height: 1.4em;
+    flex: 0 0 auto;
+    border: none;
+}
