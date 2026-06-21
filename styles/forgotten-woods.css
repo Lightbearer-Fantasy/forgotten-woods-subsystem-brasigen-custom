@@ -29,7 +29,7 @@
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
     padding: 0.4em;
     min-width: 12em;
-    max-width: 16em;
+    max-width: 20em;
 }
 
 /* Panneau Groupe : à gauche du token (son bord droit à gauche du token). */
@@ -197,6 +197,7 @@
     border-top: 1px solid #55555a;
     color: #ff8c1a;
     font-weight: bold;
+    white-space: nowrap;
 }
 #forgotten-woods-party-hud .fw-camp-line .fw-camp-icon {
     width: 1.4em;

@@ -64,7 +64,15 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             // Un clic propre (sans drag) ré-évalue, même si aucun controlToken
             // n'a été émis : cliquer un Token Party déjà contrôlé (après une
             // sélection large) doit ouvrir le HUD, comme le Token HUD natif.
-            if (wasDrag) return;
+            // Une sélection large (drag) ne doit jamais OUVRIR le HUD, mais doit
+            // le FERMER s'il est ouvert — parité avec le MJ (dont le controlToken
+            // déclenche la fermeture) ; côté joueur, controlToken ne se déclenche
+            // pas, donc on planifie nous-mêmes l'évaluation (qui fermera sur _dragged).
+            if (wasDrag) {
+                this._hovered = null;
+                this._scheduleEvaluate();
+                return;
+            }
             // Gate sur l'outil actif, comme le Token HUD natif : un clic émis
             // alors qu'un outil Hex Controls (selectHex/editPoints…) est actif ne
             // doit jamais ouvrir le Party HUD. Sinon, en mode Sélection de hex,
@@ -214,6 +222,16 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     onCanvasPan() {
         this._positionToToken();
+    }
+
+    /**
+     * Re-render le HUD s'il est ouvert, sans changer le token ancré. Appelé quand
+     * une donnée affichée change hors interaction souris : compteurs de ressources
+     * (GPC) ou état des camps de la scène, pour mettre à jour grisages, ligne camp
+     * et compteur d'activités individuelles sans réouverture manuelle.
+     */
+    refreshIfOpen() {
+        if (this.rendered && this.token) this.render();
     }
 
     async close(options = {}) {

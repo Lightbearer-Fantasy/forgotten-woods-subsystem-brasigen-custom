@@ -48,3 +48,14 @@ Hooks.on("canvasReady", () => renderCampOverlay());
 Hooks.on("updateScene", (scene) => {
     if (scene?.id === canvas?.scene?.id) renderCampOverlay();
 });
+
+// --- Rafraîchissement du Party HUD sur changement de données affichées ---
+// Compteurs de ressources (GPC) : dégrise Cuisiner dès que les ingrédients suffisent.
+Hooks.on("updateSetting", (setting) => {
+    if (setting?.key === "global-progress-clocks.activeClocks") hud?.refreshIfOpen();
+});
+// Camps de la scène : met à jour grisages, ligne camp et compteur d'activités.
+Hooks.on("updateScene", (scene, changes) => {
+    if (scene?.id !== canvas?.scene?.id) return;
+    if (changes?.flags && (MODULE_ID in changes.flags)) hud?.refreshIfOpen();
+});

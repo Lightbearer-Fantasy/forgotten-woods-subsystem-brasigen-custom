@@ -1,7 +1,7 @@
 import { readCamps } from "../mapping/camp-store.js";
 
-/** Icône identique à celle de l'activité « Monter le camp » (data/activities.js). */
-const CAMP_ICON = "icons/environment/settlement/hut.webp";
+/** Symbole de tente du module (trait noir, intérieur blanc, fond transparent). */
+const CAMP_ICON = "modules/forgotten-woods-brasigen/assets/camp-tent.png";
 
 /** @type {PIXI.Container|null} */
 let overlay = null;
@@ -41,7 +41,7 @@ export async function renderCampOverlay() {
     if (canvas?.scene?.id !== scene.id) return;
 
     const container = new PIXI.Container();
-    const target = grid.size * 0.6;
+    const target = grid.size * 0.7;
     for (const key of keys) {
         const { x, y } = grid.getCenterPoint(parseKey(key));
         const sprite = new PIXI.Sprite(texture);
