@@ -1,4 +1,4 @@
-<div class="item action" data-activity-id="{{id}}">
+<div class="item action{{#if disabled}} fw-disabled{{/if}}" data-activity-id="{{id}}">
     <div class="image" data-action="send-to-chat">
         <img src="{{img}}" alt="{{label}}">
         <i class="fa-solid fa-message chat"></i>
@@ -7,6 +7,10 @@
         <a data-action="open-description">{{label}}</a>
     </div>
     <div class="controls">
+        {{#if disabled}}
+        <a class="fw-d20-disabled"><i class="fa-solid fa-dice-d20"></i></a>
+        {{else}}
         <a data-action="roll-d20"><i class="fa-solid fa-dice-d20"></i></a>
+        {{/if}}
     </div>
 </div>

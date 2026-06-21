@@ -1,6 +1,10 @@
 import { isHexScene, activePartyToken, tokenAtPoint, canvasClickOpensHud } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
 import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
+import { activityDisabled } from "../data/activity-gating.js";
+import { campAt } from "../mapping/camp-store.js";
+import { counterValue } from "../mapping/gpc-bridge.js";
+import { coordsToOffset } from "../utils/hex.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
 import { enrichActivityHtml } from "./activity-enrich.js";
 import { SkillCheckFlow } from "../mapping/skill-check-flow.js";
@@ -100,14 +104,28 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
     async _prepareContext() {
         const actor = this.token?.actor ?? null;
         const groupCount = groupActivityCount(slowestLandSpeed(actor));
+        const scene = canvas?.scene ?? null;
+        const offset = this.token ? coordsToOffset(this.token.center) : null;
+        const campPresent = scene && offset ? campAt(scene, offset) : false;
+        const character = game.user.character ?? null;
+        const ctx = {
+            hasCharacter: !!character,
+            craftingTrained: (character?.skills?.crafting?.rank ?? 0) >= 1,
+            medicineTrained: (character?.skills?.medicine?.rank ?? 0) >= 1,
+            campPresent,
+            ingredientCount: counterValue("ingredients"),
+            characterCount: characterCount(actor)
+        };
+        const withDisabled = (list) => list.map((a) => ({ ...a, disabled: activityDisabled(a, ctx) }));
+        const baseIndividual = characterCount(actor);
         return {
             groupTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.group"),
             individualTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.individual"),
             groupCount,
             groupColor: groupCountColor(groupCount),
-            individualCount: characterCount(actor),
-            groupActivities: GROUP_ACTIVITIES,
-            individualActivities: INDIVIDUAL_ACTIVITIES
+            individualCount: baseIndividual + (campPresent ? 2 : 0),
+            groupActivities: withDisabled(GROUP_ACTIVITIES),
+            individualActivities: withDisabled(INDIVIDUAL_ACTIVITIES)
         };
     }
 

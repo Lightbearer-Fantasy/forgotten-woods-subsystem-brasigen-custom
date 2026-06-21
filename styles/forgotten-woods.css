@@ -175,3 +175,13 @@
 .fw-activity-popup .window-content {
     padding: 0;
 }
+
+/* Activité grisée : prérequis non remplis (camp, proficiency, ingrédients). */
+#forgotten-woods-party-hud .item.action.fw-disabled .name a,
+#forgotten-woods-party-hud .item.action.fw-disabled .controls a {
+    opacity: 0.4;
+}
+#forgotten-woods-party-hud .item.action.fw-disabled .controls a.fw-d20-disabled {
+    cursor: default;
+    pointer-events: none;
+}
