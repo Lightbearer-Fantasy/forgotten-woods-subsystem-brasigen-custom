@@ -3,6 +3,13 @@ import { readCamps } from "../mapping/camp-store.js";
 /** Symbole de tente du module (trait noir, intérieur blanc, fond transparent). */
 const CAMP_ICON = "modules/forgotten-woods-brasigen/assets/camp-tent.png";
 
+/** Teinte rouge appliquée au symbole (intérieur blanc → rouge, trait noir conservé). */
+const CAMP_TINT = 0xe02020;
+/** Taille du symbole, en fraction de la taille de grille (petit, lisible au-dessus du token). */
+const CAMP_SCALE = 0.3;
+/** Décalage vertical vers le haut du Hex, en fraction de la taille de grille. */
+const CAMP_TOP_OFFSET = 0.36;
+
 /** @type {PIXI.Container|null} */
 let overlay = null;
 
@@ -21,8 +28,9 @@ function clearCampOverlay() {
 }
 
 /**
- * (Re)dessine une icône de camp au centre de chaque Hex portant un camp de la
- * scène active. Visible par tout le monde (lit le flag de scène). IO — validé en jeu.
+ * (Re)dessine une icône de camp (tente rouge) en haut de chaque Hex portant un
+ * camp de la scène active, assez petite pour rester visible au-dessus du Token
+ * Party. Visible par tout le monde (lit le flag de scène). IO — validé en jeu.
  * @returns {Promise<void>}
  */
 export async function renderCampOverlay() {
@@ -41,14 +49,16 @@ export async function renderCampOverlay() {
     if (canvas?.scene?.id !== scene.id) return;
 
     const container = new PIXI.Container();
-    const target = grid.size * 0.7;
+    const target = grid.size * CAMP_SCALE;
+    const topOffset = grid.size * CAMP_TOP_OFFSET;
     for (const key of keys) {
         const { x, y } = grid.getCenterPoint(parseKey(key));
         const sprite = new PIXI.Sprite(texture);
         sprite.anchor.set(0.5);
-        sprite.position.set(x, y);
+        sprite.position.set(x, y - topOffset);
         sprite.width = target;
         sprite.height = target;
+        sprite.tint = CAMP_TINT;
         container.addChild(sprite);
     }
     canvas.interface.addChild(container);

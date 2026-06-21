@@ -29,7 +29,9 @@
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
     padding: 0.4em;
     min-width: 12em;
-    max-width: 20em;
+    /* Large assez pour contenir la ligne « Un camp est monté sur ce Hex. » (nowrap)
+       sans débordement ; le panneau ne s'élargit que jusqu'à son contenu réel. */
+    max-width: 28em;
 }
 
 /* Panneau Groupe : à gauche du token (son bord droit à gauche du token). */
