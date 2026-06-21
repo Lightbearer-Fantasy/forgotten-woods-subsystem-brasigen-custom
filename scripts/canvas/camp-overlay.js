@@ -3,12 +3,12 @@ import { readCamps } from "../mapping/camp-store.js";
 /** Symbole de tente du module (trait noir, intérieur blanc, fond transparent). */
 const CAMP_ICON = "modules/forgotten-woods-brasigen/assets/camp-tent.png";
 
-/** Teinte rouge appliquée au symbole (intérieur blanc → rouge, trait noir conservé). */
-const CAMP_TINT = 0xe02020;
+/** Teinte appliquée au symbole : même orange que la ligne « camp présent » (#ff8c1a). */
+const CAMP_TINT = 0xff8c1a;
 /** Taille du symbole, en fraction de la taille de grille (petit, lisible au-dessus du token). */
 const CAMP_SCALE = 0.3;
 /** Décalage vertical vers le haut du Hex, en fraction de la taille de grille. */
-const CAMP_TOP_OFFSET = 0.47;
+const CAMP_TOP_OFFSET = 0.45;
 
 /** @type {PIXI.Container|null} */
 let overlay = null;
