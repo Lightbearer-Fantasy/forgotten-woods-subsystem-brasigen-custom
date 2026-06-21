@@ -192,14 +192,17 @@
    Simple label (pas de d20 ni de survol), texte orange, séparé par un filet. */
 #forgotten-woods-party-hud .fw-camp-line {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.3em;
     margin-top: 0.3em;
     padding: 0.3em 0.2em 0.1em;
     border-top: 1px solid #55555a;
     color: #ff8c1a;
     font-weight: bold;
-    white-space: nowrap;
+    /* La ligne revient à la ligne plutôt que de déborder quand la place à gauche
+       du token est limitée (cas joueur : token près du bord gauche de l'écran). */
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 #forgotten-woods-party-hud .fw-camp-line .fw-camp-icon {
     width: 1.4em;
