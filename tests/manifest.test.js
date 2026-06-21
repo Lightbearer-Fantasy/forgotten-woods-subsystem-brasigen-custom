@@ -17,4 +17,9 @@ describe("module.json manifest", () => {
         // map-lock.js : CHANNEL = "module.forgotten-woods-brasigen"
         expect(`module.${manifest.id}`).toBe("module.forgotten-woods-brasigen");
     });
+
+    it("déclare Global Progress Clocks en dépendance requise", () => {
+        const reqs = manifest.relationships?.requires ?? [];
+        expect(reqs.some((r) => r.id === "global-progress-clocks")).toBe(true);
+    });
 });
