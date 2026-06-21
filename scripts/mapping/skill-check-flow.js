@@ -2,6 +2,7 @@ import { coordsToOffset } from "../utils/hex.js";
 import { dcAt } from "./mapping-dc-store.js";
 import { rollMapSkill, resolveSkillStatistic } from "./skill-roll.js";
 import { actorSkillChoices } from "../data/activity-actions.js";
+import { ResourceFlow } from "./resource-flow.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.skillCheck.${key}`);
 
@@ -44,7 +45,10 @@ export class SkillCheckFlow {
             dc = dcAt(canvas.scene, offset);
             if (!dc) { ui.notifications.warn(t("noDC")); return; }
         }
-        await rollMapSkill(actor, skill, dc, []);
+        const outcome = await rollMapSkill(actor, skill, dc, []);
+        if (activity?.resource) {
+            ResourceFlow.report(activity, skillLabel(skill), outcome);
+        }
     }
 
     /** Prompt de choix de compétence. @param {{value,label}[]} choices */

@@ -92,7 +92,8 @@ export const INDIVIDUAL_ACTIVITIES = [
             criticalSuccess: "Vous trouvez 3 ingrédients frais.",
             success: "Vous trouvez 2 ingrédients frais."
         },
-        check: { skills: ["nature", "survival"], vsHexDC: true }
+        check: { skills: ["nature", "survival"], vsHexDC: true },
+        resource: "ingredients"
     },
     {
         id: "cook",
@@ -189,7 +190,8 @@ export const INDIVIDUAL_ACTIVITIES = [
             success: "Vous trouvez 2 matériaux de fabrication.",
             failure: "Vous revenez bredouille."
         },
-        check: { allSkills: true, vsHexDC: true }
+        check: { allSkills: true, vsHexDC: true },
+        resource: "materials"
     },
     {
         id: "repair",
