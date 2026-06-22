@@ -7,10 +7,15 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "pack": "node tools/release.mjs",
-        "release": "node tools/release.mjs --publish"
+        "release": "node tools/release.mjs --publish",
+        "pack:build": "node tools/build-packs.mjs"
     },
     "devDependencies": {
+        "@foundryvtt/foundryvtt-cli": "^1.0.4",
         "archiver": "^8.0.0",
         "vitest": "^2.1.0"
+    },
+    "allowScripts": {
+        "classic-level@1.4.1": true
     }
 }

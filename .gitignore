@@ -27,6 +27,12 @@
 !/vitest.config.js
 !/tests/
 
+# Source des compendiums du module (le binaire packs/effects/ reste ignoré, build au release)
+!/packs/
+/packs/*
+!/packs/_source/
+!/packs/_source/**
+
 # 4. Garde-fous : ces éléments restent ignorés en toutes circonstances
 node_modules/
 .mcp.json

@@ -22,6 +22,15 @@
     "styles": [
         "styles/forgotten-woods.css"
     ],
+    "packs": [
+        {
+            "name": "effects",
+            "label": "Forgotten Woods – Effets",
+            "path": "packs/effects",
+            "type": "Item",
+            "system": "pf2e"
+        }
+    ],
     "socket": true,
     "languages": [
         {
