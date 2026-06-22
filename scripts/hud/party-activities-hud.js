@@ -202,6 +202,16 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         this.element.style.left = `${center.x}px`;
         this.element.style.top = `${center.y}px`;
         this.element.style.setProperty("--fw-half", `${halfWidth}px`);
+        // Espace réel à gauche du token (jusqu'au bord gauche de l'écran), borne de
+        // largeur DYNAMIQUE du panneau Groupe : son bord droit est à
+        // `center.x - halfWidth - gap`, donc l'espace dispo = cette même valeur.
+        // On retranche une marge pour ne pas coller le bord de l'écran. C'est cette
+        // mesure géométrique (et non une `max-width` fixe) qui fait wrapper la ligne
+        // camp quand le token est près du bord gauche (cas joueur) au lieu de déborder.
+        const gap = 10; // doit suivre --fw-gap
+        const margin = 8;
+        const leftSpace = Math.max(0, center.x - halfWidth - gap - margin);
+        this.element.style.setProperty("--fw-left-space", `${leftSpace}px`);
     }
 
     _onRender(context, options) {

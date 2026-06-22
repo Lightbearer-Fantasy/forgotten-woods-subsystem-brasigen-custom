@@ -4,6 +4,9 @@
     --fw-gap: 10px;
     /* Demi-largeur écran du token, fixée par le JS au moment du positionnement. */
     --fw-half: 0px;
+    /* Espace réel à gauche du token (px), fixé par le JS. Borne dynamique de
+       largeur du panneau Groupe. Fallback large avant le 1er positionnement. */
+    --fw-left-space: 9999px;
     position: fixed;
     z-index: 70;
     /* L'élément racine est un point d'ancrage (centre-haut du token), taille nulle. */
@@ -34,9 +37,13 @@
     max-width: 28em;
 }
 
-/* Panneau Groupe : à gauche du token (son bord droit à gauche du token). */
+/* Panneau Groupe : à gauche du token (son bord droit à gauche du token).
+   Sa largeur est bornée par l'espace réel disponible à gauche (mesuré en JS),
+   sans jamais dépasser 28em. C'est cette borne dynamique qui fait wrapper la
+   ligne camp au lieu de déborder quand le token est près du bord gauche. */
 #forgotten-woods-party-hud .fw-panel[data-panel="group"] {
     right: calc(var(--fw-half) + var(--fw-gap));
+    max-width: min(28em, var(--fw-left-space));
 }
 
 /* Panneau Individuelles : à droite du token. */
