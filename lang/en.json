@@ -65,7 +65,10 @@
             },
             "scoutApplied": "Scout effect applied to {count} adventurer(s).",
             "scoutAlready": "The whole party is already scouting.",
-            "scoutMissing": "Scout effect not found (PF2E UUID)."
+            "scoutMissing": "Scout effect not found (PF2E UUID).",
+            "partyEffectApplied": "Effect applied to the party.",
+            "partyEffectAlready": "That effect is already active on the party.",
+            "effectMissing": "Effect not found (compendium UUID)."
         },
         "mapArea": {
             "agPrompt": {

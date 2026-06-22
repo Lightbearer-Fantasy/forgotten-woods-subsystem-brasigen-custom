@@ -2,7 +2,7 @@ import { setCamp } from "./camp-store.js";
 import { restHealAmount } from "./rest-heal.js";
 import { resourceAmountForOutcome } from "./resource-amount.js";
 import { addOrIncrement } from "./gpc-bridge.js";
-import { membersNeedingScout } from "./scout-targets.js";
+import { hasScout, membersNeedingScout } from "./scout-targets.js";
 
 const SCOUT_UUID = "Compendium.pf2e.other-effects.Item.EMqGwUi3VMhCjTlF";
 
@@ -42,6 +42,25 @@ export function requestResource(payload) {
 export function requestApplyScout(partyActorId) {
     if (isActiveGM()) return handleApplyScout({ partyActorId });
     game.socket.emit(CHANNEL, { type: "scoutRequest", partyActorId });
+}
+
+/** Applique un effet (par UUID) à l'acteur Party lui-même, sans doublon. MJ. */
+async function applyPartyEffect(partyActorId, effectUuid) {
+    const party = game.actors.get(partyActorId);
+    if (!party) return;
+    if (hasScout(party, effectUuid)) { ui.notifications.info(t("partyEffectAlready")); return; }
+    const src = (await fromUuid(effectUuid))?.toObject();
+    if (!src) { ui.notifications.warn(t("effectMissing")); return; }
+    src.flags = src.flags ?? {};
+    src.flags.core = { ...(src.flags.core ?? {}), sourceId: effectUuid };
+    await party.createEmbeddedDocuments("Item", [src]);
+    ui.notifications.info(t("partyEffectApplied"));
+}
+
+/** Joueur → MJ : appliquer un effet au Token Party. */
+export function requestApplyPartyEffect(partyActorId, effectUuid) {
+    if (isActiveGM()) return applyPartyEffect(partyActorId, effectUuid);
+    game.socket.emit(CHANNEL, { type: "partyEffectRequest", partyActorId, effectUuid });
 }
 
 async function handleMakeCamp({ sceneId, offsetKey }) {
@@ -112,5 +131,6 @@ export function registerGmActions() {
         else if (data?.type === "restRequest") handleRest(data);
         else if (data?.type === "resourceRequest") handleResource(data);
         else if (data?.type === "scoutRequest") handleApplyScout(data);
+        else if (data?.type === "partyEffectRequest") applyPartyEffect(data.partyActorId, data.effectUuid);
     });
 }

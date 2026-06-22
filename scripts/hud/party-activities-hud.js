@@ -13,7 +13,8 @@ import { TreatWoundsFlow } from "../mapping/treat-wounds-flow.js";
 import { MakeCampFlow } from "../mapping/make-camp-flow.js";
 import { RestFlow } from "../mapping/rest-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
-import { requestApplyScout } from "../mapping/gm-actions.js";
+import { requestApplyScout, requestApplyPartyEffect } from "../mapping/gm-actions.js";
+import { HUSTLE_EFFECT_UUID } from "../data/module-effects.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -339,6 +340,10 @@ async function onRollD20(event, target) {
     // (côté MJ via relais). Pas de jet.
     if (activity.id === "scout") {
         return requestApplyScout(this.token?.actor?.id);
+    }
+    // S'empresser : pose l'Effet: S'empresser (inerte) sur le Token Party.
+    if (activity.id === "hustle") {
+        return requestApplyPartyEffect(this.token?.actor?.id, HUSTLE_EFFECT_UUID);
     }
     // Activité sans jet : placeholder 1d20.
     const roll = await new Roll("1d20").evaluate();

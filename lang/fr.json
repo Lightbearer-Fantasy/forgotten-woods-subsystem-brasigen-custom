@@ -65,7 +65,10 @@
             },
             "scoutApplied": "Effet Reconnaissance appliqué à {count} aventurier(s).",
             "scoutAlready": "Tout le groupe est déjà en reconnaissance.",
-            "scoutMissing": "Effet Reconnaissance introuvable (UUID PF2E)."
+            "scoutMissing": "Effet Reconnaissance introuvable (UUID PF2E).",
+            "partyEffectApplied": "Effet appliqué au groupe.",
+            "partyEffectAlready": "Cet effet est déjà actif sur le groupe.",
+            "effectMissing": "Effet introuvable (UUID du compendium)."
         },
         "mapArea": {
             "agPrompt": {
