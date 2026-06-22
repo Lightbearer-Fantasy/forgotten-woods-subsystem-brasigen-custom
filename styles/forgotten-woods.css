@@ -217,3 +217,48 @@
     flex: 0 0 auto;
     border: none;
 }
+
+/* Chips d'effets de groupe (marqueurs flag), centrées sous le token. */
+#forgotten-woods-party-hud .fw-party-effects {
+    position: absolute;
+    top: calc(var(--fw-half) + var(--fw-gap));
+    left: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em;
+    justify-content: center;
+    pointer-events: all;
+    max-width: 16em;
+}
+#forgotten-woods-party-hud .fw-effect-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    background: rgba(22, 22, 26, 0.95);
+    border: 1px solid #6f6f6f;
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+    padding: 0.15em 0.5em 0.15em 0.2em;
+    white-space: nowrap;
+}
+#forgotten-woods-party-hud .fw-effect-icon {
+    width: 1.4em;
+    height: 1.4em;
+    flex: 0 0 auto;
+    border: 1px solid #767676;
+    border-radius: 50%;
+    object-fit: cover;
+}
+#forgotten-woods-party-hud .fw-effect-label {
+    font-size: 0.9em;
+}
+#forgotten-woods-party-hud .fw-effect-remove {
+    cursor: pointer;
+    color: var(--fw-highlight);
+    font-weight: bold;
+    padding: 0 0.15em;
+}
+#forgotten-woods-party-hud .fw-effect-remove:hover {
+    color: #fff;
+}

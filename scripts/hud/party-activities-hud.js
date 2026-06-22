@@ -13,10 +13,10 @@ import { TreatWoundsFlow } from "../mapping/treat-wounds-flow.js";
 import { MakeCampFlow } from "../mapping/make-camp-flow.js";
 import { RestFlow } from "../mapping/rest-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
-import { requestApplyScout, requestApplyPartyEffect } from "../mapping/gm-actions.js";
+import { requestApplyScout, requestSetPartyEffect, requestClearPartyEffect } from "../mapping/gm-actions.js";
 import { CookFlow } from "../mapping/cook-flow.js";
 import { CraftFlow } from "../mapping/craft-flow.js";
-import { HUSTLE_EFFECT_UUID } from "../data/module-effects.js";
+import { PARTY_EFFECTS } from "../data/party-effects.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -99,7 +99,8 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         actions: {
             "send-to-chat": onSendToChat,
             "roll-d20": onRollD20,
-            "open-description": onOpenDescription
+            "open-description": onOpenDescription,
+            "remove-party-effect": onRemovePartyEffect
         }
     };
 
@@ -131,6 +132,10 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         };
         const withDisabled = (list) => list.map((a) => ({ ...a, disabled: activityDisabled(a, ctx) }));
         const baseIndividual = characterCount(actor);
+        const activeEffectKeys = actor?.getFlag?.("forgotten-woods-brasigen", "partyEffects") ?? [];
+        const partyEffects = activeEffectKeys
+            .filter((k) => PARTY_EFFECTS[k])
+            .map((k) => ({ key: k, label: game.i18n.localize(PARTY_EFFECTS[k].label), img: PARTY_EFFECTS[k].img }));
         return {
             groupTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.group"),
             individualTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.individual"),
@@ -141,7 +146,9 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             individualActivities: withDisabled(INDIVIDUAL_ACTIVITIES),
             campPresent,
             campImg: GROUP_ACTIVITIES.find((a) => a.id === "make-camp")?.img ?? null,
-            campLabel: game.i18n.localize("FORGOTTEN_WOODS.panel.campPresent")
+            campLabel: game.i18n.localize("FORGOTTEN_WOODS.panel.campPresent"),
+            partyEffects,
+            removeEffectTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.removeEffect")
         };
     }
 
@@ -295,6 +302,13 @@ function onOpenDescription(event, target) {
     ActivityPopup.open(activity);
 }
 
+/** ✕ sur une chip d'effet de groupe : retire le marqueur (relais MJ). */
+function onRemovePartyEffect(event, target) {
+    const key = target.closest("[data-effect-key]")?.dataset.effectKey;
+    if (!key) return;
+    return requestClearPartyEffect(this.token?.actor?.id, key);
+}
+
 async function onRollD20(event, target) {
     const row = target.closest("[data-activity-id]");
     const activity = this.findActivity(row?.dataset.activityId);
@@ -344,9 +358,9 @@ async function onRollD20(event, target) {
     if (activity.id === "scout") {
         return requestApplyScout(this.token?.actor?.id);
     }
-    // S'empresser : pose l'Effet: S'empresser (inerte) sur le Token Party.
+    // S'empresser : pose le marqueur « hustle » (flag) sur l'acteur Party.
     if (activity.id === "hustle") {
-        return requestApplyPartyEffect(this.token?.actor?.id, HUSTLE_EFFECT_UUID);
+        return requestSetPartyEffect(this.token?.actor?.id, "hustle");
     }
     // Activité sans jet : placeholder 1d20.
     const roll = await new Roll("1d20").evaluate();

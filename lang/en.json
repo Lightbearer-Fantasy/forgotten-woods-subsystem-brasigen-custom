@@ -3,7 +3,12 @@
         "panel": {
             "group": "Activités de Groupe",
             "individual": "Activités Individuelles",
-            "campPresent": "Un camp est monté sur ce Hex."
+            "campPresent": "Un camp est monté sur ce Hex.",
+            "removeEffect": "Remove this effect from the party"
+        },
+        "partyEffect": {
+            "hustle": "Hustle",
+            "cook": "Cook"
         },
         "mapping": {
             "control": "Hex Controls",
@@ -68,7 +73,7 @@
             "scoutMissing": "Scout effect not found (PF2E UUID).",
             "partyEffectApplied": "Effect applied to the party.",
             "partyEffectAlready": "That effect is already active on the party.",
-            "effectMissing": "Effect not found (compendium UUID).",
+            "partyEffectRemoved": "Effect removed from the party.",
             "consumeTitle": "Resource consumption",
             "consumePrompt": "The party performed {activity} ({skill}), result {outcome}: remove {amount} {resource}?",
             "consumeEffectSuffix": " An effect will also be applied to the party."

@@ -2,9 +2,13 @@ import { setCamp } from "./camp-store.js";
 import { restHealAmount } from "./rest-heal.js";
 import { resourceAmountForOutcome } from "./resource-amount.js";
 import { addOrIncrement, RESOURCE_LABELS } from "./gpc-bridge.js";
-import { hasScout, membersNeedingScout } from "./scout-targets.js";
+import { membersNeedingScout } from "./scout-targets.js";
+import { PARTY_EFFECTS, withEffect, withoutEffect } from "../data/party-effects.js";
 
 const SCOUT_UUID = "Compendium.pf2e.other-effects.Item.EMqGwUi3VMhCjTlF";
+
+const MODULE_ID = "forgotten-woods-brasigen";
+const PARTY_EFFECTS_FLAG = "partyEffects";
 
 const CHANNEL = "module.forgotten-woods-brasigen";
 const t = (key, data) => game.i18n.format(`FORGOTTEN_WOODS.gm.${key}`, data ?? {});
@@ -44,23 +48,39 @@ export function requestApplyScout(partyActorId) {
     game.socket.emit(CHANNEL, { type: "scoutRequest", partyActorId });
 }
 
-/** Applique un effet (par UUID) à l'acteur Party lui-même, sans doublon. MJ. */
-async function applyPartyEffect(partyActorId, effectUuid) {
+/**
+ * Pose un marqueur d'effet de groupe (par clé) sur l'acteur Party, via un FLAG
+ * (PF2E refuse les items effect sur l'acteur party). Sans doublon. MJ.
+ */
+async function setPartyEffect(partyActorId, key) {
     const party = game.actors.get(partyActorId);
-    if (!party) return;
-    if (hasScout(party, effectUuid)) { ui.notifications.info(t("partyEffectAlready")); return; }
-    const src = (await fromUuid(effectUuid))?.toObject();
-    if (!src) { ui.notifications.warn(t("effectMissing")); return; }
-    src.flags = src.flags ?? {};
-    src.flags.core = { ...(src.flags.core ?? {}), sourceId: effectUuid };
-    await party.createEmbeddedDocuments("Item", [src]);
+    if (!party || !PARTY_EFFECTS[key]) return;
+    const current = party.getFlag(MODULE_ID, PARTY_EFFECTS_FLAG) ?? [];
+    if (current.includes(key)) { ui.notifications.info(t("partyEffectAlready")); return; }
+    await party.setFlag(MODULE_ID, PARTY_EFFECTS_FLAG, withEffect(current, key));
     ui.notifications.info(t("partyEffectApplied"));
 }
 
-/** Joueur → MJ : appliquer un effet au Token Party. */
-export function requestApplyPartyEffect(partyActorId, effectUuid) {
-    if (isActiveGM()) return applyPartyEffect(partyActorId, effectUuid);
-    game.socket.emit(CHANNEL, { type: "partyEffectRequest", partyActorId, effectUuid });
+/** Retire un marqueur d'effet de groupe (par clé) de l'acteur Party. MJ. */
+async function clearPartyEffect(partyActorId, key) {
+    const party = game.actors.get(partyActorId);
+    if (!party) return;
+    const current = party.getFlag(MODULE_ID, PARTY_EFFECTS_FLAG) ?? [];
+    if (!current.includes(key)) return;
+    await party.setFlag(MODULE_ID, PARTY_EFFECTS_FLAG, withoutEffect(current, key));
+    ui.notifications.info(t("partyEffectRemoved"));
+}
+
+/** Joueur → MJ : poser un marqueur d'effet sur le Party. */
+export function requestSetPartyEffect(partyActorId, key) {
+    if (isActiveGM()) return setPartyEffect(partyActorId, key);
+    game.socket.emit(CHANNEL, { type: "partyEffectSet", partyActorId, key });
+}
+
+/** Joueur → MJ : retirer un marqueur d'effet du Party. */
+export function requestClearPartyEffect(partyActorId, key) {
+    if (isActiveGM()) return clearPartyEffect(partyActorId, key);
+    game.socket.emit(CHANNEL, { type: "partyEffectClear", partyActorId, key });
 }
 
 /** Joueur → MJ : confirmer puis appliquer une consommation de ressource (+ effet éventuel). */
@@ -69,9 +89,9 @@ export function requestConsumeResource(payload) {
     game.socket.emit(CHANNEL, { type: "consumeRequest", ...payload });
 }
 
-async function handleConsumeResource({ resourceKey, activityLabel, skillLabel, outcome, amount, partyActorId, effectUuid }) {
+async function handleConsumeResource({ resourceKey, activityLabel, skillLabel, outcome, amount, partyActorId, effectKey }) {
     // Ni perte ni effet (ex. échec simple) : rien à confirmer.
-    if ((amount ?? 0) === 0 && !effectUuid) return;
+    if ((amount ?? 0) === 0 && !effectKey) return;
     const confirmed = await foundry.applications.api.DialogV2.confirm({
         window: { title: t("consumeTitle") },
         content: `<p>${t("consumePrompt", {
@@ -80,12 +100,12 @@ async function handleConsumeResource({ resourceKey, activityLabel, skillLabel, o
             outcome: game.i18n.localize(`FORGOTTEN_WOODS.gm.outcome.${outcome || "none"}`),
             amount: Math.abs(amount ?? 0),
             resource: RESOURCE_LABELS[resourceKey] ?? resourceKey
-        })}${effectUuid ? t("consumeEffectSuffix") : ""}</p>`,
+        })}${effectKey ? t("consumeEffectSuffix") : ""}</p>`,
         modal: true
     });
     if (!confirmed) return;
     if (amount) addOrIncrement(resourceKey, amount);
-    if (effectUuid && partyActorId) await applyPartyEffect(partyActorId, effectUuid);
+    if (effectKey && partyActorId) await setPartyEffect(partyActorId, effectKey);
 }
 
 async function handleMakeCamp({ sceneId, offsetKey }) {
@@ -156,7 +176,8 @@ export function registerGmActions() {
         else if (data?.type === "restRequest") handleRest(data);
         else if (data?.type === "resourceRequest") handleResource(data);
         else if (data?.type === "scoutRequest") handleApplyScout(data);
-        else if (data?.type === "partyEffectRequest") applyPartyEffect(data.partyActorId, data.effectUuid);
+        else if (data?.type === "partyEffectSet") setPartyEffect(data.partyActorId, data.key);
+        else if (data?.type === "partyEffectClear") clearPartyEffect(data.partyActorId, data.key);
         else if (data?.type === "consumeRequest") handleConsumeResource(data);
     });
 }

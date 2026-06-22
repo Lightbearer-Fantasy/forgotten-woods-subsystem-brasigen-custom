@@ -59,3 +59,8 @@ Hooks.on("updateScene", (scene, changes) => {
     if (scene?.id !== canvas?.scene?.id) return;
     if (changes?.flags && (MODULE_ID in changes.flags)) hud?.refreshIfOpen();
 });
+// Marqueurs d'effets de groupe (flag sur l'acteur Party) : met à jour les chips.
+Hooks.on("updateActor", (actor, changes) => {
+    if (hud?.token?.actor?.id !== actor?.id) return;
+    if (changes?.flags && (MODULE_ID in changes.flags)) hud?.refreshIfOpen();
+});

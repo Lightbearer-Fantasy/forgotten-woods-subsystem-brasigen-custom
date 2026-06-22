@@ -5,7 +5,6 @@ import { characterCount } from "../hud/party-counts.js";
 import { cookSkillChoices, cookIngredientCost } from "./cook-logic.js";
 import { skillLabel, promptSkill } from "./skill-prompt.js";
 import { requestConsumeResource } from "./gm-actions.js";
-import { COOK_EFFECT_UUID } from "../data/module-effects.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.skillCheck.${key}`);
 
@@ -33,7 +32,7 @@ export class CookFlow {
             outcome,
             amount,
             partyActorId: token.actor?.id,
-            effectUuid: applyEffect ? COOK_EFFECT_UUID : null
+            effectKey: applyEffect ? "cook" : null
         });
     }
 }
