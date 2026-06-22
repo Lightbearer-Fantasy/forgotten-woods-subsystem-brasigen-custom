@@ -62,7 +62,10 @@
                 "failure": "échec",
                 "criticalFailure": "échec critique",
                 "none": "indéterminé"
-            }
+            },
+            "scoutApplied": "Effet Reconnaissance appliqué à {count} aventurier(s).",
+            "scoutAlready": "Tout le groupe est déjà en reconnaissance.",
+            "scoutMissing": "Effet Reconnaissance introuvable (UUID PF2E)."
         },
         "mapArea": {
             "agPrompt": {

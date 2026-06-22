@@ -2,6 +2,9 @@ import { setCamp } from "./camp-store.js";
 import { restHealAmount } from "./rest-heal.js";
 import { resourceAmountForOutcome } from "./resource-amount.js";
 import { addOrIncrement } from "./gpc-bridge.js";
+import { membersNeedingScout } from "./scout-targets.js";
+
+const SCOUT_UUID = "Compendium.pf2e.other-effects.Item.EMqGwUi3VMhCjTlF";
 
 const CHANNEL = "module.forgotten-woods-brasigen";
 const t = (key, data) => game.i18n.format(`FORGOTTEN_WOODS.gm.${key}`, data ?? {});
@@ -33,6 +36,12 @@ export function requestRest(partyActorId) {
 export function requestResource(payload) {
     if (isActiveGM()) return handleResource(payload);
     game.socket.emit(CHANNEL, { type: "resourceRequest", ...payload });
+}
+
+/** Joueur → MJ : appliquer l'effet Reconnaissance à tous les PJ du Party. */
+export function requestApplyScout(partyActorId) {
+    if (isActiveGM()) return handleApplyScout({ partyActorId });
+    game.socket.emit(CHANNEL, { type: "scoutRequest", partyActorId });
 }
 
 async function handleMakeCamp({ sceneId, offsetKey }) {
@@ -73,6 +82,28 @@ async function handleResource({ resourceKey, activityLabel, skillLabel, outcome 
     addOrIncrement(resourceKey, resourceAmountForOutcome(outcome));
 }
 
+async function handleApplyScout({ partyActorId }) {
+    const party = game.actors.get(partyActorId);
+    const members = (party?.members ?? []).filter((m) => m?.type === "character");
+    const targets = membersNeedingScout(members, SCOUT_UUID);
+    if (targets.length === 0) {
+        ui.notifications.info(t("scoutAlready"));
+        return;
+    }
+    const src = (await fromUuid(SCOUT_UUID))?.toObject();
+    if (!src) {
+        ui.notifications.warn(t("scoutMissing"));
+        return;
+    }
+    // Marque la source pour rendre la dédup déterministe au prochain clic.
+    src.flags = src.flags ?? {};
+    src.flags.core = { ...(src.flags.core ?? {}), sourceId: SCOUT_UUID };
+    for (const actor of targets) {
+        await actor.createEmbeddedDocuments("Item", [src]);
+    }
+    ui.notifications.info(t("scoutApplied", { count: targets.length }));
+}
+
 /** Écouteur socket : seul le MJ actif traite les requêtes. À appeler au ready. */
 export function registerGmActions() {
     game.socket.on(CHANNEL, (data) => {
@@ -80,5 +111,6 @@ export function registerGmActions() {
         if (data?.type === "campRequest") handleMakeCamp(data);
         else if (data?.type === "restRequest") handleRest(data);
         else if (data?.type === "resourceRequest") handleResource(data);
+        else if (data?.type === "scoutRequest") handleApplyScout(data);
     });
 }

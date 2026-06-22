@@ -13,6 +13,7 @@ import { TreatWoundsFlow } from "../mapping/treat-wounds-flow.js";
 import { MakeCampFlow } from "../mapping/make-camp-flow.js";
 import { RestFlow } from "../mapping/rest-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
+import { requestApplyScout } from "../mapping/gm-actions.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -333,6 +334,11 @@ async function onRollD20(event, target) {
     // clique, pas par l'acteur du Token Party.
     if (activity.check?.skills || activity.check?.allSkills) {
         return SkillCheckFlow.start(this.token, actor, activity);
+    }
+    // Partir en reconnaissance : applique l'effet PF2E Scout à tous les PJ du Party
+    // (côté MJ via relais). Pas de jet.
+    if (activity.id === "scout") {
+        return requestApplyScout(this.token?.actor?.id);
     }
     // Activité sans jet : placeholder 1d20.
     const roll = await new Roll("1d20").evaluate();
