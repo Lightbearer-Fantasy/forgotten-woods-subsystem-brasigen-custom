@@ -70,6 +70,7 @@ export const GROUP_ACTIVITIES = [
         slug: null,
         img: "systems/pf2e/icons/spells/synchronise-steps.webp",
         traits: ["exploration", "move"],
+        noRoll: true,
         description:
             "Vous progressez en direction d'un Hex adjacent. Dans la forêt du Bois de l'Oubli, chaque Hex est traversé en une activité de Voyage. Traverser un Hex avec du terrain difficile, comme la montagne ou les marécages, nécessite 2 activités de Voyage, et au contraire sur une route bitumée ou un espace dégagé, vous pouvez traverser 2 Hex en 1 activité de Voyage. En arrivant sur un Hex, vous révélez si le Hex abrite une créature non caché ou un point d'intérêt non secret, et vous identifiez automatiquement les terrains des Hex adjacents. Vous révélez automatiquement une Ancre en arrivant sur sa Hex si avez une Boussole de Courant ou si vous entendez le Chant. De la même manière, la Boussole de Courant indique automatiquement si une Ancre se trouve sur une Hex adjacente."
     }
@@ -116,6 +117,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         slug: "defend",
         img: "systems/pf2e/icons/spells/inspire-defense.webp",
         traits: ["exploration"],
+        noRoll: true,
         description:
             "Vous commencez toute Rencontre avec le bouclier levé et votre réaction. La nuit au camp, si une embuscade nocturne survient, vous montez la garde, vous empêchant vous et vos compagnons d'être surpris."
     },
@@ -125,6 +127,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         slug: "avoid-notice",
         img: "icons/magic/perception/shadow-stealth-eyes-purple.webp",
         traits: ["exploration"],
+        noRoll: true,
         description:
             "Vous et les membres de votre groupe qui le souhaitent peuvent effectuer leur jet d'initiative avec leur Stealth."
     },

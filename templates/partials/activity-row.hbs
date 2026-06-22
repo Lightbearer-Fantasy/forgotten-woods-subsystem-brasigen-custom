@@ -7,10 +7,12 @@
         <a data-action="open-description">{{label}}</a>
     </div>
     <div class="controls">
+        {{#unless noRoll}}
         {{#if disabled}}
         <a class="fw-d20-disabled"><i class="fa-solid fa-dice-d20"></i></a>
         {{else}}
         <a data-action="roll-d20"><i class="fa-solid fa-dice-d20"></i></a>
         {{/if}}
+        {{/unless}}
     </div>
 </div>

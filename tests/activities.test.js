@@ -193,3 +193,20 @@ describe("contenu reformaté PF2E", () => {
         expect(byId("cook").description).toContain("@Check[cooking-lore]");
     });
 });
+
+describe("flag noRoll (v0.6 sp1)", () => {
+    const byId = (id) => ALL.find((a) => a.id === id);
+    it("Voyager, Défendre et Échapper aux regards portent noRoll:true", () => {
+        for (const id of ["travel", "defend", "avoid-notice"]) {
+            expect(byId(id).noRoll, id).toBe(true);
+        }
+    });
+    it("Partir en reconnaissance NE porte PAS noRoll (garde son d20)", () => {
+        expect(byId("scout").noRoll).toBeUndefined();
+    });
+    it("les activités à jet/ressource n'ont pas noRoll", () => {
+        for (const id of ["map-area", "search", "cook", "scout", "hunt-and-gather", "gather-materials"]) {
+            expect(byId(id).noRoll, id).toBeUndefined();
+        }
+    });
+});
