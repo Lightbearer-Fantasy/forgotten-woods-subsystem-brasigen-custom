@@ -227,4 +227,13 @@ describe("textes v0.6 sp2", () => {
         expect(d).toContain("batch de 2 consommables");
         expect(d).toContain("@Action[craft]{Fabriquer}");
     });
+    it("craft : outcomes listés sous le tiret (crit succ économise, succ fabrique, crit échec perd 1)", () => {
+        const o = byId("craft").outcomes;
+        expect(o.criticalSuccess).toBe("Vous fabriquez l'objet temporaire en économisant 1 matériau de fabrication.");
+        expect(o.success).toBe("Vous fabriquez l'objet temporaire.");
+        expect(o.criticalFailure).toBe("Votre tentative infructueuse a endommagé une partie des matériaux. Vous perdez 1 matériau de fabrication.");
+        expect(o.failure).toBeUndefined();
+        // la prose crit/échec a quitté la description (déplacée dans outcomes)
+        expect(byId("craft").description).not.toContain("Une réussite critique au Craft");
+    });
 });
