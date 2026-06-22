@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { HUSTLE_EFFECT_UUID, COOK_EFFECT_UUID } from "../scripts/data/module-effects.js";
 
 const read = (rel) => JSON.parse(readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8"));
 const manifest = read("../module.json");
@@ -33,5 +34,16 @@ describe("compendium d'effets — sources", () => {
         expect(cook.flags["forgotten-woods-brasigen"].effect).toBe("cook");
         expect(cook.system.duration.unit).toBe("unlimited");
         expect(cook.system.rules).toEqual([]);
+    });
+});
+
+describe("compendium d'effets — _key (sinon foundryvtt-cli ignore la source → pack vide)", () => {
+    it("chaque source a _key === !items!<_id>", () => {
+        expect(hustle._key).toBe(`!items!${hustle._id}`);
+        expect(cook._key).toBe(`!items!${cook._id}`);
+    });
+    it("les UUID de module-effects.js pointent sur les _id des sources", () => {
+        expect(HUSTLE_EFFECT_UUID.endsWith(`.Item.${hustle._id}`)).toBe(true);
+        expect(COOK_EFFECT_UUID.endsWith(`.Item.${cook._id}`)).toBe(true);
     });
 });

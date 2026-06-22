@@ -1,21 +1,24 @@
 {
-    "_id": "FWCOOKEFFECT0001",
+    "_id": "rQLQ2dUWGT6XoLDd",
+    "_key": "!items!rQLQ2dUWGT6XoLDd",
     "name": "Effet: Cuisiner",
     "type": "effect",
     "img": "icons/consumables/food/bowl-stew-tofu-potato-red.webp",
     "system": {
-        "description": { "value": "<p>Le groupe a cuisiné. Effet de préparation : sa mécanique sera appliquée au début du prochain Round (v0.7).</p>" },
+        "description": { "gm": "", "value": "" },
         "rules": [],
         "slug": "effet-cuisiner",
-        "traits": { "otherTags": [], "value": [], "rarity": "common" },
+        "traits": { "otherTags": [], "value": [] },
+        "publication": { "title": "Forgotten Woods", "authors": "Brasigen", "license": "OGL", "remaster": false },
         "level": { "value": 1 },
         "duration": { "value": -1, "unit": "unlimited", "expiry": null, "sustained": false },
         "start": { "value": 0, "initiative": null },
-        "tokenIcon": { "show": true },
+        "tokenIcon": { "show": false },
         "badge": null,
         "context": null,
         "unidentified": false,
-        "publication": { "title": "Forgotten Woods", "authors": "Brasigen", "license": "OGL", "remaster": false }
+        "fromSpell": false
     },
+    "effects": [],
     "flags": { "forgotten-woods-brasigen": { "effect": "cook" } }
 }

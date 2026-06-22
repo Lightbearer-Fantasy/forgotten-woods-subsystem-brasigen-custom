@@ -1,21 +1,24 @@
 {
-    "_id": "FWHUSTLEEFFECT01",
+    "_id": "LPuu6KCcWVNYB7K0",
+    "_key": "!items!LPuu6KCcWVNYB7K0",
     "name": "Effet: S'empresser",
     "type": "effect",
     "img": "systems/pf2e/icons/spells/longstrider.webp",
     "system": {
-        "description": { "value": "<p>Le groupe s'empresse. Effet de préparation : sa mécanique sera appliquée au début du prochain Round (v0.7).</p>" },
+        "description": { "gm": "", "value": "" },
         "rules": [],
-        "slug": "effet-s-empresser",
-        "traits": { "otherTags": [], "value": [], "rarity": "common" },
+        "slug": "effet-sempresser",
+        "traits": { "otherTags": [], "value": [] },
+        "publication": { "title": "Forgotten Woods", "authors": "Brasigen", "license": "OGL", "remaster": false },
         "level": { "value": 1 },
         "duration": { "value": -1, "unit": "unlimited", "expiry": null, "sustained": false },
         "start": { "value": 0, "initiative": null },
-        "tokenIcon": { "show": true },
+        "tokenIcon": { "show": false },
         "badge": null,
         "context": null,
         "unidentified": false,
-        "publication": { "title": "Forgotten Woods", "authors": "Brasigen", "license": "OGL", "remaster": false }
+        "fromSpell": false
     },
+    "effects": [],
     "flags": { "forgotten-woods-brasigen": { "effect": "hustle" } }
 }
