@@ -5,26 +5,54 @@
     "version": "0.5.9b",
     "url": "https://github.com/Lightbearer-Fantasy/forgotten-woods-subsystem-brasigen-custom",
     "manifest": "https://github.com/Lightbearer-Fantasy/forgotten-woods-subsystem-brasigen-custom/releases/latest/download/module.json",
-    "download": "https://github.com/Lightbearer-Fantasy/forgotten-woods-subsystem-brasigen-custom/releases/download/v0.5.9/module.zip",
+    "download": "https://github.com/Lightbearer-Fantasy/forgotten-woods-subsystem-brasigen-custom/releases/download/v0.5.9b/module.zip",
     "bugs": "https://github.com/Lightbearer-Fantasy/forgotten-woods-subsystem-brasigen-custom/issues",
     "compatibility": {
         "minimum": "14.364",
         "verified": "14.364"
     },
-    "authors": [{ "name": "Brasigen" }],
-    "esmodules": ["scripts/main.js"],
-    "styles": ["styles/forgotten-woods.css"],
+    "authors": [
+        {
+            "name": "Brasigen"
+        }
+    ],
+    "esmodules": [
+        "scripts/main.js"
+    ],
+    "styles": [
+        "styles/forgotten-woods.css"
+    ],
     "socket": true,
     "languages": [
-        { "lang": "en", "name": "English", "path": "lang/en.json" },
-        { "lang": "fr", "name": "Français", "path": "lang/fr.json" }
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "lang/en.json"
+        },
+        {
+            "lang": "fr",
+            "name": "Français",
+            "path": "lang/fr.json"
+        }
     ],
     "relationships": {
         "systems": [
-            { "id": "pf2e", "type": "system", "compatibility": { "minimum": "8.2.0" } }
+            {
+                "id": "pf2e",
+                "type": "system",
+                "compatibility": {
+                    "minimum": "8.2.0"
+                }
+            }
         ],
         "requires": [
-            { "id": "global-progress-clocks", "type": "module", "compatibility": { "minimum": "1.3.0" } }
+            {
+                "id": "global-progress-clocks",
+                "type": "module",
+                "compatibility": {
+                    "minimum": "1.3.0"
+                }
+            }
         ]
     }
 }
