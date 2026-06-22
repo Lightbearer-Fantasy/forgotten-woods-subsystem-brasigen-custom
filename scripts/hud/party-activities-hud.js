@@ -15,6 +15,7 @@ import { RestFlow } from "../mapping/rest-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
 import { requestApplyScout, requestApplyPartyEffect } from "../mapping/gm-actions.js";
 import { CookFlow } from "../mapping/cook-flow.js";
+import { CraftFlow } from "../mapping/craft-flow.js";
 import { HUSTLE_EFFECT_UUID } from "../data/module-effects.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -324,12 +325,9 @@ async function onRollD20(event, target) {
     if (activity.id === "repair") {
         return game.pf2e.actions.repair({ event, actors: [actor] });
     }
-    // Fabriquer : action Craft du système PF2E (déclenchée comme la liste de skills
-    // du Token HUD). game.pf2e.actions.craft attend { event, actors, item? } ;
-    // sans item présélectionné, l'action ouvre son propre dialogue.
+    // Fabriquer : flux dédié (zone de drop + pré-check matériaux + craft PF2E + consommation).
     if (activity.id === "craft") {
-        return game.pf2e.actions.craft?.({ event, actors: [actor] })
-            ?? ui.notifications.warn(game.i18n.localize("FORGOTTEN_WOODS.skillCheck.noRK"));
+        return CraftFlow.start(this.token, actor, event);
     }
     // Cuisiner : flux dédié (choix compétence filtré + consommation + effet).
     if (activity.id === "cook") {

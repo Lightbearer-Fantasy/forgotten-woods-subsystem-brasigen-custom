@@ -74,6 +74,15 @@
             "consumeEffectSuffix": " Un effet sera aussi appliqué au groupe."
         },
         "cook": { "label": "Cuisiner" },
+        "craft": {
+            "label": "Fabriquer",
+            "pickTitle": "Fabriquer un objet",
+            "pickDrop": "Glissez ici l'objet (ou la recette) à fabriquer.",
+            "pickConfirm": "Fabriquer",
+            "pickCancel": "Annuler",
+            "notPhysical": "Cet élément n'est pas un objet fabricable.",
+            "noMaterials": "Vous n'avez pas suffisamment de matériaux de fabrication."
+        },
         "mapArea": {
             "agPrompt": {
                 "title": "Cartographier la zone",

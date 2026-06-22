@@ -74,6 +74,15 @@
             "consumeEffectSuffix": " An effect will also be applied to the party."
         },
         "cook": { "label": "Cook" },
+        "craft": {
+            "label": "Craft",
+            "pickTitle": "Craft an item",
+            "pickDrop": "Drop the item (or formula) to craft here.",
+            "pickConfirm": "Craft",
+            "pickCancel": "Cancel",
+            "notPhysical": "This is not a craftable item.",
+            "noMaterials": "You don't have enough crafting materials."
+        },
         "mapArea": {
             "agPrompt": {
                 "title": "Cartographier la zone",
