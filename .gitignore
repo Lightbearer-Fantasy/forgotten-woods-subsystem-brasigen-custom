@@ -33,6 +33,14 @@
 !/packs/_source/
 !/packs/_source/**
 
+# Pipeline de build/release versionné (UNIQUEMENT ces 2 scripts ; le reste de
+# tools/ — dont mcp-image-server/ — reste ignoré). Aucun secret en dur : le token
+# GitHub vient de l'env (GITHUB_TOKEN/GH_TOKEN) ou du credential git.
+!/tools/
+/tools/*
+!/tools/build-packs.mjs
+!/tools/release.mjs
+
 # 4. Garde-fous : ces éléments restent ignorés en toutes circonstances
 node_modules/
 .mcp.json
