@@ -68,8 +68,12 @@
             "scoutMissing": "Scout effect not found (PF2E UUID).",
             "partyEffectApplied": "Effect applied to the party.",
             "partyEffectAlready": "That effect is already active on the party.",
-            "effectMissing": "Effect not found (compendium UUID)."
+            "effectMissing": "Effect not found (compendium UUID).",
+            "consumeTitle": "Resource consumption",
+            "consumePrompt": "The party performed {activity} ({skill}), result {outcome}: remove {amount} {resource}?",
+            "consumeEffectSuffix": " An effect will also be applied to the party."
         },
+        "cook": { "label": "Cook" },
         "mapArea": {
             "agPrompt": {
                 "title": "Cartographier la zone",

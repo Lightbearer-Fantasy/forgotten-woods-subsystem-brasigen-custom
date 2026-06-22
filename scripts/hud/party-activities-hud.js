@@ -14,6 +14,7 @@ import { MakeCampFlow } from "../mapping/make-camp-flow.js";
 import { RestFlow } from "../mapping/rest-flow.js";
 import { ActivityPopup } from "./activity-popup.js";
 import { requestApplyScout, requestApplyPartyEffect } from "../mapping/gm-actions.js";
+import { CookFlow } from "../mapping/cook-flow.js";
 import { HUSTLE_EFFECT_UUID } from "../data/module-effects.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -329,6 +330,10 @@ async function onRollD20(event, target) {
     if (activity.id === "craft") {
         return game.pf2e.actions.craft?.({ event, actors: [actor] })
             ?? ui.notifications.warn(game.i18n.localize("FORGOTTEN_WOODS.skillCheck.noRK"));
+    }
+    // Cuisiner : flux dédié (choix compétence filtré + consommation + effet).
+    if (activity.id === "cook") {
+        return CookFlow.start(this.token, actor);
     }
     // Activité « à check » : jet de compétence (vs Hex DC si zone, sinon simple),
     // sans application de PC. Le jet est porté par le personnage du joueur qui

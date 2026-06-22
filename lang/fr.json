@@ -68,8 +68,12 @@
             "scoutMissing": "Effet Reconnaissance introuvable (UUID PF2E).",
             "partyEffectApplied": "Effet appliqué au groupe.",
             "partyEffectAlready": "Cet effet est déjà actif sur le groupe.",
-            "effectMissing": "Effet introuvable (UUID du compendium)."
+            "effectMissing": "Effet introuvable (UUID du compendium).",
+            "consumeTitle": "Consommation de ressources",
+            "consumePrompt": "Le groupe a {activity} ({skill}), résultat {outcome} : retirer {amount} {resource} ?",
+            "consumeEffectSuffix": " Un effet sera aussi appliqué au groupe."
         },
+        "cook": { "label": "Cuisiner" },
         "mapArea": {
             "agPrompt": {
                 "title": "Cartographier la zone",

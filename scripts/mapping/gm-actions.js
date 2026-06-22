@@ -1,7 +1,7 @@
 import { setCamp } from "./camp-store.js";
 import { restHealAmount } from "./rest-heal.js";
 import { resourceAmountForOutcome } from "./resource-amount.js";
-import { addOrIncrement } from "./gpc-bridge.js";
+import { addOrIncrement, RESOURCE_LABELS } from "./gpc-bridge.js";
 import { hasScout, membersNeedingScout } from "./scout-targets.js";
 
 const SCOUT_UUID = "Compendium.pf2e.other-effects.Item.EMqGwUi3VMhCjTlF";
@@ -61,6 +61,31 @@ async function applyPartyEffect(partyActorId, effectUuid) {
 export function requestApplyPartyEffect(partyActorId, effectUuid) {
     if (isActiveGM()) return applyPartyEffect(partyActorId, effectUuid);
     game.socket.emit(CHANNEL, { type: "partyEffectRequest", partyActorId, effectUuid });
+}
+
+/** Joueur → MJ : confirmer puis appliquer une consommation de ressource (+ effet éventuel). */
+export function requestConsumeResource(payload) {
+    if (isActiveGM()) return handleConsumeResource(payload);
+    game.socket.emit(CHANNEL, { type: "consumeRequest", ...payload });
+}
+
+async function handleConsumeResource({ resourceKey, activityLabel, skillLabel, outcome, amount, partyActorId, effectUuid }) {
+    // Ni perte ni effet (ex. échec simple) : rien à confirmer.
+    if ((amount ?? 0) === 0 && !effectUuid) return;
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+        window: { title: t("consumeTitle") },
+        content: `<p>${t("consumePrompt", {
+            activity: activityLabel,
+            skill: skillLabel ?? "",
+            outcome: game.i18n.localize(`FORGOTTEN_WOODS.gm.outcome.${outcome || "none"}`),
+            amount: Math.abs(amount ?? 0),
+            resource: RESOURCE_LABELS[resourceKey] ?? resourceKey
+        })}${effectUuid ? t("consumeEffectSuffix") : ""}</p>`,
+        modal: true
+    });
+    if (!confirmed) return;
+    if (amount) addOrIncrement(resourceKey, amount);
+    if (effectUuid && partyActorId) await applyPartyEffect(partyActorId, effectUuid);
 }
 
 async function handleMakeCamp({ sceneId, offsetKey }) {
@@ -132,5 +157,6 @@ export function registerGmActions() {
         else if (data?.type === "resourceRequest") handleResource(data);
         else if (data?.type === "scoutRequest") handleApplyScout(data);
         else if (data?.type === "partyEffectRequest") applyPartyEffect(data.partyActorId, data.effectUuid);
+        else if (data?.type === "consumeRequest") handleConsumeResource(data);
     });
 }
