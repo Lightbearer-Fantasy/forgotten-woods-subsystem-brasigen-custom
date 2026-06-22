@@ -132,7 +132,11 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         };
         const withDisabled = (list) => list.map((a) => ({ ...a, disabled: activityDisabled(a, ctx) }));
         const baseIndividual = characterCount(actor);
-        const activeEffectKeys = actor?.getFlag?.("forgotten-woods-brasigen", "partyEffects") ?? [];
+        // Chips d'effets de groupe : VISIBLES DU MJ UNIQUEMENT (états transitoires
+        // pour la mécanique v0.7, pas destinés aux Joueurs).
+        const activeEffectKeys = game.user.isGM
+            ? (actor?.getFlag?.("forgotten-woods-brasigen", "partyEffects") ?? [])
+            : [];
         const partyEffects = activeEffectKeys
             .filter((k) => PARTY_EFFECTS[k])
             .map((k) => ({ key: k, label: game.i18n.localize(PARTY_EFFECTS[k].label), img: PARTY_EFFECTS[k].img }));
