@@ -81,7 +81,8 @@
             "pickConfirm": "Fabriquer",
             "pickCancel": "Annuler",
             "notPhysical": "Cet élément n'est pas un objet fabricable.",
-            "noMaterials": "Vous n'avez pas suffisamment de matériaux de fabrication."
+            "noMaterials": "Vous n'avez pas suffisamment de matériaux de fabrication.",
+            "tooHighLevel": "Cet objet est d'un niveau supérieur au vôtre : vous ne pouvez fabriquer que des objets de votre niveau ou inférieur."
         },
         "mapArea": {
             "agPrompt": {

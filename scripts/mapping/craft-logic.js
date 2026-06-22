@@ -24,3 +24,14 @@ export function craftMaterialConsumption(outcome, baseCost) {
         default: return 0;
     }
 }
+
+/**
+ * Vrai si l'objet dépasse le niveau du personnage (interdit à Fabriquer) :
+ * on ne peut fabriquer qu'un objet de son niveau ou inférieur.
+ * @param {number} itemLevel
+ * @param {number} charLevel
+ * @returns {boolean}
+ */
+export function craftExceedsLevel(itemLevel, charLevel) {
+    return Number(itemLevel) > Number(charLevel);
+}

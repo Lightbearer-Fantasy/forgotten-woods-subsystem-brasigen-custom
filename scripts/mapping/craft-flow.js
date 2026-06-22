@@ -1,5 +1,5 @@
 import { counterValue } from "./gpc-bridge.js";
-import { craftMaterialCost, craftMaterialConsumption } from "./craft-logic.js";
+import { craftMaterialCost, craftMaterialConsumption, craftExceedsLevel } from "./craft-logic.js";
 import { requestConsumeResource } from "./gm-actions.js";
 import { CraftItemPicker } from "./craft-item-picker.js";
 
@@ -13,6 +13,10 @@ export class CraftFlow {
         const item = await CraftItemPicker.pick();
         if (!item) return;
         const charLevel = actor.level ?? actor.system?.details?.level?.value;
+        if (craftExceedsLevel(item.level, charLevel)) {
+            ui.notifications.warn(t("tooHighLevel"));
+            return;
+        }
         const baseCost = craftMaterialCost(item.level, charLevel);
         if (counterValue("materials") < baseCost) {
             ui.notifications.warn(t("noMaterials"));

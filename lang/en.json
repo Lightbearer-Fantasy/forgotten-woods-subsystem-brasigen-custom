@@ -81,7 +81,8 @@
             "pickConfirm": "Craft",
             "pickCancel": "Cancel",
             "notPhysical": "This is not a craftable item.",
-            "noMaterials": "You don't have enough crafting materials."
+            "noMaterials": "You don't have enough crafting materials.",
+            "tooHighLevel": "This item's level is higher than yours: you can only craft items of your level or lower."
         },
         "mapArea": {
             "agPrompt": {

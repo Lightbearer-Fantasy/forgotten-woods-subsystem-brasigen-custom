@@ -1,6 +1,6 @@
 // tests/craft-logic.test.js
 import { describe, it, expect } from "vitest";
-import { craftMaterialCost, craftMaterialConsumption } from "../scripts/mapping/craft-logic.js";
+import { craftMaterialCost, craftMaterialConsumption, craftExceedsLevel } from "../scripts/mapping/craft-logic.js";
 
 describe("craftMaterialCost", () => {
     it("objet de niveau −2 ou moins → 3", () => {
@@ -29,5 +29,17 @@ describe("craftMaterialConsumption", () => {
     });
     it("échec critique : −1", () => {
         expect(craftMaterialConsumption("criticalFailure", 5)).toBe(-1);
+    });
+});
+
+describe("craftExceedsLevel", () => {
+    it("objet au-dessus du niveau du PJ → interdit", () => {
+        expect(craftExceedsLevel(22, 1)).toBe(true);
+        expect(craftExceedsLevel(2, 1)).toBe(true);
+    });
+    it("objet du niveau du PJ ou inférieur → autorisé", () => {
+        expect(craftExceedsLevel(1, 1)).toBe(false);
+        expect(craftExceedsLevel(0, 1)).toBe(false);
+        expect(craftExceedsLevel(3, 5)).toBe(false);
     });
 });
