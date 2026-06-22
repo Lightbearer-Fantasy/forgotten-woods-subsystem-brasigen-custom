@@ -210,3 +210,21 @@ describe("flag noRoll (v0.6 sp1)", () => {
         }
     });
 });
+
+describe("textes v0.6 sp2", () => {
+    const byId = (id) => ALL.find((a) => a.id === id);
+    it("cook : nouveaux outcomes (crit succ économise, succ +1 lendemain, crit échec perd 1)", () => {
+        const o = byId("cook").outcomes;
+        expect(o.criticalSuccess).toContain("économisez un ingrédient frais");
+        expect(o.success).toContain("bonus sans type de +1");
+        expect(o.criticalFailure).toContain("Vous perdez 1 ingrédient frais");
+        expect(o.failure).toBeUndefined();
+    });
+    it("craft : texte mis à jour (3 et 5 matériaux, batch de 2, marqueur @Action[craft])", () => {
+        const d = byId("craft").description;
+        expect(d).toContain("3 matériaux de fabrication");
+        expect(d).toContain("5 matériaux de fabrication");
+        expect(d).toContain("batch de 2 consommables");
+        expect(d).toContain("@Action[craft]{Fabriquer}");
+    });
+});

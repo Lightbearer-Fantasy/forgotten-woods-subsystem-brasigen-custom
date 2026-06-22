@@ -106,8 +106,9 @@ export const INDIVIDUAL_ACTIVITIES = [
         description:
             "Nécessite un camp. Vous cuisinez des ingrédients frais. Effectuez un @Check[crafting] ou @Check[cooking-lore] contre le DC de la zone (les ingrédients disponibles dépendent de la zone et influent sur la difficulté de la recette). En cas d'échec, vous économisez les ingrédients frais.",
         outcomes: {
-            criticalSuccess: "Comme la Réussite, et vous gagnez un bonus sans type de +1 au prochain jet d'attaque, de sauvegarde ou de compétence que vous effectuez le lendemain.",
-            success: "Vous gagnez une Activité de Groupe supplémentaire le lendemain."
+            criticalSuccess: "Comme la Réussite, et vous économisez un ingrédient frais.",
+            success: "Vous gagnez une Activité de Groupe supplémentaire le lendemain, et le prochain jet d'attaque, sauvegarde ou de compétence que vous et vos compagnons effectuez le lendemain bénéficie d'un bonus sans type de +1.",
+            criticalFailure: "Votre tentative infructueuse a endommagé une partie des ingrédients. Vous perdez 1 ingrédient frais."
         },
         check: { skills: ["crafting", "cooking-lore"], vsHexDC: true }
     },
@@ -156,7 +157,7 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: "icons/tools/hand/hammer-cobbler-steel.webp",
         traits: ["exploration", "manipulate"],
         description:
-            "Nécessite un camp. Vous utilisez des matériaux récupérés au cours de votre exploration pour @Action[craft]{Fabriquer} un objet dont vous avez la recette de votre niveau ou moins."
+            "Nécessite un camp. Vous utilisez des matériaux récupérés au cours de votre exploration pour @Action[craft]{Fabriquer} un objet temporaire dont vous avez la recette. Comme d'habitude vous devez avoir le feat correspondant pour créer des objets spécifiques (Alchemical Crafting pour des objets alchimiques par exemple) et les matériaux trouvables dans la zone doivent permettre la réalisation de votre objet. Si l'objet est de votre niveau-2 ou moins, la fabrication nécessite 3 matériaux de fabrication. Si l'objet est de votre niveau-1 ou de votre niveau, sa fabrication nécessite 5 matériaux de fabrication. Dans le cas d'un consommable, vous pouvez fabriquer un batch de 2 consommables d'un coup avec les matériaux indiqués. Une réussite critique au Craft permet d'économiser 1 matériau de fabrication, et un échec critique consomme 1 matériau de fabrication quoi qu'il arrive. Les objets temporaires créées avec cette activité expirent automatiquement à la fin de votre exploration du Bois de l'Oubli."
     },
     {
         id: "search",
