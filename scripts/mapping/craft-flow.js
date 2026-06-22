@@ -12,7 +12,8 @@ export class CraftFlow {
         if (!token || !actor) return;
         const item = await CraftItemPicker.pick();
         if (!item) return;
-        const baseCost = craftMaterialCost(item.level, actor.level);
+        const charLevel = actor.level ?? actor.system?.details?.level?.value;
+        const baseCost = craftMaterialCost(item.level, charLevel);
         if (counterValue("materials") < baseCost) {
             ui.notifications.warn(t("noMaterials"));
             return;
