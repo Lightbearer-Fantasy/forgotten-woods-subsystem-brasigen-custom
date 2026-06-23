@@ -6,6 +6,7 @@ import { membersNeedingScout } from "./scout-targets.js";
 import { PARTY_EFFECTS, withEffect, withoutEffect } from "../data/party-effects.js";
 import { searchPointsDeltas } from "./search-targets.js";
 import { applyDeltas } from "./mapping-points-store.js";
+import { temporaryItemName } from "./craft-logic.js";
 
 const SCOUT_UUID = "Compendium.pf2e.other-effects.Item.EMqGwUi3VMhCjTlF";
 
@@ -89,6 +90,51 @@ export function requestClearPartyEffect(partyActorId, key) {
 export function requestConsumeResource(payload) {
     if (isActiveGM()) return handleConsumeResource(payload);
     game.socket.emit(CHANNEL, { type: "consumeRequest", ...payload });
+}
+
+/** Garde mémoire (côté MJ) contre les double-emits rapides sur un même message. */
+const receivingTemp = new Set();
+
+/** Joueur → MJ : réceptionner l'objet temporaire d'une carte de craft (first-click-wins). */
+export function requestReceiveTemp(payload) {
+    if (isActiveGM()) return handleReceiveTemp(payload);
+    game.socket.emit(CHANNEL, { type: "receiveTempRequest", ...payload });
+}
+
+/**
+ * MJ : crée l'objet « (temporaire) » UNE seule fois pour ce message, puis pose le flag
+ * persistant `received` (re-rend le bouton désactivé sur tous les clients).
+ * Idempotent : flag persistant + garde mémoire contre les emits concurrents.
+ */
+async function handleReceiveTemp({ messageId, actorId, itemUuid, quantity }) {
+    const message = messageId ? game.messages.get(messageId) : null;
+    if (message?.getFlag(MODULE_ID, "received")) return;          // déjà reçu (persistant)
+    if (messageId && receivingTemp.has(messageId)) return;         // emit concurrent en cours
+    if (messageId) receivingTemp.add(messageId);
+    try {
+        const actor = game.actors.get(actorId);
+        if (!actor) return;
+        const source = (await fromUuid(itemUuid))?.toObject();
+        if (!source) {
+            ui.notifications.warn(game.i18n.localize("PF2E.Actions.Craft.Warning.CantAddItem"));
+            return;
+        }
+        source.name = temporaryItemName(source.name);
+        source.system.quantity = quantity;
+        source.system.temporary = true;
+        if (!await actor.addToInventory(source)) {
+            ui.notifications.warn(game.i18n.localize("PF2E.Actions.Craft.Warning.CantAddItem"));
+            return;
+        }
+        await message?.setFlag(MODULE_ID, "received", true);
+        await ChatMessage.create({
+            author: game.user.id,
+            content: `${actor.name} reçoit ${quantity} × ${source.name}.`,
+            speaker: { alias: actor.name }
+        });
+    } finally {
+        if (messageId) receivingTemp.delete(messageId);
+    }
 }
 
 /** Joueur → MJ : appliquer un delta de PC sur un seul Hex (Fouiller). */
@@ -196,5 +242,6 @@ export function registerGmActions() {
         else if (data?.type === "partyEffectClear") clearPartyEffect(data.partyActorId, data.key);
         else if (data?.type === "consumeRequest") handleConsumeResource(data);
         else if (data?.type === "searchPoints") handleApplySearchPoints(data);
+        else if (data?.type === "receiveTempRequest") handleReceiveTemp(data);
     });
 }

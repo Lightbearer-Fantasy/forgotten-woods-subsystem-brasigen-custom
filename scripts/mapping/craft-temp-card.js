@@ -1,4 +1,5 @@
 import { temporaryItemName } from "./craft-logic.js";
+import { requestReceiveTemp } from "./gm-actions.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -50,27 +51,10 @@ function onPreCreateCraftMessage(message) {
     }
 }
 
-/** Crée l'objet renommé « (temporaire) » et désactive le bouton. */
-async function onReceiveTemp({ itemUuid, quantity, actor, button }) {
+/** Émet la requête de réception au MJ arbitre (first-click-wins). MJ + propriétaire uniquement. */
+function onReceiveTemp({ messageId, itemUuid, quantity, actor }) {
     if (!actor?.isOwner) return;
-    const source = (await fromUuid(itemUuid))?.toObject();
-    if (!source) {
-        ui.notifications.warn(game.i18n.localize("PF2E.Actions.Craft.Warning.CantAddItem"));
-        return;
-    }
-    source.name = temporaryItemName(source.name);
-    source.system.quantity = quantity;
-    source.system.temporary = true;
-    if (!await actor.addToInventory(source)) {
-        ui.notifications.warn(game.i18n.localize("PF2E.Actions.Craft.Warning.CantAddItem"));
-        return;
-    }
-    if (button) button.disabled = true;
-    await ChatMessage.create({
-        author: game.user.id,
-        content: `${actor.name} reçoit ${quantity} × ${source.name}.`,
-        speaker: { alias: actor.name }
-    });
+    requestReceiveTemp({ messageId, actorId: actor.id, itemUuid, quantity });
 }
 
 /** renderChatMessageHTML : réécrit notre carte de craft (texte + bouton + gating). */
@@ -91,11 +75,13 @@ function onRenderCraftCard(message, html) {
         const itemUuid = card.dataset.itemUuid;
         const quantity = Number(card.dataset.craftingQuantity) || 1;
         const actor = resolveMessageActor(message);
+        const received = !!message.getFlag(MODULE_ID, "received");
         const btn = document.createElement("button");
         btn.type = "button";
         btn.dataset.action = "fw-receive-temp";
         btn.textContent = game.i18n.localize("PF2E.Actions.Craft.Details.ReceiveItem");
-        btn.addEventListener("click", () => onReceiveTemp({ itemUuid, quantity, actor, button: btn }));
+        btn.disabled = received;
+        btn.addEventListener("click", () => onReceiveTemp({ messageId: message.id, itemUuid, quantity, actor }));
         btnArea.replaceChildren(btn);
     } else {
         // Échec critique : free:true afficherait « Recevoir » → on retire tout.
