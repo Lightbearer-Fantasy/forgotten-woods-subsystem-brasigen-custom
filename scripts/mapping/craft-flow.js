@@ -2,6 +2,7 @@ import { counterValue } from "./gpc-bridge.js";
 import { craftMaterialCost, craftMaterialConsumption, craftExceedsLevel } from "./craft-logic.js";
 import { requestConsumeResource } from "./gm-actions.js";
 import { CraftItemPicker } from "./craft-item-picker.js";
+import { markTemporaryCraft } from "./craft-temp-card.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.craft.${key}`);
 
@@ -23,8 +24,9 @@ export class CraftFlow {
             return;
         }
         const quantity = item.isOfType("consumable") ? 2 : 1;
+        markTemporaryCraft(actor.id);
         await game.pf2e.actions.craft({
-            item, quantity, actors: [actor], event,
+            item, quantity, actors: [actor], event, free: true,
             callback: (result) => {
                 const amount = craftMaterialConsumption(result?.outcome, baseCost);
                 requestConsumeResource({

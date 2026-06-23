@@ -5,6 +5,7 @@ import { registerSocket } from "./mapping/map-lock.js";
 import { registerResourceClocks } from "./mapping/gpc-bridge.js";
 import { registerGmActions } from "./mapping/gm-actions.js";
 import { renderCampOverlay } from "./canvas/camp-overlay.js";
+import { registerCraftTempHooks } from "./mapping/craft-temp-card.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -35,7 +36,7 @@ Hooks.on("canvasReady", () => {
     hud?.close();
 });
 
-Hooks.once("ready", () => { registerSocket(); registerGmActions(); });
+Hooks.once("ready", () => { registerSocket(); registerGmActions(); registerCraftTempHooks(); });
 
 // --- Système de Points de Cartographie (MJ) ---
 Hooks.on("getSceneControlButtons", (controls) => mapping?.getControls(controls));
