@@ -50,11 +50,17 @@ export function activePartyToken({ controlled = [], hovered = null } = {}) {
  * `editPoints`, …) — ou tout autre contrôle — le HUD ne doit pas s'ouvrir,
  * exactement comme le Token HUD du Token Actor ne s'ouvre pas dans ce mode.
  *
+ * Côté JOUEUR, l'outil actif reste `"select"` pendant la sélection de Hex de
+ * Fouiller (le joueur n'a pas accès aux outils Hex Controls, réservés au MJ).
+ * On bloque donc aussi l'ouverture quand une sélection de Hex est en cours, pour
+ * que cliquer le Hex SOUS le Token Party ne rouvre pas le Party HUD.
+ *
  * @param {string|null|undefined} activeTool  cf. `game.activeTool`
+ * @param {boolean} [searchSelecting=false]  vrai si une sélection de Hex Fouiller est en cours
  * @returns {boolean}
  */
-export function canvasClickOpensHud(activeTool) {
-    return activeTool === "select";
+export function canvasClickOpensHud(activeTool, searchSelecting = false) {
+    return activeTool === "select" && !searchSelecting;
 }
 
 /**

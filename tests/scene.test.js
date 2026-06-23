@@ -93,6 +93,11 @@ describe("canvasClickOpensHud", () => {
         expect(canvasClickOpensHud(undefined)).toBe(false);
         expect(canvasClickOpensHud(null)).toBe(false);
     });
+
+    it("bloque l'ouverture pendant une sélection de Hex (Fouiller), même outil 'select'", () => {
+        expect(canvasClickOpensHud("select", true)).toBe(false);
+        expect(canvasClickOpensHud("select", false)).toBe(true);
+    });
 });
 
 describe("tokenAtPoint", () => {

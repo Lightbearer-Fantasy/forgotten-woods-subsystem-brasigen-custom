@@ -21,6 +21,13 @@ const SEARCH_SKILLS = ["perception", "stealth", "survival"];
  */
 export class SearchFlow {
     /**
+     * Vrai tant qu'une sélection de Hex Fouiller est en cours (consulté par le
+     * Party HUD via `canvasClickOpensHud` pour ne pas se rouvrir au clic).
+     * @type {boolean}
+     */
+    static selecting = false;
+
+    /**
      * @param {Token} token   Token Party ancré au HUD
      * @param {object} actor  personnage du Joueur qui clique (porte le jet)
      * @param {object} [hud]  panneau Party HUD à fermer pendant la sélection
@@ -37,14 +44,14 @@ export class SearchFlow {
         const origin = coordsToOffset(token.center);
         const validKeys = validSearchKeys(spacesInRange(origin, 1));
 
-        // 2. Libère l'espace visuel : ferme le Party HUD, et coupe l'interactivité
-        // de la couche Tokens pour que cliquer un Hex (même celui SOUS le Token
-        // Party) ne sélectionne pas le token / ne rouvre pas le HUD. Réversible,
-        // par client (même condition que le flux MJ sous un scene control actif).
+        // 2. Libère l'espace visuel et neutralise la réouverture du Party HUD.
+        // Le HUD se rouvre via son propre hit-test géométrique (tokenAtPoint) au
+        // pointerup, tant que `game.activeTool === "select"` — ce qui reste le cas
+        // côté joueur (pas d'outil Hex Controls, réservé au MJ). On lève donc un
+        // drapeau que la garde du HUD (canvasClickOpensHud) consulte, pour que
+        // cliquer le Hex SOUS le Token Party ne rouvre pas le panneau.
         hud?.close?.();
-        const tokensLayer = canvas?.tokens ?? null;
-        const prevTokensInteractive = tokensLayer?.interactiveChildren ?? true;
-        if (tokensLayer) tokensLayer.interactiveChildren = false;
+        SearchFlow.selecting = true;
 
         // 3. Sélection mono-hex restreinte, surbrillance dédiée au flux.
         const selection = new HexSelection("forgotten-woods-hex-selection-search");
@@ -61,8 +68,7 @@ export class SearchFlow {
         const cleanup = () => {
             canvas.stage?.off("pointerdown", onPointerDown);
             selection.destroy();
-            // Restaure l'interactivité de la couche Tokens.
-            if (tokensLayer) tokensLayer.interactiveChildren = prevTokensInteractive;
+            SearchFlow.selecting = false;
         };
 
         // 4. Fenêtre non-modale Confirmer/Annuler pendant que le Joueur clique.
