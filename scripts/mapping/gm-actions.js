@@ -4,6 +4,8 @@ import { resourceAmountForOutcome } from "./resource-amount.js";
 import { addOrIncrement, RESOURCE_LABELS } from "./gpc-bridge.js";
 import { membersNeedingScout } from "./scout-targets.js";
 import { PARTY_EFFECTS, withEffect, withoutEffect } from "../data/party-effects.js";
+import { searchPointsDeltas } from "./search-targets.js";
+import { applyDeltas } from "./mapping-points-store.js";
 
 const SCOUT_UUID = "Compendium.pf2e.other-effects.Item.EMqGwUi3VMhCjTlF";
 
@@ -89,6 +91,12 @@ export function requestConsumeResource(payload) {
     game.socket.emit(CHANNEL, { type: "consumeRequest", ...payload });
 }
 
+/** Joueur → MJ : appliquer un delta de PC sur un seul Hex (Fouiller). */
+export function requestApplySearchPoints(sceneId, offsetKey, delta) {
+    if (isActiveGM()) return handleApplySearchPoints({ sceneId, offsetKey, delta });
+    game.socket.emit(CHANNEL, { type: "searchPoints", sceneId, offsetKey, delta });
+}
+
 async function handleConsumeResource({ resourceKey, activityLabel, skillLabel, outcome, amount, partyActorId, effectKey }) {
     // Ni perte ni effet (ex. échec simple) : rien à confirmer.
     if ((amount ?? 0) === 0 && !effectKey) return;
@@ -106,6 +114,14 @@ async function handleConsumeResource({ resourceKey, activityLabel, skillLabel, o
     if (!confirmed) return;
     if (amount) addOrIncrement(resourceKey, amount);
     if (effectKey && partyActorId) await setPartyEffect(partyActorId, effectKey);
+}
+
+async function handleApplySearchPoints({ sceneId, offsetKey, delta }) {
+    const scene = game.scenes.get(sceneId);
+    if (!scene) return;
+    const deltas = searchPointsDeltas(offsetKey, delta);
+    if (deltas.size === 0) return;       // échec simple (delta 0) : rien à écrire
+    return applyDeltas(scene, deltas);   // applyDeltas re-garde isGM + clamp [0,MAX]
 }
 
 async function handleMakeCamp({ sceneId, offsetKey }) {
@@ -179,5 +195,6 @@ export function registerGmActions() {
         else if (data?.type === "partyEffectSet") setPartyEffect(data.partyActorId, data.key);
         else if (data?.type === "partyEffectClear") clearPartyEffect(data.partyActorId, data.key);
         else if (data?.type === "consumeRequest") handleConsumeResource(data);
+        else if (data?.type === "searchPoints") handleApplySearchPoints(data);
     });
 }
