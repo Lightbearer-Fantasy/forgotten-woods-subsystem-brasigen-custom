@@ -35,3 +35,15 @@ export function craftMaterialConsumption(outcome, baseCost) {
 export function craftExceedsLevel(itemLevel, charLevel) {
     return Number(itemLevel) > Number(charLevel);
 }
+
+/**
+ * Suffixe « (temporaire) » pour les objets fabriqués via l'activité Fabriquer.
+ * Source de vérité unique du libellé (nom d'inventaire + carte de chat).
+ * Ne double pas le suffixe s'il est déjà présent.
+ * @param {string} name
+ * @returns {string}
+ */
+export function temporaryItemName(name) {
+    const base = String(name ?? "");
+    return base.endsWith("(temporaire)") ? base : `${base} (temporaire)`;
+}

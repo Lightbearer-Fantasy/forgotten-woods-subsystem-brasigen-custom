@@ -1,6 +1,6 @@
 // tests/craft-logic.test.js
 import { describe, it, expect } from "vitest";
-import { craftMaterialCost, craftMaterialConsumption, craftExceedsLevel } from "../scripts/mapping/craft-logic.js";
+import { craftMaterialCost, craftMaterialConsumption, craftExceedsLevel, temporaryItemName } from "../scripts/mapping/craft-logic.js";
 
 describe("craftMaterialCost", () => {
     it("objet de niveau −2 ou moins → 3", () => {
@@ -41,5 +41,17 @@ describe("craftExceedsLevel", () => {
         expect(craftExceedsLevel(1, 1)).toBe(false);
         expect(craftExceedsLevel(0, 1)).toBe(false);
         expect(craftExceedsLevel(3, 5)).toBe(false);
+    });
+});
+
+describe("temporaryItemName", () => {
+    it("ajoute le suffixe « (temporaire) »", () => {
+        expect(temporaryItemName("Potion de soin")).toBe("Potion de soin (temporaire)");
+    });
+    it("ne double pas le suffixe si déjà présent", () => {
+        expect(temporaryItemName("Potion de soin (temporaire)")).toBe("Potion de soin (temporaire)");
+    });
+    it("gère un nom vide", () => {
+        expect(temporaryItemName("")).toBe(" (temporaire)");
     });
 });
