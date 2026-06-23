@@ -7,7 +7,7 @@
 /** Registre des marqueurs connus : clé → libellé (i18n) + icône. */
 export const PARTY_EFFECTS = {
     hustle: { label: "FORGOTTEN_WOODS.partyEffect.hustle", img: "systems/pf2e/icons/spells/longstrider.webp" },
-    cook: { label: "FORGOTTEN_WOODS.partyEffect.cook", img: "icons/consumables/food/bowl-stew-tofu-potato-red.webp" }
+    cook: { label: "FORGOTTEN_WOODS.partyEffect.cook", img: "icons/tools/cooking/bowl-steaming-brown.webp" }
 };
 
 /**
