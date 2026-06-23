@@ -20,7 +20,7 @@
     {{#if partyEffects.length}}
     <section class="fw-party-effects">
         {{#each partyEffects as |fx|}}
-        <span class="fw-effect-chip" data-effect-key="{{fx.key}}">
+        <span class="fw-effect-chip" data-effect-key="{{fx.key}}" title="{{fx.label}}">
             <img class="fw-effect-icon" src="{{fx.img}}" alt="">
             <span class="fw-effect-label">{{fx.label}}</span>
             <a class="fw-effect-remove" data-action="remove-party-effect" title="{{../removeEffectTitle}}">✕</a>

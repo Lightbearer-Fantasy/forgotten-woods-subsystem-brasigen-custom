@@ -250,8 +250,10 @@
     border-radius: 50%;
     object-fit: cover;
 }
+/* Libellé masqué : seul l'icône (+ ✕) s'affiche pour éviter que la chip,
+   placée entre les deux panneaux, déborde. Le nom reste en infobulle. */
 #forgotten-woods-party-hud .fw-effect-label {
-    font-size: 0.9em;
+    display: none;
 }
 #forgotten-woods-party-hud .fw-effect-remove {
     cursor: pointer;
