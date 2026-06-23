@@ -37,7 +37,7 @@ export class SearchFlow {
         const validKeys = validSearchKeys(spacesInRange(origin, 1));
 
         // 2. Sélection mono-hex restreinte, surbrillance dédiée au flux.
-        const selection = new HexSelection();
+        const selection = new HexSelection("forgotten-woods-hex-selection-search");
         selection.showHighlight();
         const onPointerDown = (event) => {
             const local = event.data?.getLocalPosition?.(canvas.app.stage)

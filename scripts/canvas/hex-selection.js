@@ -15,6 +15,13 @@ export class HexSelection {
     #visible = false;
     /** @type {((offsets: {i: number, j: number}[]) => void)[]} */
     #listeners = [];
+    /** @type {string} */
+    #layer;
+
+    /** @param {string} [layerName] nom de couche de surbrillance (par défaut partagé). */
+    constructor(layerName = HIGHLIGHT_LAYER) {
+        this.#layer = layerName;
+    }
 
     /** @returns {{i: number, j: number}|null} Premier offset sélectionné, ou null. */
     get() {
@@ -92,7 +99,7 @@ export class HexSelection {
         this.#selected = new Map();
         this.#listeners = [];
         const grid = globalThis.canvas?.interface?.grid;
-        if (grid) grid.clearHighlightLayer(HIGHLIGHT_LAYER);
+        if (grid) grid.clearHighlightLayer(this.#layer);
     }
 
     #notify() {
@@ -103,14 +110,14 @@ export class HexSelection {
     #render() {
         const grid = globalThis.canvas?.interface?.grid;
         if (!grid) return; // hors canvas (tests) : no-op.
-        if (!grid.highlightLayers?.[HIGHLIGHT_LAYER]) {
-            grid.addHighlightLayer(HIGHLIGHT_LAYER);
+        if (!grid.highlightLayers?.[this.#layer]) {
+            grid.addHighlightLayer(this.#layer);
         }
-        grid.clearHighlightLayer(HIGHLIGHT_LAYER);
+        grid.clearHighlightLayer(this.#layer);
         if (!this.#visible) return;
         for (const offset of this.#selected.values()) {
             const { x, y } = globalThis.canvas.grid.getTopLeftPoint(offset);
-            grid.highlightPosition(HIGHLIGHT_LAYER, {
+            grid.highlightPosition(this.#layer, {
                 x,
                 y,
                 color: HIGHLIGHT_COLOR,
