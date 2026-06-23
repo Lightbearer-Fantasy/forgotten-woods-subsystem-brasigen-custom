@@ -211,6 +211,13 @@ describe("flag noRoll (v0.6 sp1)", () => {
     });
 });
 
+describe("Fouiller (search)", () => {
+    it("outcome échec critique = -1 PC", () => {
+        const search = ALL.find((a) => a.id === "search");
+        expect(search.outcomes.criticalFailure).toBe("Le Hex perd 1 PC.");
+    });
+});
+
 describe("textes v0.6 sp2", () => {
     const byId = (id) => ALL.find((a) => a.id === id);
     it("cook : nouveaux outcomes (crit succ économise, succ +1 lendemain, crit échec perd 1)", () => {

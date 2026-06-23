@@ -16,6 +16,7 @@ import { ActivityPopup } from "./activity-popup.js";
 import { requestApplyScout, requestSetPartyEffect, requestClearPartyEffect } from "../mapping/gm-actions.js";
 import { CookFlow } from "../mapping/cook-flow.js";
 import { CraftFlow } from "../mapping/craft-flow.js";
+import { SearchFlow } from "../mapping/search-flow.js";
 import { PARTY_EFFECTS } from "../data/party-effects.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -350,6 +351,10 @@ async function onRollD20(event, target) {
     // Cuisiner : flux dédié (choix compétence filtré + consommation + effet).
     if (activity.id === "cook") {
         return CookFlow.start(this.token, actor);
+    }
+    // Fouiller : sélection 1-hex joueur + jet vs DC + PC sur le hex.
+    if (activity.id === "search") {
+        return SearchFlow.start(this.token, actor);
     }
     // Activité « à check » : jet de compétence (vs Hex DC si zone, sinon simple),
     // sans application de PC. Le jet est porté par le personnage du joueur qui
