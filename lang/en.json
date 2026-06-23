@@ -4,11 +4,11 @@
             "group": "Activités de Groupe",
             "individual": "Activités Individuelles",
             "campPresent": "Un camp est monté sur ce Hex.",
-            "removeEffect": "Remove this effect from the party"
+            "removeEffect": "Retirer cet effet du groupe"
         },
         "partyEffect": {
-            "hustle": "Hustle",
-            "cook": "Cook"
+            "hustle": "S'empresser",
+            "cook": "Cuisiner"
         },
         "mapping": {
             "control": "Hex Controls",
