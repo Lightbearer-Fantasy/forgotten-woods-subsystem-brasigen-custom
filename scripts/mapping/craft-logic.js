@@ -1,4 +1,6 @@
 // scripts/mapping/craft-logic.js
+import { INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
+
 /**
  * Coût de base en matériaux selon le palier de niveau de l'objet.
  * niveau −2 ou moins → 3 ; niveau −1 ou niveau (et au-delà) → 5.
@@ -46,4 +48,28 @@ export function craftExceedsLevel(itemLevel, charLevel) {
 export function temporaryItemName(name) {
     const base = String(name ?? "");
     return base.endsWith("(temporaire)") ? base : `${base} (temporaire)`;
+}
+
+/**
+ * Vrai si le contexte d'un message PF2E correspond à l'activité Fabriquer.
+ * Le flag `pf2e.context` ne porte PAS de champ `action` ; l'activité est
+ * exposée comme roll option « action:craft » dans `context.options`.
+ * @param {{options?: string[]}|null|undefined} context
+ * @returns {boolean}
+ */
+export function isCraftContext(context) {
+    const options = context?.options;
+    return Array.isArray(options) && options.includes("action:craft");
+}
+
+/**
+ * Texte d'issue de l'activité individuelle « Fabriquer » du module (source de
+ * vérité : INDIVIDUAL_ACTIVITIES), selon l'outcome PF2E. L'échec simple n'a pas
+ * de texte dédié → null (la note générique PF2E est alors retirée de la carte).
+ * @param {string|null|undefined} outcome
+ * @returns {string|null}
+ */
+export function craftOutcomeText(outcome) {
+    const craft = INDIVIDUAL_ACTIVITIES.find((a) => a.id === "craft");
+    return craft?.outcomes?.[outcome] ?? null;
 }

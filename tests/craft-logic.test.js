@@ -1,6 +1,7 @@
 // tests/craft-logic.test.js
 import { describe, it, expect } from "vitest";
-import { craftMaterialCost, craftMaterialConsumption, craftExceedsLevel, temporaryItemName } from "../scripts/mapping/craft-logic.js";
+import { craftMaterialCost, craftMaterialConsumption, craftExceedsLevel, temporaryItemName, isCraftContext, craftOutcomeText } from "../scripts/mapping/craft-logic.js";
+import { INDIVIDUAL_ACTIVITIES } from "../scripts/data/activities.js";
 
 describe("craftMaterialCost", () => {
     it("objet de niveau −2 ou moins → 3", () => {
@@ -53,5 +54,45 @@ describe("temporaryItemName", () => {
     });
     it("gère un nom vide", () => {
         expect(temporaryItemName("")).toBe(" (temporaire)");
+    });
+});
+
+describe("isCraftContext", () => {
+    // PF2E v14 : le contexte du message ne porte PAS de champ `action` ;
+    // l'activité vit dans la roll option « action:craft » de context.options.
+    it("vrai si options contient « action:craft »", () => {
+        expect(isCraftContext({ type: "skill-check", options: ["self:level:5", "action:craft"] })).toBe(true);
+    });
+    it("faux si options ne mentionne pas le craft", () => {
+        expect(isCraftContext({ type: "skill-check", options: ["action:repair"] })).toBe(false);
+    });
+    it("faux si options absent", () => {
+        expect(isCraftContext({ type: "skill-check" })).toBe(false);
+    });
+    it("faux pour un contexte nul/indéfini", () => {
+        expect(isCraftContext(null)).toBe(false);
+        expect(isCraftContext(undefined)).toBe(false);
+    });
+    it("ne se fie pas au champ `action` (inexistant dans le flag réel)", () => {
+        // Même si un hypothétique action:"craft" était présent, c'est options qui fait foi.
+        expect(isCraftContext({ action: "craft", options: [] })).toBe(false);
+    });
+});
+
+describe("craftOutcomeText", () => {
+    const craft = INDIVIDUAL_ACTIVITIES.find((a) => a.id === "craft");
+
+    it("renvoie le texte de l'activité maison pour chaque issue définie", () => {
+        expect(craftOutcomeText("criticalSuccess")).toBe(craft.outcomes.criticalSuccess);
+        expect(craftOutcomeText("success")).toBe(craft.outcomes.success);
+        expect(craftOutcomeText("criticalFailure")).toBe(craft.outcomes.criticalFailure);
+    });
+    it("renvoie null pour l'échec simple (aucun texte d'activité)", () => {
+        expect(craftOutcomeText("failure")).toBeNull();
+    });
+    it("renvoie null pour un outcome inconnu ou absent", () => {
+        expect(craftOutcomeText("banana")).toBeNull();
+        expect(craftOutcomeText(null)).toBeNull();
+        expect(craftOutcomeText(undefined)).toBeNull();
     });
 });

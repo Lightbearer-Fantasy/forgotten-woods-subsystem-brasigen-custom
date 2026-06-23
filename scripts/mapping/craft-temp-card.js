@@ -1,4 +1,4 @@
-import { temporaryItemName } from "./craft-logic.js";
+import { temporaryItemName, isCraftContext, craftOutcomeText } from "./craft-logic.js";
 import { requestReceiveTemp } from "./gm-actions.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
@@ -41,7 +41,7 @@ function resolveMessageActor(message) {
 
 /** preCreateChatMessage : tague notre carte de craft via le marqueur one-shot. */
 function onPreCreateCraftMessage(message) {
-    if (message.flags?.pf2e?.context?.action !== "craft") return;
+    if (!isCraftContext(message.flags?.pf2e?.context)) return;
     const actorId = resolveMessageActor(message)?.id
         ?? message.flags?.pf2e?.context?.actor
         ?? message.speaker?.actor;
@@ -57,6 +57,22 @@ function onReceiveTemp({ messageId, itemUuid, quantity, actor }) {
     requestReceiveTemp({ messageId, actorId: actor.id, itemUuid, quantity });
 }
 
+/**
+ * Réécrit la/les note(s) d'issue PF2E du message avec le texte de l'activité
+ * maison « Fabriquer », en conservant le libellé d'issue (`<strong>`). Si l'activité
+ * n'a pas de texte pour cet outcome (échec simple), la note est retirée.
+ */
+function rewriteOutcomeNote(html, outcome) {
+    const text = craftOutcomeText(outcome);
+    for (const note of html.querySelectorAll("li.roll-note")) {
+        if (text === null) { note.remove(); continue; }
+        const label = note.querySelector("strong");
+        note.replaceChildren();
+        if (label) note.append(label, " ");
+        note.append(text);
+    }
+}
+
 /** renderChatMessageHTML : réécrit notre carte de craft (texte + bouton + gating). */
 function onRenderCraftCard(message, html) {
     if (!message.getFlag(MODULE_ID, "tempCraft")) return;
@@ -68,7 +84,11 @@ function onRenderCraftCard(message, html) {
     const link = card.querySelector(".card-content a");
     if (link) link.textContent = temporaryItemName(link.textContent);
 
-    // 2. Bouton de réception (gating par outcome).
+    // 2. Texte d'issue : remplace la note générique PF2E (jours/po, hors-sujet)
+    //    par celui de l'activité maison. Échec simple (null) → on retire la note.
+    rewriteOutcomeNote(html, outcome);
+
+    // 3. Bouton de réception (gating par outcome).
     const btnArea = card.querySelector(".card-buttons");
     if (!btnArea) return;
     if (outcome === "success" || outcome === "criticalSuccess") {
