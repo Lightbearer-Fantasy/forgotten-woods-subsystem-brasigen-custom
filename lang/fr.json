@@ -132,6 +132,17 @@
                 "label": "Choisissez la compétence à utiliser :"
             }
         },
+        "search": {
+            "selectPrompt": {
+                "title": "Fouiller",
+                "label": "Choisissez un Hex adjacent à fouiller, puis cliquez sur Confirmer.",
+                "confirm": "Confirmer",
+                "cancel": "Annuler"
+            },
+            "noParty": "Cette activité n'est disponible que sur une scène hexagonale avec un Token Party.",
+            "noDC": "Aucun DC de zone n'est défini sur ce hex. Le MJ doit d'abord fixer le DC.",
+            "noSkill": "Ce personnage ne possède pas cette compétence. Choisissez-en une autre."
+        },
         "skills": {
             "crafting": "Crafting",
             "society": "Society",
