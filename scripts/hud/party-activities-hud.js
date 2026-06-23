@@ -353,8 +353,9 @@ async function onRollD20(event, target) {
         return CookFlow.start(this.token, actor);
     }
     // Fouiller : sélection 1-hex joueur + jet vs DC + PC sur le hex.
+    // On passe le HUD pour qu'il se ferme pendant la sélection (libère l'espace).
     if (activity.id === "search") {
-        return SearchFlow.start(this.token, actor);
+        return SearchFlow.start(this.token, actor, this);
     }
     // Activité « à check » : jet de compétence (vs Hex DC si zone, sinon simple),
     // sans application de PC. Le jet est porté par le personnage du joueur qui
