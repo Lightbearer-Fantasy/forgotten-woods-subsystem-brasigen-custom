@@ -60,13 +60,19 @@ export class FWNote extends foundry.canvas.placeables.Note {
         return super._canDrag(user, event);
     }
 
-    /** @override Simple clic gauche sur un pin géré → pop-up description, à côté du pin. */
+    /**
+     * @override Simple clic gauche sur un pin géré → pop-up description, à côté du pin.
+     * `clickLeft` se déclenche au pointer-down : on STOPPE la propagation (comme le natif),
+     * sinon l'événement remonte au calque qui arme son rectangle de sélection (marquee bloqué).
+     */
     _onClickLeft(event) {
         if (!pinFlags(this.document).fwPin) return super._onClickLeft(event);
         openPinPopup({
             name: this.document.text,
             description: this.document.getFlag(MODULE_ID, "description"),
-            anchor: { x: event?.clientX, y: event?.clientY }
+            anchor: { x: event?.clientX, y: event?.clientY },
+            key: this.document.id
         });
+        event?.stopPropagation?.();
     }
 }
