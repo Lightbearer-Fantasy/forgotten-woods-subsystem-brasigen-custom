@@ -6,6 +6,7 @@ import { registerResourceClocks } from "./mapping/gpc-bridge.js";
 import { registerGmActions } from "./mapping/gm-actions.js";
 import { renderCampOverlay } from "./canvas/camp-overlay.js";
 import { registerCraftTempHooks } from "./mapping/craft-temp-card.js";
+import { onCombatRoundAdvance } from "./mapping/round-flow.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -49,6 +50,8 @@ Hooks.on("canvasReady", () => renderCampOverlay());
 Hooks.on("updateScene", (scene) => {
     if (scene?.id === canvas?.scene?.id) renderCampOverlay();
 });
+
+Hooks.on("updateCombat", (combat, change) => onCombatRoundAdvance(combat, change));
 
 // --- Rafraîchissement du Party HUD sur changement de données affichées ---
 // Compteurs de ressources (GPC) : dégrise Cuisiner dès que les ingrédients suffisent.

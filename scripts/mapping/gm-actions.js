@@ -17,7 +17,7 @@ const CHANNEL = "module.forgotten-woods-brasigen";
 const t = (key, data) => game.i18n.format(`FORGOTTEN_WOODS.gm.${key}`, data ?? {});
 
 /** @returns {boolean} vrai si ce client est le MJ actif (exécutant des actions). */
-function isActiveGM() {
+export function isActiveGM() {
     return game.users.activeGM?.isSelf === true;
 }
 

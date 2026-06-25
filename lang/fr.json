@@ -154,6 +154,11 @@
             "none": "Aucun",
             "sauvage": "Aspect Sauvage",
             "donjon": "Aspect du Donjon"
+        },
+        "round": {
+            "exclusiveTitle": "Round d'Hexploration",
+            "exclusiveBody": "Les Joueurs ne peuvent pas S'empresser et Se reposer au cours du même Round. Ajustez les chips correspondants et recommencez le Round.",
+            "cookMissing": "Effet : Cuisiner introuvable dans le compendium du module."
         }
     }
 }
