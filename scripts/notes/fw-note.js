@@ -36,6 +36,16 @@ export class FWNote extends foundry.canvas.placeables.Note {
         return pinVisibleToPlayer(flags);
     }
 
+    /**
+     * @override Permission « view » (gate du double-clic clickLeft2).
+     * Le natif renvoie FAUX pour une Note sans JournalEntry (nos pins n'en ont pas) →
+     * le double-clic est bloqué pour MJ ET joueur. On l'autorise pour un pin géré.
+     */
+    _canView(user) {
+        if (pinFlags(this.document).fwPin) return true;
+        return super._canView(user);
+    }
+
     /** @override Double-clic (geste « ouvrir ») : pop-up custom pour un pin géré. */
     _onClickLeft2(event) {
         if (!pinFlags(this.document).fwPin) return super._onClickLeft2(event);

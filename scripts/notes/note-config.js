@@ -44,7 +44,15 @@ export function onRenderNoteConfig(app, html) {
         </div>
     `;
 
-    const footer = root.querySelector("footer") ?? root.querySelector("button[type=submit]")?.parentElement;
-    if (footer) footer.before(section); else root.append(section);
+    // Insérer en TÊTE de la zone défilante : juste avant le premier bloc natif
+    // (« Content ») → la section devient la première option et défile avec le reste
+    // (sinon, placée avant le <footer>, elle reste hors du scroll, comme Tagger).
+    const firstFieldset = root.querySelector("fieldset:not(.fw-note-section)");
+    if (firstFieldset) {
+        firstFieldset.before(section);
+    } else {
+        const footer = root.querySelector("footer") ?? root.querySelector("button[type=submit]")?.parentElement;
+        if (footer) footer.before(section); else root.append(section);
+    }
     app.setPosition?.({ height: "auto" });
 }

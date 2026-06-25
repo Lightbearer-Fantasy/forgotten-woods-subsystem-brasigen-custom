@@ -95,3 +95,9 @@ Hooks.on("updateScene", (scene, changes) => {
 // Pin créé/édité : les PC peuvent déjà dépasser le seuil.
 Hooks.on("createNote", (note) => { if (note?.parent?.id === canvas?.scene?.id) refreshPinReveals(note.parent); });
 Hooks.on("updateNote", (note) => { if (note?.parent?.id === canvas?.scene?.id) refreshPinReveals(note.parent); });
+// Révélation DYNAMIQUE (tous les clients) : quand un flag FW change (notamment le latch
+// `revealed`), forcer le placeable à recalculer sa visibilité. Sans ça, le pin ne se met à
+// jour qu'au déplacement de la Note ou en passant sur le calque Notes.
+Hooks.on("updateNote", (note, changes) => {
+    if (changes?.flags && (MODULE_ID in changes.flags)) note.object?._refreshVisibility?.();
+});
