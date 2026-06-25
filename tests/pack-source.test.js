@@ -34,6 +34,10 @@ describe("compendium d'effets — sources", () => {
         expect(cook.flags["forgotten-woods-brasigen"].effect).toBe("cook");
         expect(cook.system.duration.unit).toBe("rounds");
         expect(cook.system.duration.value).toBe(1);
+        // expiry "round-end" : expiration UNIFORME (indépendante de l'initiative) au
+        // début du Round suivant. "turn-start" n'expirait que sur le PJ dont
+        // l'initiative == start.initiative (créé au début du Round → même init pour tous).
+        expect(cook.system.duration.expiry).toBe("round-end");
         expect(cook.system.rules).toHaveLength(1);
         const rule = cook.system.rules[0];
         expect(rule.key).toBe("FlatModifier");
