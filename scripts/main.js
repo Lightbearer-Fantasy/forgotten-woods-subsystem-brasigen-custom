@@ -9,6 +9,7 @@ import { registerCraftTempHooks } from "./mapping/craft-temp-card.js";
 import { onCombatRoundAdvance, onCombatEnd } from "./mapping/round-flow.js";
 import { markHexplorationTracker } from "./hud/hexploration-label.js";
 import { onRenderNoteConfig } from "./notes/note-config.js";
+import { FWNote } from "./notes/fw-note.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -17,6 +18,7 @@ let mapping = null;
 let hexSelection = null;
 
 Hooks.once("init", () => {
+    CONFIG.Note.objectClass = FWNote;
     registerResourceClocks();
     hud = new PartyActivitiesHUD();
     hexSelection = new HexSelection();
