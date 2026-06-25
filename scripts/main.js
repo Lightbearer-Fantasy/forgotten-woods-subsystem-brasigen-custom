@@ -7,6 +7,7 @@ import { registerGmActions } from "./mapping/gm-actions.js";
 import { renderCampOverlay } from "./canvas/camp-overlay.js";
 import { registerCraftTempHooks } from "./mapping/craft-temp-card.js";
 import { onCombatRoundAdvance } from "./mapping/round-flow.js";
+import { markHexplorationTracker } from "./hud/hexploration-label.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -75,3 +76,5 @@ Hooks.on("updateActor", (actor, changes) => {
     if (hud?.token?.actor?.id !== actor?.id) return;
     if (changes?.flags && (MODULE_ID in changes.flags)) hud?.refreshIfOpen();
 });
+
+Hooks.on("renderCombatTracker", (app, html) => markHexplorationTracker(app, html));

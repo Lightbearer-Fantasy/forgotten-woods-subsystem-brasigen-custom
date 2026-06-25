@@ -266,3 +266,5 @@
 #forgotten-woods-party-hud .fw-effect-remove:hover {
     color: #fff;
 }
+
+.fw-hexploration-label { text-align: center; font-weight: bold; letter-spacing: 0.05em; padding: 0.25em; color: #3aa0ff; text-transform: uppercase; }
