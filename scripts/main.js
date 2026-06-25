@@ -11,6 +11,7 @@ import { markHexplorationTracker } from "./hud/hexploration-label.js";
 import { onRenderNoteConfig } from "./notes/note-config.js";
 import { FWNote } from "./notes/fw-note.js";
 import { refreshPinReveals } from "./notes/reveal-watcher.js";
+import { isHexScene } from "./utils/scene.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -93,7 +94,13 @@ Hooks.on("updateScene", (scene, changes) => {
     if (changes?.flags && (MODULE_ID in changes.flags)) refreshPinReveals(scene);
 });
 // Pin créé/édité : les PC peuvent déjà dépasser le seuil.
-Hooks.on("createNote", (note) => { if (note?.parent?.id === canvas?.scene?.id) refreshPinReveals(note.parent); });
+Hooks.on("createNote", (note, options, userId) => {
+    if (note?.parent?.id === canvas?.scene?.id) refreshPinReveals(note.parent);
+    // Le mini-dialogue « Créer une note » natif ne propose que le nom : pour que le MJ
+    // règle « Secret » + « Description » à la création (sans deux clics droits ensuite),
+    // on ouvre la config complète (bloc Forgotten Woods) juste après la création.
+    if (game.user?.isGM && userId === game.user.id && isHexScene(note?.parent)) note.sheet?.render(true);
+});
 Hooks.on("updateNote", (note) => { if (note?.parent?.id === canvas?.scene?.id) refreshPinReveals(note.parent); });
 // Révélation DYNAMIQUE (tous les clients) : quand un flag FW change (notamment le latch
 // `revealed`), forcer le placeable à recalculer sa visibilité. Sans ça, le pin ne se met à

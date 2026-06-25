@@ -1,7 +1,9 @@
 // scripts/notes/fw-note.js
 // Sous-classe du placeable Note :
 //  - visibilité joueur gouvernée par le latch `revealed` (pin géré) ;
-//  - double-clic sur un pin géré → pop-up description (pas de feuille de journal).
+//  - simple clic gauche sur un pin géré → pop-up description (pas de feuille de journal),
+//    affichée à côté du pin ;
+//  - jamais de déplacement d'un pin géré par un joueur.
 // Installée via CONFIG.Note.objectClass dans main.js (init).
 
 import { pinVisibleToPlayer } from "./pin-reveal.js";
@@ -37,21 +39,34 @@ export class FWNote extends foundry.canvas.placeables.Note {
     }
 
     /**
-     * @override Permission « view » (gate du double-clic clickLeft2).
-     * Le natif renvoie FAUX pour une Note sans JournalEntry (nos pins n'en ont pas) →
-     * le double-clic est bloqué pour MJ ET joueur. On l'autorise pour un pin géré.
+     * @override Permission « control » (gate du simple clic gauche clickLeft).
+     * Le natif exige le calque Notes actif + droit de modification → faux pour un joueur,
+     * et faux pour tous hors du calque Notes (Token Controls). On l'autorise pour un pin
+     * géré afin que le clic ouvre la pop-up. Le clic NE contrôle/sélectionne PAS le pin :
+     * `_onClickLeft` n'appelle pas le super.
      */
-    _canView(user) {
+    _canControl(user, event) {
         if (pinFlags(this.document).fwPin) return true;
-        return super._canView(user);
+        return super._canControl(user, event);
     }
 
-    /** @override Double-clic (geste « ouvrir ») : pop-up custom pour un pin géré. */
-    _onClickLeft2(event) {
-        if (!pinFlags(this.document).fwPin) return super._onClickLeft2(event);
+    /**
+     * @override Déplacement : un joueur ne déplace jamais un pin géré ; le MJ ne le déplace
+     * que sur le calque Notes (jamais depuis les Token Controls), comme le comportement natif.
+     */
+    _canDrag(user, event) {
+        if (!pinFlags(this.document).fwPin) return super._canDrag(user, event);
+        if (!game.user?.isGM || !this.layer?.active) return false;
+        return super._canDrag(user, event);
+    }
+
+    /** @override Simple clic gauche sur un pin géré → pop-up description, à côté du pin. */
+    _onClickLeft(event) {
+        if (!pinFlags(this.document).fwPin) return super._onClickLeft(event);
         openPinPopup({
             name: this.document.text,
-            description: this.document.getFlag(MODULE_ID, "description")
+            description: this.document.getFlag(MODULE_ID, "description"),
+            anchor: { x: event?.clientX, y: event?.clientY }
         });
     }
 }
