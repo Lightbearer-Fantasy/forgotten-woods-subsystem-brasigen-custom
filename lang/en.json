@@ -171,7 +171,9 @@
             "close": "Close",
             "name": "Name",
             "createTitle": "Create a marker",
-            "create": "Create marker"
+            "create": "Create marker",
+            "preset": "Preset",
+            "presetNone": "— None —"
         }
     }
 }

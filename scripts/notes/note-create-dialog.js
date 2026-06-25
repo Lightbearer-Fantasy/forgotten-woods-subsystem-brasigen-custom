@@ -10,6 +10,7 @@
 
 import { isHexScene } from "../utils/scene.js";
 import { defaultFwPin } from "./pin-reveal.js";
+import { PIN_PRESETS, getPreset } from "./pin-presets.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 const t = (k) => game.i18n.localize(`FORGOTTEN_WOODS.notes.${k}`);
@@ -75,6 +76,17 @@ async function openFwNoteCreateDialog(noteData) {
         const anchorDefault = CONST.TEXT_ANCHOR_POINTS.BOTTOM;
 
         const content = `
+            <div class="form-group">
+                <label>${t("preset")}</label>
+                <div class="form-fields">
+                    <select name="preset">${options(
+                        Object.fromEntries(PIN_PRESETS.map((p) => [p.id, p.label])),
+                        "",
+                        t("presetNone")
+                    )}</select>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label>${t("name")}</label>
                 <div class="form-fields"><input type="text" name="name" autofocus placeholder="${esc(t("untitled"))}"></div>
@@ -155,6 +167,24 @@ async function openFwNoteCreateDialog(noteData) {
                 const toggle = () => { custom.hidden = sel.value !== ""; };
                 sel.addEventListener("change", toggle);
                 toggle();
+                const presetSel = root.querySelector('select[name="preset"]');
+                const applyPreset = () => {
+                    const p = getPreset(presetSel.value);
+                    if (!p) return;
+                    const set = (name, value) => {
+                        const el = root.querySelector(`[name="${name}"]`);
+                        if (el) el.value = value;
+                    };
+                    set("icon", p.icon);
+                    set("iconSize", p.iconSize);
+                    set("tint", p.tint);
+                    set("fontFamily", p.fontFamily);
+                    set("fontSize", p.fontSize);
+                    set("textColor", p.textColor);
+                    set("textAnchor", CONST.TEXT_ANCHOR_POINTS[p.textAnchor]);
+                    toggle(); // resynchronise l'affichage du champ « icône personnalisée »
+                };
+                presetSel.addEventListener("change", applyPreset);
             },
             ok: {
                 label: t("create"),

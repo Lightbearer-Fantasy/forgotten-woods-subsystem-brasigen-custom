@@ -171,7 +171,9 @@
             "close": "Fermer",
             "name": "Nom",
             "createTitle": "Créer un repère",
-            "create": "Créer le repère"
+            "create": "Créer le repère",
+            "preset": "Preset",
+            "presetNone": "— Aucun —"
         }
     }
 }
