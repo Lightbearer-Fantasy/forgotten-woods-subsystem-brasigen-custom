@@ -98,6 +98,12 @@ describe("canvasClickOpensHud", () => {
         expect(canvasClickOpensHud("select", true)).toBe(false);
         expect(canvasClickOpensHud("select", false)).toBe(true);
     });
+
+    it("bloque l'ouverture hors du calque des jetons (ex. Sélection de notes), même outil 'select'", () => {
+        expect(canvasClickOpensHud("select", false, "notes")).toBe(false);
+        expect(canvasClickOpensHud("select", false, "walls")).toBe(false);
+        expect(canvasClickOpensHud("select", false, "tokens")).toBe(true);
+    });
 });
 
 describe("tokenAtPoint", () => {

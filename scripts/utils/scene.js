@@ -55,12 +55,17 @@ export function activePartyToken({ controlled = [], hovered = null } = {}) {
  * On bloque donc aussi l'ouverture quand une sélection de Hex est en cours, pour
  * que cliquer le Hex SOUS le Token Party ne rouvre pas le Party HUD.
  *
+ * Enfin, l'outil « select » existe AUSSI sur le calque Notes (Sélection de notes) :
+ * le HUD ne doit pas s'y ouvrir. On exige donc que le contrôle actif soit le calque
+ * des jetons (`"tokens"`), sinon (Notes, Murs, Éclairage…) on bloque.
+ *
  * @param {string|null|undefined} activeTool  cf. `game.activeTool`
  * @param {boolean} [searchSelecting=false]  vrai si une sélection de Hex Fouiller est en cours
+ * @param {string|null|undefined} [activeControl="tokens"]  cf. `ui.controls?.control?.name`
  * @returns {boolean}
  */
-export function canvasClickOpensHud(activeTool, searchSelecting = false) {
-    return activeTool === "select" && !searchSelecting;
+export function canvasClickOpensHud(activeTool, searchSelecting = false, activeControl = "tokens") {
+    return activeControl === "tokens" && activeTool === "select" && !searchSelecting;
 }
 
 /**
