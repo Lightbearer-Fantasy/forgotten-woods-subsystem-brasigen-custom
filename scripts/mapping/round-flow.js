@@ -50,6 +50,16 @@ async function removeFatigued(members) {
     }
 }
 
+/** Retire l'Effet: Cuisiner (dédup sourceId) de chaque Personnage. */
+async function removeCookEffect(members) {
+    for (const actor of members) {
+        const effects = (actor.itemTypes?.effect ?? []).filter(
+            (e) => e?.flags?.core?.sourceId === COOK_EFFECT_UUID
+        );
+        for (const e of effects) await e.delete();
+    }
+}
+
 /**
  * Au début d'un Round d'Hexploration : résout les chips en attente du Party.
  * @param {object} combat  document Combat
@@ -63,6 +73,15 @@ export async function onCombatRoundAdvance(combat, change) {
     const party = partyActorOnScene(scene);
     if (!party) return;
 
+    // Ne déclencher qu'à l'AVANCÉE de Round (jamais au recul). On mémorise le
+    // dernier Round vu sur le Combat ; un recul (ex. previousRound après le
+    // message d'exclusivité, ou correction d'erreur des joueurs) met juste le
+    // flag à jour et sort, sans re-jouer les effets ni boucler.
+    const prevRound = combat.getFlag(MODULE_ID, "lastRound") ?? 0;
+    const curRound = combat.round;
+    await combat.setFlag(MODULE_ID, "lastRound", curRound);
+    if (curRound <= prevRound) return;
+
     const chips = party.getFlag(MODULE_ID, PARTY_EFFECTS_FLAG) ?? [];
     const decision = resolveRoundChips(chips);
 
@@ -72,6 +91,9 @@ export async function onCombatRoundAdvance(combat, change) {
             content: `<p>${game.i18n.localize("FORGOTTEN_WOODS.round.exclusiveBody")}</p>`,
             modal: true
         });
+        // Recule d'un Round : le MJ corrige les chips puis ré-avance pour
+        // re-déclencher. Le recul est ignoré par la garde d'avancée ci-dessus.
+        await combat.previousRound();
         return; // on stoppe sans rien appliquer ni vider les chips
     }
 
@@ -87,4 +109,26 @@ export async function onCombatRoundAdvance(combat, change) {
 
     // Vide tous les chips en attente.
     await party.setFlag(MODULE_ID, PARTY_EFFECTS_FLAG, []);
+}
+
+/**
+ * Fin d'un Hex Encounter (et UNIQUEMENT lui — pas les combats hors Scene hex) :
+ * purge sur le Token Party tout ce qui altère ses Activités de Groupe — chips,
+ * marqueur Cuisiner, condition Fatigued et Effet: Cuisiner sur les PJ. L'Hex
+ * Encounter tournant en background sur toute l'hexploration, sa fin (ex. fin de
+ * quête) remet le Party à zéro.
+ * @param {object} combat  document Combat supprimé
+ */
+export async function onCombatEnd(combat) {
+    if (!isActiveGM()) return;
+    const scene = resolveCombatScene(combat);
+    if (!isHexScene(scene)) return;
+    const party = partyActorOnScene(scene);
+    if (!party) return;
+
+    const members = characters(party);
+    await party.setFlag(MODULE_ID, PARTY_EFFECTS_FLAG, []);
+    await party.unsetFlag(MODULE_ID, "cookRound");
+    await removeFatigued(members);
+    await removeCookEffect(members);
 }

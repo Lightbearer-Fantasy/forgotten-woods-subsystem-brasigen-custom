@@ -19,7 +19,7 @@
         "traits": { "otherTags": [], "value": [] },
         "publication": { "title": "Forgotten Woods", "authors": "Brasigen", "license": "OGL", "remaster": false },
         "level": { "value": 1 },
-        "duration": { "value": -1, "unit": "unlimited", "expiry": null, "sustained": false },
+        "duration": { "value": 1, "unit": "rounds", "expiry": "turn-start", "sustained": false },
         "start": { "value": 0, "initiative": null },
         "tokenIcon": { "show": false },
         "badge": null,

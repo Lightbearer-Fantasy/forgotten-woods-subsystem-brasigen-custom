@@ -6,7 +6,7 @@ import { registerResourceClocks } from "./mapping/gpc-bridge.js";
 import { registerGmActions } from "./mapping/gm-actions.js";
 import { renderCampOverlay } from "./canvas/camp-overlay.js";
 import { registerCraftTempHooks } from "./mapping/craft-temp-card.js";
-import { onCombatRoundAdvance } from "./mapping/round-flow.js";
+import { onCombatRoundAdvance, onCombatEnd } from "./mapping/round-flow.js";
 import { markHexplorationTracker } from "./hud/hexploration-label.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
@@ -56,6 +56,8 @@ Hooks.on("updateCombat", (combat, change) => {
     onCombatRoundAdvance(combat, change);
     if (change && "round" in change) hud?.refreshIfOpen();
 });
+// Fin d'un Hex Encounter : purge des chips/états altérant les AG du Party.
+Hooks.on("deleteCombat", (combat) => { onCombatEnd(combat); hud?.refreshIfOpen(); });
 // Conditions des membres (Fatigued) : un item condition créé/supprimé sur un Personnage du Party.
 const memberOfHudParty = (item) => (hud?.token?.actor?.members ?? []).some((m) => m?.id === item?.parent?.id);
 Hooks.on("createItem", (item) => { if (item?.type === "condition" && memberOfHudParty(item)) hud?.refreshIfOpen(); });

@@ -27,12 +27,13 @@ describe("compendium d'effets — sources", () => {
         expect(hustle.system.duration.unit).toBe("unlimited");
         expect(hustle.system.rules).toEqual([]);
     });
-    it("Effet: Cuisiner : _id 16 car., type effect, flag cook, duration unlimited, règle FlatModifier +1 untyped", () => {
+    it("Effet: Cuisiner : _id 16 car., type effect, flag cook, duration 1 round, règle FlatModifier +1 untyped", () => {
         expect(cook._id).toHaveLength(16);
         expect(cook.type).toBe("effect");
         expect(cook.name).toBe("Effet: Cuisiner");
         expect(cook.flags["forgotten-woods-brasigen"].effect).toBe("cook");
-        expect(cook.system.duration.unit).toBe("unlimited");
+        expect(cook.system.duration.unit).toBe("rounds");
+        expect(cook.system.duration.value).toBe(1);
         expect(cook.system.rules).toHaveLength(1);
         const rule = cook.system.rules[0];
         expect(rule.key).toBe("FlatModifier");

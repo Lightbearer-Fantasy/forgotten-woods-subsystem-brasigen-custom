@@ -189,8 +189,9 @@ async function handleRest({ partyActorId }) {
             const next = Math.min(hp.max, (hp.value ?? 0) + heal);
             await actor.update({ "system.attributes.hp.value": next });
         }
-        const fatigued = actor.itemTypes?.condition?.find?.((c) => c.slug === "fatigued");
-        if (fatigued) await fatigued.delete();
+        // Fatigued n'est PAS retiré ici : le chip `rest` le retire au DÉBUT du
+        // Round suivant (cohérent avec les bascules S'empresser/Cuisiner, qui se
+        // font aussi au début du Round suivant).
     }
     ui.notifications.info(t("rested"));
 }
