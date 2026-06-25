@@ -8,6 +8,7 @@ import { renderCampOverlay } from "./canvas/camp-overlay.js";
 import { registerCraftTempHooks } from "./mapping/craft-temp-card.js";
 import { onCombatRoundAdvance, onCombatEnd } from "./mapping/round-flow.js";
 import { markHexplorationTracker } from "./hud/hexploration-label.js";
+import { onRenderNoteConfig } from "./notes/note-config.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -80,3 +81,6 @@ Hooks.on("updateActor", (actor, changes) => {
 });
 
 Hooks.on("renderCombatTracker", (app, html) => markHexplorationTracker(app, html));
+
+// --- Repères Forgotten Woods (Map Notes enrichies) ---
+Hooks.on("renderNoteConfig", (app, html) => onRenderNoteConfig(app, html));
