@@ -11,7 +11,7 @@ import { markHexplorationTracker } from "./hud/hexploration-label.js";
 import { onRenderNoteConfig } from "./notes/note-config.js";
 import { FWNote } from "./notes/fw-note.js";
 import { refreshPinReveals } from "./notes/reveal-watcher.js";
-import { onRenderNoteCreateDialog, onCloseNoteCreateDialog, applyPendingFwCreate } from "./notes/note-create-dialog.js";
+import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -88,10 +88,8 @@ Hooks.on("renderCombatTracker", (app, html) => markHexplorationTracker(app, html
 
 // --- Repères Forgotten Woods (Map Notes enrichies) ---
 Hooks.on("renderNoteConfig", (app, html) => onRenderNoteConfig(app, html));
-// Dialogue natif « Créer une note » : bloc Forgotten Woods + anti-spam.
-Hooks.on("renderDialogV2", (dialog, element) => onRenderNoteCreateDialog(dialog, element));
-Hooks.on("closeDialogV2", (dialog) => onCloseNoteCreateDialog(dialog));
-Hooks.on("preCreateNote", (note) => applyPendingFwCreate(note));
+// Scène Hex : création d'un repère en une seule fenêtre (remplace le flux natif à deux fenêtres).
+Hooks.once("ready", () => installNoteCreateOverride());
 // PC modifiés sur la scène active → recalcule les latches de révélation (MJ).
 Hooks.on("updateScene", (scene, changes) => {
     if (scene?.id !== canvas?.scene?.id) return;

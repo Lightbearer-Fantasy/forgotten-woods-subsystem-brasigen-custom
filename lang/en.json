@@ -168,7 +168,10 @@
             "description": "Description",
             "noDescription": "(No description.)",
             "untitled": "Marker",
-            "close": "Close"
+            "close": "Close",
+            "name": "Name",
+            "createTitle": "Create a marker",
+            "create": "Create marker"
         }
     }
 }

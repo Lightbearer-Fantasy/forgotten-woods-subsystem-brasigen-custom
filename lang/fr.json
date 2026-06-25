@@ -168,7 +168,10 @@
             "description": "Description",
             "noDescription": "(Aucune description.)",
             "untitled": "Repère",
-            "close": "Fermer"
+            "close": "Fermer",
+            "name": "Nom",
+            "createTitle": "Créer un repère",
+            "create": "Créer le repère"
         }
     }
 }
