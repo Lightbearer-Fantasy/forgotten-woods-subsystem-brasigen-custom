@@ -1,6 +1,7 @@
 import { isHexScene, activePartyToken, tokenAtPoint, canvasClickOpensHud } from "../utils/scene.js";
 import { GROUP_ACTIVITIES, INDIVIDUAL_ACTIVITIES } from "../data/activities.js";
-import { slowestLandSpeed, groupActivityCount, groupCountColor, characterCount } from "./party-counts.js";
+import { slowestLandSpeed, groupActivityCount, characterCount } from "./party-counts.js";
+import { roundCountModifier, roundCountColor, roundSymbols, partyFatigued, isCookRound } from "../data/round-effects.js";
 import { activityDisabled } from "../data/activity-gating.js";
 import { campAt } from "../mapping/camp-store.js";
 import { counterValue } from "../mapping/gpc-bridge.js";
@@ -117,7 +118,14 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
 
     async _prepareContext() {
         const actor = this.token?.actor ?? null;
-        const groupCount = groupActivityCount(slowestLandSpeed(actor));
+        const base = groupActivityCount(slowestLandSpeed(actor));
+        const members = (actor?.members ?? []).filter((m) => m?.type === "character");
+        const fatigued = partyFatigued(members);
+        const cook = isCookRound(actor?.getFlag?.("forgotten-woods-brasigen", "cookRound"), game.combat?.round ?? null);
+        const modifier = roundCountModifier({ fatigued, cook });
+        const groupCount = base + modifier;
+        const groupColor = roundCountColor(modifier);
+        const groupSymbols = roundSymbols({ fatigued, cook });
         const scene = canvas?.scene ?? null;
         const offset = this.token ? coordsToOffset(this.token.center) : null;
         const campPresent = scene && offset ? campAt(scene, offset) : false;
@@ -145,7 +153,8 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             groupTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.group"),
             individualTitle: game.i18n.localize("FORGOTTEN_WOODS.panel.individual"),
             groupCount,
-            groupColor: groupCountColor(groupCount),
+            groupColor,
+            groupSymbols,
             individualCount: baseIndividual + (campPresent ? 2 : 0),
             groupActivities: withDisabled(GROUP_ACTIVITIES),
             individualActivities: withDisabled(INDIVIDUAL_ACTIVITIES),

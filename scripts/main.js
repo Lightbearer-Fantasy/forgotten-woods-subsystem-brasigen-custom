@@ -51,7 +51,14 @@ Hooks.on("updateScene", (scene) => {
     if (scene?.id === canvas?.scene?.id) renderCampOverlay();
 });
 
-Hooks.on("updateCombat", (combat, change) => onCombatRoundAdvance(combat, change));
+Hooks.on("updateCombat", (combat, change) => {
+    onCombatRoundAdvance(combat, change);
+    if (change && "round" in change) hud?.refreshIfOpen();
+});
+// Conditions des membres (Fatigued) : un item condition créé/supprimé sur un Personnage du Party.
+const memberOfHudParty = (item) => (hud?.token?.actor?.members ?? []).some((m) => m?.id === item?.parent?.id);
+Hooks.on("createItem", (item) => { if (item?.type === "condition" && memberOfHudParty(item)) hud?.refreshIfOpen(); });
+Hooks.on("deleteItem", (item) => { if (item?.type === "condition" && memberOfHudParty(item)) hud?.refreshIfOpen(); });
 
 // --- Rafraîchissement du Party HUD sur changement de données affichées ---
 // Compteurs de ressources (GPC) : dégrise Cuisiner dès que les ingrédients suffisent.

@@ -1,6 +1,6 @@
 <div class="fw-inner">
     <section class="fw-panel" data-panel="group">
-        <header class="fw-panel-title"><span class="fw-count fw-count-{{groupColor}}">{{groupCount}}</span> {{groupTitle}}</header>
+        <header class="fw-panel-title"><span class="fw-count fw-count-{{groupColor}}">{{groupCount}}</span> {{groupTitle}}{{#if groupSymbols.length}}<span class="fw-round-symbols">{{#each groupSymbols as |sym|}}<img class="fw-round-symbol" src="{{sym.img}}" title="{{sym.title}}" alt="">{{/each}}</span>{{/if}}</header>
         {{#each groupActivities as |activity|}}
         {{> fwActivityRow activity}}
         {{/each}}

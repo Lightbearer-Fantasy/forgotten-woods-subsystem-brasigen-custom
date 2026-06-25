@@ -150,6 +150,8 @@
 #forgotten-woods-party-hud .fw-count-red { color: #c0392b; }
 #forgotten-woods-party-hud .fw-count-white { color: #ffffff; }
 #forgotten-woods-party-hud .fw-count-blue { color: #3aa0ff; }
+#forgotten-woods-party-hud .fw-round-symbols { margin-left: 0.35em; display: inline-flex; gap: 0.15em; vertical-align: middle; }
+#forgotten-woods-party-hud .fw-round-symbol { width: 1.1em; height: 1.1em; }
 
 /* Overlay hex : couleur PC = #ffffff, couleur DC = #5fd0ff (0x5fd0ff).
    Ces couleurs sont appliquées côté PIXI (mapping-points-controller.js),
