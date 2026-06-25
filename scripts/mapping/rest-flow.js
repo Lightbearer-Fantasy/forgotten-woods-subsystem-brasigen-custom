@@ -1,4 +1,4 @@
-import { requestRest } from "./gm-actions.js";
+import { requestRest, requestSetPartyEffect } from "./gm-actions.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.rest.${key}`);
 
@@ -18,5 +18,6 @@ export class RestFlow {
         });
         if (!confirmed) return;
         requestRest(party.id);
+        requestSetPartyEffect(party.id, "rest");
     }
 }

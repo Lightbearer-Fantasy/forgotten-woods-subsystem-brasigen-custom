@@ -39,3 +39,12 @@ describe("withoutEffect", () => {
         expect(withoutEffect(undefined, "cook")).toEqual([]);
     });
 });
+
+describe("PARTY_EFFECTS — clé rest (v0.7)", () => {
+    it("rest a un label i18n et une image", () => {
+        expect(PARTY_EFFECTS.rest).toBeTruthy();
+        expect(PARTY_EFFECTS.rest.label).toBe("FORGOTTEN_WOODS.partyEffect.rest");
+        expect(typeof PARTY_EFFECTS.rest.img).toBe("string");
+        expect(PARTY_EFFECTS.rest.img.length).toBeGreaterThan(0);
+    });
+});

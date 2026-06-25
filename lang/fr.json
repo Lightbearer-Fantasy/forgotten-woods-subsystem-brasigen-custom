@@ -8,7 +8,8 @@
         },
         "partyEffect": {
             "hustle": "S'empresser",
-            "cook": "Cuisiner"
+            "cook": "Cuisiner",
+            "rest": "Se reposer"
         },
         "mapping": {
             "control": "Hex Controls",
