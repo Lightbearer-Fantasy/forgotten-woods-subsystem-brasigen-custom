@@ -17,9 +17,16 @@ const t = (k) => game.i18n.localize(`FORGOTTEN_WOODS.notes.${k}`);
 let pending = null; // { fwPin, secret, description } saisis dans le dialogue en cours
 let openDialog = null; // dialogue « Créer une note » actuellement ouvert (anti-spam)
 
-/** Vrai si l'élément rendu est le dialogue natif de création d'une Note. */
+/**
+ * Vrai si l'élément rendu est le dialogue natif de création d'une Note.
+ * NB : DialogV2 injecte le contenu via innerHTML DANS son propre <form>. Le <form id="document-create">
+ * du gabarit, imbriqué, est supprimé par l'analyseur HTML (formulaires imbriqués interdits) ; seuls
+ * ses champs survivent. On détecte donc par la combinaison de champs (nom + case « journal »),
+ * pas par le formulaire interne.
+ */
 function isNoteCreateDialog(element) {
-    return !!element?.querySelector?.('form#document-create input[name="journal"]');
+    return !!(element?.querySelector?.('input[name="journal"]')
+        && element?.querySelector?.('input[name="name"]'));
 }
 
 /** Hook renderDialogV2 : dédoublonne + injecte le bloc Forgotten Woods. */
@@ -35,8 +42,9 @@ export function onRenderNoteCreateDialog(dialog, element) {
     }
     openDialog = dialog;
 
-    const form = root.querySelector("form#document-create");
-    if (!form || form.querySelector(".fw-note-section")) return;
+    // Cible d'injection : le conteneur du contenu (le <form id="document-create"> a été aplati).
+    const container = root.querySelector(".dialog-content") ?? root.querySelector("form.dialog-form") ?? root;
+    if (!container || container.querySelector(".fw-note-section")) return;
 
     const fwPin = defaultFwPin(isHexScene(canvas?.scene));
     pending = { fwPin, secret: false, description: "" };
@@ -58,7 +66,7 @@ export function onRenderNoteCreateDialog(dialog, element) {
             <textarea name="fw-description" rows="4"></textarea>
         </div>
     `;
-    form.append(section);
+    container.append(section);
     dialog.setPosition?.({ height: "auto" });
 
     // Suivi en direct des valeurs (input couvre frappe clavier + cases).
