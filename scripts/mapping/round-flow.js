@@ -3,6 +3,7 @@
 // La décision est pure (round-resolution.js) ; ici on applique les mutations PF2E.
 
 import { resolveRoundChips } from "./round-resolution.js";
+import { resolveCombatScene } from "./combat-scene.js";
 import { isActiveGM } from "./gm-actions.js";
 import { isHexScene } from "../utils/scene.js";
 import { membersNeedingScout } from "./scout-targets.js";
@@ -57,7 +58,7 @@ async function removeFatigued(members) {
 export async function onCombatRoundAdvance(combat, change) {
     if (!isActiveGM()) return;
     if (!(change && "round" in change)) return;
-    const scene = combat?.scene ?? null;
+    const scene = resolveCombatScene(combat);
     if (!isHexScene(scene)) return;
     const party = partyActorOnScene(scene);
     if (!party) return;
