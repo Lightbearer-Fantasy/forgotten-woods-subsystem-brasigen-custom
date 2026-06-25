@@ -160,6 +160,15 @@
             "exclusiveBody": "Les Joueurs ne peuvent pas S'empresser et Se reposer au cours du même Round. Ajustez les chips correspondants et recommencez le Round.",
             "cookMissing": "Effet : Cuisiner introuvable dans le compendium du module.",
             "hexplorationLabel": "Hexploration"
+        },
+        "notes": {
+            "legend": "Forgotten Woods",
+            "fwPin": "Forgotten Woods Marker",
+            "secret": "Secret",
+            "description": "Description",
+            "noDescription": "(No description.)",
+            "untitled": "Marker",
+            "close": "Close"
         }
     }
 }
