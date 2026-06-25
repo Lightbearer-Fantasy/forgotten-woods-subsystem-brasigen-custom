@@ -10,6 +10,7 @@ import { onCombatRoundAdvance, onCombatEnd } from "./mapping/round-flow.js";
 import { markHexplorationTracker } from "./hud/hexploration-label.js";
 import { onRenderNoteConfig } from "./notes/note-config.js";
 import { FWNote } from "./notes/fw-note.js";
+import { refreshPinReveals } from "./notes/reveal-watcher.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -86,3 +87,11 @@ Hooks.on("renderCombatTracker", (app, html) => markHexplorationTracker(app, html
 
 // --- Repères Forgotten Woods (Map Notes enrichies) ---
 Hooks.on("renderNoteConfig", (app, html) => onRenderNoteConfig(app, html));
+// PC modifiés sur la scène active → recalcule les latches de révélation (MJ).
+Hooks.on("updateScene", (scene, changes) => {
+    if (scene?.id !== canvas?.scene?.id) return;
+    if (changes?.flags && (MODULE_ID in changes.flags)) refreshPinReveals(scene);
+});
+// Pin créé/édité : les PC peuvent déjà dépasser le seuil.
+Hooks.on("createNote", (note) => { if (note?.parent?.id === canvas?.scene?.id) refreshPinReveals(note.parent); });
+Hooks.on("updateNote", (note) => { if (note?.parent?.id === canvas?.scene?.id) refreshPinReveals(note.parent); });
