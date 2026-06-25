@@ -6,7 +6,15 @@
     "img": "icons/consumables/food/bowl-stew-tofu-potato-red.webp",
     "system": {
         "description": { "gm": "", "value": "" },
-        "rules": [],
+        "rules": [
+            {
+                "key": "FlatModifier",
+                "predicate": ["cuisiner"],
+                "removeAfterRoll": "if-enabled",
+                "selector": ["attack", "perception", "saving-throw", "skill-check"],
+                "value": 1
+            }
+        ],
         "slug": "effet-cuisiner",
         "traits": { "otherTags": [], "value": [] },
         "publication": { "title": "Forgotten Woods", "authors": "Brasigen", "license": "OGL", "remaster": false },
