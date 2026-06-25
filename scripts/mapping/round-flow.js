@@ -33,9 +33,12 @@ async function applyCookEffect(members) {
     for (const actor of targets) await actor.createEmbeddedDocuments("Item", [src]);
 }
 
-/** Applique la condition PF2E `fatigued` à chaque Personnage. */
+/** Applique la condition PF2E `fatigued` à chaque Personnage (idempotent). */
 async function applyFatigued(members) {
-    for (const actor of members) await actor.increaseCondition?.("fatigued");
+    for (const actor of members) {
+        const has = actor.itemTypes?.condition?.some?.((c) => c.slug === "fatigued");
+        if (!has) await actor.increaseCondition?.("fatigued");
+    }
 }
 
 /** Retire la condition `fatigued` de chaque Personnage (pattern handleRest). */
@@ -74,7 +77,9 @@ export async function onCombatRoundAdvance(combat, change) {
     const members = characters(party);
     if (decision.applyCook) {
         await applyCookEffect(members);
-        await party.setFlag(MODULE_ID, "cookRound", combat.round);
+        await party.setFlag(MODULE_ID, "cookRound", { round: combat.round, combatId: combat.id });
+    } else {
+        await party.unsetFlag(MODULE_ID, "cookRound");
     }
     if (decision.applyFatigued) await applyFatigued(members);
     if (decision.removeFatigued) await removeFatigued(members);

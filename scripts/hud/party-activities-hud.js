@@ -121,7 +121,11 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
         const base = groupActivityCount(slowestLandSpeed(actor));
         const members = (actor?.members ?? []).filter((m) => m?.type === "character");
         const fatigued = partyFatigued(members);
-        const cook = isCookRound(actor?.getFlag?.("forgotten-woods-brasigen", "cookRound"), game.combat?.round ?? null);
+        const cook = isCookRound(
+            actor?.getFlag?.("forgotten-woods-brasigen", "cookRound"),
+            game.combat?.round ?? null,
+            game.combat?.id ?? null
+        );
         const modifier = roundCountModifier({ fatigued, cook });
         const groupCount = base + modifier;
         const groupColor = roundCountColor(modifier);

@@ -32,7 +32,10 @@ export function partyFatigued(members) {
     );
 }
 
-/** Vrai si le marqueur Cuisiner correspond au Round de combat courant. */
-export function isCookRound(cookRoundFlag, currentRound) {
-    return currentRound != null && cookRoundFlag === currentRound;
+/** Vrai si le marqueur Cuisiner correspond au Round ET au combat courants. */
+export function isCookRound(cookRound, currentRound, currentCombatId) {
+    return currentRound != null
+        && currentCombatId != null
+        && cookRound?.round === currentRound
+        && cookRound?.combatId === currentCombatId;
 }

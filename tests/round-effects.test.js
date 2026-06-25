@@ -39,8 +39,12 @@ describe("partyFatigued", () => {
 });
 
 describe("isCookRound", () => {
-    it("vrai si flag === round courant", () => expect(isCookRound(3, 3)).toBe(true));
-    it("faux si round différent", () => expect(isCookRound(2, 3)).toBe(false));
-    it("faux si pas de combat (round null)", () => expect(isCookRound(3, null)).toBe(false));
-    it("faux si flag absent", () => expect(isCookRound(undefined, 3)).toBe(false));
+    const marker = { round: 3, combatId: "abc" };
+    it("vrai si round ET combatId correspondent", () => expect(isCookRound(marker, 3, "abc")).toBe(true));
+    it("faux si round différent", () => expect(isCookRound(marker, 4, "abc")).toBe(false));
+    it("faux si combatId différent", () => expect(isCookRound(marker, 3, "xyz")).toBe(false));
+    it("faux si pas de combat (round null)", () => expect(isCookRound(marker, null, "abc")).toBe(false));
+    it("faux si combatId null", () => expect(isCookRound(marker, 3, null)).toBe(false));
+    it("faux si marqueur undefined", () => expect(isCookRound(undefined, 3, "abc")).toBe(false));
+    it("faux si marqueur null", () => expect(isCookRound(null, 3, "abc")).toBe(false));
 });
