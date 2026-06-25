@@ -17,10 +17,23 @@ function pinFlags(doc) {
 }
 
 export class FWNote extends foundry.canvas.placeables.Note {
-    /** @override Le MJ voit tout ; le joueur ne voit un pin géré que s'il est révélé. */
-    get visible() {
-        if (game.user?.isGM) return super.visible;
-        return super.visible && pinVisibleToPlayer(pinFlags(this.document));
+    /**
+     * @override Visibilité du placeable.
+     * NB : on surcharge `isVisible` (et non `visible`) car `visible` est une propriété
+     * de données PIXI assignée par le constructeur DisplayObject (`this.visible = true`) ;
+     * un getter seul sur `visible` casse la construction (TypeError « only a getter »).
+     * Foundry assigne `this.visible` depuis `isVisible` dans `_refreshVisibility()`.
+     *
+     * MJ et notes non gérées : comportement natif. Pour un pin géré côté joueur, on renvoie
+     * directement le latch de révélation, SANS le `&& super.isVisible` natif : un pin n'a pas
+     * de JournalEntry et le natif gate sur la permission d'entrée / l'affichage des notes /
+     * la vision des tokens → un pin révélé pourrait ne jamais s'afficher (risque T5).
+     */
+    get isVisible() {
+        const flags = pinFlags(this.document);
+        if (!flags.fwPin) return super.isVisible;
+        if (game.user?.isGM) return super.isVisible;
+        return pinVisibleToPlayer(flags);
     }
 
     /** @override Double-clic (geste « ouvrir ») : pop-up custom pour un pin géré. */
