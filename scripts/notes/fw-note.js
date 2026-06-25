@@ -61,18 +61,48 @@ export class FWNote extends foundry.canvas.placeables.Note {
     }
 
     /**
-     * @override Simple clic gauche sur un pin géré → pop-up description, à côté du pin.
-     * `clickLeft` se déclenche au pointer-down : on STOPPE la propagation (comme le natif),
-     * sinon l'événement remonte au calque qui arme son rectangle de sélection (marquee bloqué).
+     * @override Permission « view » (gate du double clic clickLeft2). Le natif renvoie faux
+     * pour une note sans JournalEntry → le double-clic MJ ne se déclencherait jamais. On
+     * l'autorise pour un pin géré afin que `_onClickLeft2` (pop-up MJ) parte.
+     */
+    _canView(user, event) {
+        if (pinFlags(this.document).fwPin) return true;
+        return super._canView(user, event);
+    }
+
+    /**
+     * @override Simple clic gauche sur un pin géré.
+     *  - Joueur : ouvre la pop-up description, à côté du pin.
+     *  - MJ : comportement natif (sélection/contrôle) pour pouvoir déplacer/supprimer le pin
+     *    en mode Select Notes. La pop-up MJ s'ouvre au DOUBLE clic (`_onClickLeft2`).
+     * `clickLeft` se déclenche au pointer-down : côté joueur on STOPPE la propagation (comme
+     * le natif), sinon l'événement remonte au calque qui arme son rectangle de sélection.
      */
     _onClickLeft(event) {
         if (!pinFlags(this.document).fwPin) return super._onClickLeft(event);
+        if (game.user?.isGM) return super._onClickLeft(event);
+        this.#openPopup(event);
+        event?.stopPropagation?.();
+    }
+
+    /**
+     * @override Double clic gauche sur un pin géré.
+     *  - MJ : ouvre la pop-up description (le simple clic sert à sélectionner).
+     *  - Joueur : pop-up déjà ouverte au simple clic (dédupliquée) → rien à faire.
+     */
+    _onClickLeft2(event) {
+        if (!pinFlags(this.document).fwPin) return super._onClickLeft2(event);
+        if (game.user?.isGM) this.#openPopup(event);
+        event?.stopPropagation?.();
+    }
+
+    /** Ouvre la pop-up description du pin, positionnée à côté du clic. */
+    #openPopup(event) {
         openPinPopup({
             name: this.document.text,
             description: this.document.getFlag(MODULE_ID, "description"),
             anchor: { x: event?.clientX, y: event?.clientY },
             key: this.document.id
         });
-        event?.stopPropagation?.();
     }
 }
