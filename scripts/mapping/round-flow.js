@@ -31,6 +31,13 @@ async function applyCookEffect(members) {
     if (!src) { ui.notifications.warn(game.i18n.localize("FORGOTTEN_WOODS.round.cookMissing")); return; }
     src.flags = src.flags ?? {};
     src.flags.core = { ...(src.flags.core ?? {}), sourceId: COOK_EFFECT_UUID };
+    // Durée "unlimited" : on gère nous-mêmes l'expiration (removeCookEffect au
+    // Round suivant). PF2E ne suit donc PAS cet effet dans son EffectTracker et
+    // ne tente pas de l'auto-supprimer. Sinon, comme tous les PJ portent un effet
+    // expirant au MÊME tick, deux passes de refresh() suppriment le même id →
+    // « Item does not exist! » (double-delete dans #removeExpired).
+    src.system = src.system ?? {};
+    src.system.duration = { value: -1, unit: "unlimited", expiry: null, sustained: false };
     for (const actor of targets) await actor.createEmbeddedDocuments("Item", [src]);
 }
 
@@ -98,6 +105,10 @@ export async function onCombatRoundAdvance(combat, change) {
     }
 
     const members = characters(party);
+    // Expiration maîtrisée de l'Effet: Cuisiner : on retire systématiquement
+    // celui du Round précédent (passe unique, pas de course avec PF2E), puis on
+    // ré-applique si Cuisiner est de nouveau choisi ce Round.
+    await removeCookEffect(members);
     if (decision.applyCook) {
         await applyCookEffect(members);
         await party.setFlag(MODULE_ID, "cookRound", { round: combat.round, combatId: combat.id });
