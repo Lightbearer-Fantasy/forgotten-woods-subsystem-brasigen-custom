@@ -76,6 +76,7 @@ async function openFwNoteCreateDialog(noteData) {
         const anchorDefault = CONST.TEXT_ANCHOR_POINTS.BOTTOM;
 
         const content = `
+            <div class="fw-note-dialog-body">
             <div class="form-group">
                 <label>${t("preset")}</label>
                 <div class="form-fields">
@@ -152,7 +153,8 @@ async function openFwNoteCreateDialog(noteData) {
                     <label>${t("description")}</label>
                     <textarea name="description" rows="4"></textarea>
                 </div>
-            </fieldset>`;
+            </fieldset>
+            </div>`;
 
         const result = await DialogV2.prompt({
             window: { title: t("createTitle") },
