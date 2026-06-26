@@ -12,6 +12,8 @@ import { onRenderNoteConfig } from "./notes/note-config.js";
 import { FWNote } from "./notes/fw-note.js";
 import { refreshPinReveals } from "./notes/reveal-watcher.js";
 import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
+import { installWorldExplorerRevealWrap } from "./mapping/we-reveal-wrap.js";
+import { isPartyToken } from "./utils/scene.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -44,6 +46,27 @@ Hooks.on("canvasReady", () => {
 });
 
 Hooks.once("ready", () => { registerSocket(); registerGmActions(); registerCraftTempHooks(); });
+
+// World Explorer : applique le delta de révélation des chips (plaines/marais).
+Hooks.once("ready", () => installWorldExplorerRevealWrap());
+
+// --- Révélation dynamique World Explorer (fix B) ---
+const fwRefreshWorldExplorer = foundry.utils.debounce(
+    () => canvas.worldExplorer?.refreshMask?.(), 50
+);
+// Le Token Party se déplace → recalcule le halo tout de suite (sans attendre le prochain mouvement).
+Hooks.on("updateToken", (doc, changes) => {
+    if (("x" in (changes ?? {}) || "y" in (changes ?? {})) && isPartyToken(doc)) {
+        fwRefreshWorldExplorer();
+    }
+});
+// Les chips d'un Hex changent → recalcule le halo (plaines/marais).
+Hooks.on("updateScene", (scene, changes) => {
+    if (scene?.id !== canvas?.scene?.id) return;
+    if (changes?.flags?.[MODULE_ID] && ("hexChips" in changes.flags[MODULE_ID])) {
+        fwRefreshWorldExplorer();
+    }
+});
 
 // --- Système de Points de Cartographie (MJ) ---
 Hooks.on("getSceneControlButtons", (controls) => mapping?.getControls(controls));
