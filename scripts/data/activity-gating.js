@@ -20,6 +20,8 @@ export function activityDisabled(activity, ctx) {
             return !ctx.campPresent || ctx.ingredientCount < ctx.characterCount;
         case "rest":
             return !ctx.campPresent;
+        case "make-camp":
+            return ctx.campPresent; // grisé si un camp est déjà sur le Hex du Party
         default:
             return false; // repair inclus : jamais grisé
     }

@@ -51,4 +51,13 @@ describe("activityDisabled", () => {
         expect(activityDisabled({ id: "rest" }, gm)).toBe(false);
         expect(activityDisabled({ id: "treat-wounds" }, gm)).toBe(false);
     });
+    it("Monter le camp grisé si un camp est déjà présent", () => {
+        expect(activityDisabled({ id: "make-camp" }, { ...base, campPresent: true })).toBe(true);
+    });
+    it("Monter le camp actif s'il n'y a pas de camp", () => {
+        expect(activityDisabled({ id: "make-camp" }, { ...base, campPresent: false })).toBe(false);
+    });
+    it("Monter le camp jamais grisé pour le MJ, même avec un camp", () => {
+        expect(activityDisabled({ id: "make-camp" }, { ...base, isGM: true, campPresent: true })).toBe(false);
+    });
 });
