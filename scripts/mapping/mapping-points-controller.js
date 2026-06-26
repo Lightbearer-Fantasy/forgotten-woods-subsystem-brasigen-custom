@@ -446,6 +446,7 @@ export class MappingPointsController {
         const value = Number(raw);
         if (Number.isNaN(value)) return;
         setDC(this.scene, keys, Math.max(0, Math.trunc(value)));
+        this.#selection.clear(); // libère la sélection pour enchaîner sur d'autres Hex
     }
 
     /** Clés "i,j" de tous les hex de la scène (centre dans la zone de scène). */
@@ -494,6 +495,7 @@ export class MappingPointsController {
         });
         if (!chipId || !getChip(chipId)) return;
         applyChip(this.scene, offsets.map((o) => offsetToKey(o)), chipId);
+        this.#selection.clear(); // libère la sélection pour enchaîner sur d'autres Hex
     }
 
     /** Remise à zéro de tous les chips de la scène (MJ). */
