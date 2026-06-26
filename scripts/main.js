@@ -15,6 +15,9 @@ import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
 import { installWorldExplorerRevealWrap } from "./mapping/we-reveal-wrap.js";
 import { onRenderSceneConfig } from "./mapping/aspect-scene-config.js";
 import { isPartyToken } from "./utils/scene.js";
+import { spacesInRange } from "./utils/hex.js";
+import { chipsAt } from "./mapping/hex-chips-store.js";
+import { effectiveRange } from "./mapping/reveal-modifiers.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -55,9 +58,28 @@ Hooks.once("ready", () => installWorldExplorerRevealWrap());
 const fwRefreshWorldExplorer = foundry.utils.debounce(
     () => canvas.worldExplorer?.refreshMask?.(), 50
 );
-// Le Token Party se déplace → recalcule le halo tout de suite (sans attendre le prochain mouvement).
+
+// Persiste INDIVIDUELLEMENT l'empreinte de révélation du Party (Hex + anneau modulé par
+// les chips), au lieu de ne mémoriser que le centre et de peindre les voisins via un halo
+// gridReveal. Chaque Hex révélé a ainsi son propre état → le MJ peut en cacher n'importe
+// lequel (central ou adjacent). Requiert gridReveal=0 côté scène (sinon les halos persistent).
+function fwPersistPartyReveal(tokenDoc) {
+    const we = canvas.worldExplorer;
+    if (!game.user.isGM || !we?.enabled) return;
+    const token = tokenDoc.object;
+    if (!token) return;
+    const origin = canvas.grid.getOffset(token.center);
+    const base = we.settings?.tokenReveal?.value ?? 1;
+    const steps = effectiveRange(base, chipsAt(we.scene, origin));
+    for (const offset of spacesInRange(origin, steps)) {
+        we.setRevealed({ offset, coords: canvas.grid.getCenterPoint(offset) }, true);
+    }
+}
+
+// Le Token Party se déplace → persiste l'empreinte (qui déclenche aussi le refresh du masque).
 Hooks.on("updateToken", (doc, changes) => {
     if (("x" in (changes ?? {}) || "y" in (changes ?? {})) && isPartyToken(doc)) {
+        fwPersistPartyReveal(doc);
         fwRefreshWorldExplorer();
     }
 });

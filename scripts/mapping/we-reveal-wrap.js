@@ -1,12 +1,22 @@
 // scripts/mapping/we-reveal-wrap.js
 // Enveloppe World Explorer : on patche _getSpacesInRange, la méthode par laquelle WE
-// calcule les DEUX halos de révélation (autour des tokens ET autour des Hex explorés),
-// toujours avec originOffset = Hex émetteur. On y ajoute le delta des chips de cet Hex.
-// Couvre uniquement le mode "spaces" (le mode "grid units" dessine des cercles sans
-// passer par cette méthode — non géré, cf. spec).
+// calcule ses halos de révélation. On n'applique le delta des chips qu'au halo VIVANT
+// d'un token (Party) — quand un token visible est sur l'Hex émetteur. On NE l'applique
+// PAS à l'extension des Hex explorés persistés (gridReveal) : sinon les Hex persistés
+// refusionnent en un halo de rayon ≥1 sur les Plaines, et le MJ ne peut plus les cacher
+// un par un (cf. bug « Hide Hex »). Mode "spaces" uniquement (cf. spec).
 
 import { chipsAt } from "./hex-chips-store.js";
 import { effectiveRange } from "./reveal-modifiers.js";
+
+/** Vrai si un token visible (ami/joueur) occupe l'Hex `originOffset`. */
+function tokenOnHex(layer, originOffset) {
+    for (const token of layer._getViewableTokens()) {
+        const o = canvas.grid.getOffset(token.center);
+        if (o.i === originOffset.i && o.j === originOffset.j) return true;
+    }
+    return false;
+}
 
 /** Patch unique de WorldExplorerLayer.prototype._getSpacesInRange. No-op si WE absent. */
 export function installWorldExplorerRevealWrap() {
@@ -15,6 +25,7 @@ export function installWorldExplorerRevealWrap() {
     const orig = layerClass.prototype._getSpacesInRange;
     if (typeof orig !== "function") return;
     layerClass.prototype._getSpacesInRange = function (originOffset, steps) {
+        if (!tokenOnHex(this, originOffset)) return orig.call(this, originOffset, steps);
         const chips = chipsAt(this.scene, originOffset);
         return orig.call(this, originOffset, effectiveRange(steps, chips));
     };
