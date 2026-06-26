@@ -1,6 +1,7 @@
-import { autoIncrement } from "./auto-increment.js";
+import { mapAreaPlan } from "./auto-increment.js";
 import { coordsToOffset } from "../utils/hex.js";
 import { dcAt } from "./mapping-dc-store.js";
+import { chipsAt } from "./hex-chips-store.js";
 import { slowestLandSpeed, groupActivityCount } from "../hud/party-counts.js";
 import {
     isLockArbiter, tryAcquireLocal, releaseLocal,
@@ -32,26 +33,26 @@ export class MapAreaFlow {
         }
         const release = () => (arbiter ? releaseLocal() : sendRelease());
 
-        // 2. Prompt AG + rayon → autoDelta et radius (sans appliquer).
+        // 2. Prompt AG + rayon (réponse, sans encore calculer le plan).
         const ag = groupActivityCount(slowestLandSpeed(actor));
         const choice = await this.#promptAG(ag);
         if (choice == null) { release(); return; }
 
-        let radius = 1;
-        let autoDelta = 0;
+        let increased = false;
         if (choice >= 2) {
-            const increased = await this.#promptRadius();
-            if (increased == null) { release(); return; }
-            ({ radius, delta: autoDelta } = autoIncrement(choice, increased));
+            const answer = await this.#promptRadius();
+            if (answer == null) { release(); return; }
+            increased = answer;
         }
 
-        // 3. Garde Hex DC.
+        // 3. Position du Party (détermine les chips de terrain) + garde Hex DC.
         const scene = canvas.scene;
         const offset = coordsToOffset(token.center);
         const dc = dcAt(scene, offset);
         if (!dc) { ui.notifications.warn(t("noDC")); release(); return; }
 
-        // 4. Délégation au MJ (qui appliquera les PC et relâchera le verrou).
+        // 4. Plan (rayon modulé par les chips du Hex du Party) → délégation au MJ.
+        const { radius, autoDelta } = mapAreaPlan(choice, increased, chipsAt(scene, offset));
         startRound({
             sceneId: scene.id, tokenId: token.id, offset, radius, autoDelta, dc
         });
