@@ -18,7 +18,11 @@ export function onRenderSceneConfig(app, html) {
     if (!root) return;
     const scene = app.document;
     if (!isHexScene(scene)) return;
-    const tab = root.querySelector('[data-tab="worldExplorer"]');
+    // Cibler le PANNEAU de l'onglet (div.tab), pas le lien de navigation
+    // <a data-tab="worldExplorer"> : les deux portent data-tab, et le lien
+    // arrive en premier dans le DOM → sinon le bloc se greffe sur le bouton
+    // d'onglet et flotte hors de la zone de contenu.
+    const tab = root.querySelector('.tab[data-tab="worldExplorer"]');
     if (!tab || tab.querySelector(".fw-aspect-setting")) return;
 
     const t = (k) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${k}`);
