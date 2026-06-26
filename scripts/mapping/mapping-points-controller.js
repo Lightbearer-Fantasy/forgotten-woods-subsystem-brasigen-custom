@@ -5,8 +5,9 @@ import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
 import { aspectOf, setAspect } from "./aspect-store.js";
 import { aspectOptions, aspectLabelKey } from "../data/aspects.js";
 import { clearAllCamps } from "./camp-store.js";
-import { applyChip, clearAllChips } from "./hex-chips-store.js";
+import { applyChip, clearAllChips, removeChip } from "./hex-chips-store.js";
 import { getChip, terrains, markers } from "../data/hex-chips.js";
+import { renderChipOverlay, clearChipOverlay } from "../canvas/chip-overlay.js";
 
 const CONTROL = "forgottenWoods";
 const TOOL_SELECT = "selectHex";
@@ -210,12 +211,14 @@ export class MappingPointsController {
         if (this.#displayMode !== "none" && this.#activeTool && scene?.id === this.scene?.id) {
             this.#renderOverlay();
         }
+        if (this.#activeTool && scene?.id === this.scene?.id) this.#renderChips();
     }
 
     #enable() {
         this.#attachListeners();
         this.#selection.showHighlight();
         this.#refreshOverlay();
+        this.#renderChips();
     }
 
     #disable() {
@@ -223,6 +226,7 @@ export class MappingPointsController {
         this.#selection.hideHighlight();
         this.#selection.clear();
         this.#clearOverlay();
+        clearChipOverlay();
     }
 
     destroy() {
@@ -636,5 +640,10 @@ export class MappingPointsController {
             this.#overlay.destroy({ children: true });
             this.#overlay = null;
         }
+    }
+
+    /** (Re)dessine les boules de chips, avec retrait au clic du ✕. */
+    #renderChips() {
+        renderChipOverlay(this.scene, (offset, chipId) => removeChip(this.scene, offset, chipId));
     }
 }
