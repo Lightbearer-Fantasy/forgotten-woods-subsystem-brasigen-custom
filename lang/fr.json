@@ -23,7 +23,9 @@
                 "setDC": "Définir le DC des hex sélectionnés",
                 "resetDC": "Remettre à 0 tous les DC de la scène",
                 "setAspect": "Définir l'Aspect de la scène",
-                "resetCamps": "Démonter tous les camps"
+                "resetCamps": "Démonter tous les camps",
+                "setChip": "Poser un chip sur les Hex sélectionnés",
+                "resetChips": "Réinitialiser les chips de la scène"
             },
             "reset": {
                 "title": "Réinitialiser les Points de Cartographie",
@@ -46,7 +48,28 @@
             "resetCamps": {
                 "title": "Démonter les camps",
                 "confirm": "Démonter tous les camps de la scène ?"
-            }
+            },
+            "setChipPrompt": {
+                "title": "Poser un chip",
+                "label": "Chip à appliquer à la sélection :",
+                "noSelection": "Sélectionnez d'abord un ou plusieurs Hex.",
+                "terrains": "Terrains",
+                "markers": "Marqueurs"
+            },
+            "resetChips": {
+                "title": "Réinitialiser les chips",
+                "confirm": "Retirer tous les chips de tous les Hex de cette scène ?"
+            },
+            "chips": {
+                "plaines": "Plaines herbeuses",
+                "marais": "Marais",
+                "foret": "Forêt",
+                "foret-ancienne": "Forêt ancienne",
+                "montagne": "Montagne",
+                "ancre": "Ancre",
+                "orme-blanc": "Orme Blanc"
+            },
+            "removeChip": "Retirer ce chip"
         },
         "makeCamp": {
             "title": "Monter le camp",

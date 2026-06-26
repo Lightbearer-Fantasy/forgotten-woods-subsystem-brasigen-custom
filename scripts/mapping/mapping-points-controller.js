@@ -5,6 +5,8 @@ import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
 import { aspectOf, setAspect } from "./aspect-store.js";
 import { aspectOptions, aspectLabelKey } from "../data/aspects.js";
 import { clearAllCamps } from "./camp-store.js";
+import { applyChip, clearAllChips } from "./hex-chips-store.js";
+import { getChip, terrains, markers } from "../data/hex-chips.js";
 
 const CONTROL = "forgottenWoods";
 const TOOL_SELECT = "selectHex";
@@ -17,6 +19,8 @@ const TOOL_SET_DC = "setDC";
 const TOOL_RESET_DC = "resetDC";
 const TOOL_SET_ASPECT = "setAspect";
 const TOOL_RESET_CAMPS = "resetCamps";
+const TOOL_SET_CHIP = "setChip";
+const TOOL_RESET_CHIPS = "resetChips";
 
 /**
  * États actifs des deux toggles d'affichage dérivés du mode courant.
@@ -164,6 +168,22 @@ export class MappingPointsController {
                     icon: "fa-solid fa-campground",
                     button: true,
                     onChange: () => this.resetAllCamps()
+                },
+                [TOOL_SET_CHIP]: {
+                    name: TOOL_SET_CHIP,
+                    order: 11,
+                    title: t("tools.setChip"),
+                    icon: "fa-solid fa-hexagon-image",
+                    button: true,
+                    onChange: () => this.promptSetChip()
+                },
+                [TOOL_RESET_CHIPS]: {
+                    name: TOOL_RESET_CHIPS,
+                    order: 12,
+                    title: t("tools.resetChips"),
+                    icon: "fa-solid fa-broom-wide",
+                    button: true,
+                    onChange: () => this.resetAllChips()
                 }
             },
             activeTool: TOOL_SELECT
@@ -512,6 +532,46 @@ export class MappingPointsController {
         });
         if (!confirmed) return;
         clearAllDC(this.scene);
+    }
+
+    /** Menu de pose d'un chip sur les Hex sélectionnés (MJ). */
+    async promptSetChip() {
+        if (!game.user.isGM || !isHexScene(this.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const offsets = this.#selection.getAll();
+        if (offsets.length === 0) {
+            ui.notifications.warn(t("setChipPrompt.noSelection"));
+            return;
+        }
+        const optGroup = (labelKey, chips) =>
+            `<optgroup label="${t(labelKey)}">` +
+            chips.map((c) => `<option value="${c.id}">${game.i18n.localize(c.labelKey)}</option>`).join("") +
+            `</optgroup>`;
+        const select = `<select name="chip" autofocus>` +
+            optGroup("setChipPrompt.terrains", terrains()) +
+            optGroup("setChipPrompt.markers", markers()) +
+            `</select>`;
+        const chipId = await foundry.applications.api.DialogV2.prompt({
+            window: { title: t("setChipPrompt.title") },
+            content: `<p>${t("setChipPrompt.label")}</p>${select}`,
+            ok: { callback: (event, button) => button.form.elements.chip.value },
+            modal: true
+        });
+        if (!chipId || !getChip(chipId)) return;
+        applyChip(this.scene, offsets.map((o) => offsetToKey(o)), chipId);
+    }
+
+    /** Remise à zéro de tous les chips de la scène (MJ). */
+    async resetAllChips() {
+        if (!game.user.isGM || !isHexScene(this.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const confirmed = await foundry.applications.api.DialogV2.confirm({
+            window: { title: t("resetChips.title") },
+            content: `<p>${t("resetChips.confirm")}</p>`,
+            modal: true
+        });
+        if (!confirmed) return;
+        clearAllChips(this.scene);
     }
 
     /** Menu de sélection de l'Aspect de la scène (MJ). */
