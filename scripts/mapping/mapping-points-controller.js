@@ -17,10 +17,9 @@ const TOOL_CLEAN = "cleanScene";
 
 /**
  * Contrôleur de l'onglet « Hex Controls » (MJ, scène hexagonale).
- * 8 entrées : sélection de hex (radio, défaut), affichage des PC (toggle),
- * incrément/décrément des PC (radio), affichage des DC (toggle),
- * définir le DC (bouton), incrément par proximité (bouton),
- * remise à zéro des PC (bouton), remise à zéro des DC (bouton).
+ * 6 entrées : sélection de hex (radio, défaut), afficher des infos
+ * (dialogue PC/DC/Chips/Aucun), incrément/décrément des PC (radio),
+ * définir le DC (bouton), poser un chip (bouton), nettoyer la scène (bouton).
  * Consomme un HexSelection autonome pour la sélection + la surbrillance.
  */
 export class MappingPointsController {
