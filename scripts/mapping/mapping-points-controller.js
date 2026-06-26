@@ -2,8 +2,6 @@ import { isHexScene, isPartyToken } from "../utils/scene.js";
 import { coordsToOffset, offsetToKey, offsetsInRect } from "../utils/hex.js";
 import { readPoints, applyDeltas, clearAllPoints, buildRangeDeltas } from "./mapping-points-store.js";
 import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
-import { aspectOf, setAspect } from "./aspect-store.js";
-import { aspectOptions, aspectLabelKey } from "../data/aspects.js";
 import { clearAllCamps } from "./camp-store.js";
 import { applyChip, clearAllChips, removeChip } from "./hex-chips-store.js";
 import { getChip, terrains, markers } from "../data/hex-chips.js";
@@ -11,28 +9,11 @@ import { renderChipOverlay, clearChipOverlay } from "../canvas/chip-overlay.js";
 
 const CONTROL = "forgottenWoods";
 const TOOL_SELECT = "selectHex";
-const TOOL_SHOW = "showPoints";
+const TOOL_SHOW_INFO = "showInfo";
 const TOOL_EDIT = "editPoints";
-const TOOL_PARTY = "aroundParty";
-const TOOL_RESET = "resetPoints";
-const TOOL_SHOW_DC = "showDC";
 const TOOL_SET_DC = "setDC";
-const TOOL_RESET_DC = "resetDC";
-const TOOL_SET_ASPECT = "setAspect";
-const TOOL_RESET_CAMPS = "resetCamps";
 const TOOL_SET_CHIP = "setChip";
-const TOOL_RESET_CHIPS = "resetChips";
-
-/**
- * États actifs des deux toggles d'affichage dérivés du mode courant.
- * Invariant : au plus un toggle actif, et il correspond exactement au mode
- * (exclusivité au niveau des boutons). Pur — testable hors Foundry.
- * @param {"pc"|"dc"|"none"} displayMode
- * @returns {{pc: boolean, dc: boolean}}
- */
-export function toggleActiveStates(displayMode) {
-    return { pc: displayMode === "pc", dc: displayMode === "dc" };
-}
+const TOOL_CLEAN = "cleanScene";
 
 /**
  * Contrôleur de l'onglet « Hex Controls » (MJ, scène hexagonale).
@@ -47,7 +28,7 @@ export class MappingPointsController {
     #selection;
     /** Outil radio actif du groupe : TOOL_SELECT | TOOL_EDIT | null. */
     #activeTool = null;
-    /** Mode d'affichage de l'overlay : "pc" | "dc" | "none". PC par défaut. */
+    /** Mode d'affichage : "pc" | "dc" | "chips" | "none". PC par défaut. */
     #displayMode = "pc";
     /** @type {PIXI.Container|null} */
     #overlay = null;
@@ -98,14 +79,13 @@ export class MappingPointsController {
                     title: t("tools.selectHex"),
                     icon: "fa-solid fa-location-crosshairs"
                 },
-                [TOOL_SHOW]: {
-                    name: TOOL_SHOW,
+                [TOOL_SHOW_INFO]: {
+                    name: TOOL_SHOW_INFO,
                     order: 2,
-                    title: t("tools.showPoints"),
-                    icon: "fa-solid fa-list-ol",
-                    toggle: true,
-                    active: this.#displayMode === "pc",
-                    onChange: (event, active) => this.#onTogglePC(active)
+                    title: t("tools.showInfo"),
+                    icon: "fa-solid fa-eye",
+                    button: true,
+                    onChange: () => this.promptDisplay()
                 },
                 [TOOL_EDIT]: {
                     name: TOOL_EDIT,
@@ -113,78 +93,29 @@ export class MappingPointsController {
                     title: t("tools.editPoints"),
                     icon: "fa-solid fa-hexagon-plus"
                 },
-                [TOOL_SHOW_DC]: {
-                    name: TOOL_SHOW_DC,
-                    order: 4,
-                    title: t("tools.showDC"),
-                    icon: "fa-solid fa-flag-checkered",
-                    toggle: true,
-                    active: this.#displayMode === "dc",
-                    onChange: (event, active) => this.#onToggleDC(active)
-                },
                 [TOOL_SET_DC]: {
                     name: TOOL_SET_DC,
-                    order: 5,
+                    order: 4,
                     title: t("tools.setDC"),
                     icon: "fa-solid fa-pen-to-square",
                     button: true,
                     onChange: () => this.promptSetDC()
                 },
-                [TOOL_PARTY]: {
-                    name: TOOL_PARTY,
-                    order: 6,
-                    title: t("tools.aroundParty"),
-                    icon: "fa-solid fa-people-group",
-                    button: true,
-                    onChange: () => this.incrementAroundParty()
-                },
-                [TOOL_RESET]: {
-                    name: TOOL_RESET,
-                    order: 7,
-                    title: t("tools.resetPoints"),
-                    icon: "fa-solid fa-trash",
-                    button: true,
-                    onChange: () => this.resetAllPoints()
-                },
-                [TOOL_RESET_DC]: {
-                    name: TOOL_RESET_DC,
-                    order: 8,
-                    title: t("tools.resetDC"),
-                    icon: "fa-solid fa-eraser",
-                    button: true,
-                    onChange: () => this.resetAllDC()
-                },
-                [TOOL_SET_ASPECT]: {
-                    name: TOOL_SET_ASPECT,
-                    order: 9,
-                    title: t("tools.setAspect"),
-                    icon: "fa-solid fa-mountain-sun",
-                    button: true,
-                    onChange: () => this.promptSetAspect()
-                },
-                [TOOL_RESET_CAMPS]: {
-                    name: TOOL_RESET_CAMPS,
-                    order: 10,
-                    title: t("tools.resetCamps"),
-                    icon: "fa-solid fa-campground",
-                    button: true,
-                    onChange: () => this.resetAllCamps()
-                },
                 [TOOL_SET_CHIP]: {
                     name: TOOL_SET_CHIP,
-                    order: 11,
+                    order: 5,
                     title: t("tools.setChip"),
                     icon: "fa-solid fa-hexagon-image",
                     button: true,
                     onChange: () => this.promptSetChip()
                 },
-                [TOOL_RESET_CHIPS]: {
-                    name: TOOL_RESET_CHIPS,
-                    order: 12,
-                    title: t("tools.resetChips"),
+                [TOOL_CLEAN]: {
+                    name: TOOL_CLEAN,
+                    order: 6,
+                    title: t("tools.cleanScene"),
                     icon: "fa-solid fa-broom-wide",
                     button: true,
-                    onChange: () => this.resetAllChips()
+                    onChange: () => this.promptCleanScene()
                 }
             },
             activeTool: TOOL_SELECT
@@ -206,19 +137,15 @@ export class MappingPointsController {
         }
     }
 
-    /** Rafraîchit l'overlay si affiché (sur updateScene). */
+    /** Rafraîchit l'affichage courant (overlay nombres ou chips) sur updateScene. */
     onUpdateScene(scene) {
-        if (this.#displayMode !== "none" && this.#activeTool && scene?.id === this.scene?.id) {
-            this.#renderOverlay();
-        }
-        if (this.#activeTool && scene?.id === this.scene?.id) this.#renderChips();
+        if (this.#activeTool && scene?.id === this.scene?.id) this.#applyDisplay();
     }
 
     #enable() {
         this.#attachListeners();
         this.#selection.showHighlight();
-        this.#refreshOverlay();
-        this.#renderChips();
+        this.#applyDisplay();
     }
 
     #disable() {
@@ -234,44 +161,49 @@ export class MappingPointsController {
         this.#selection.destroy();
     }
 
-    // --- Toggles d'affichage (PC / DC mutuellement exclusifs) ---
+    // --- Affichage des informations (PC / DC / Chips / Aucun, exclusifs) ---
 
-    #onTogglePC(active) {
-        const on = typeof active === "boolean" ? active : this.#displayMode !== "pc";
-        this.#displayMode = on ? "pc" : "none";
-        this.#syncToggleStates();
+    /** Applique le mode d'affichage courant : overlay nombres + boules de chips. */
+    #applyDisplay() {
         this.#refreshOverlay();
+        this.#refreshChips();
     }
 
-    #onToggleDC(active) {
-        const on = typeof active === "boolean" ? active : this.#displayMode !== "dc";
-        this.#displayMode = on ? "dc" : "none";
-        this.#syncToggleStates();
-        this.#refreshOverlay();
-    }
-
-    /**
-     * Aligne l'état actif *vivant* des deux toggles sur #displayMode, puis
-     * redessine la barre. Indispensable : Foundry ne bascule que le toggle
-     * cliqué et `render()` ne ré-exécute pas getControls (pas de `reset`), donc
-     * sans cela l'autre toggle resterait allumé sans effet. Le template rend
-     * `aria-pressed` depuis `tool.active` (cloné au render), d'où l'écriture
-     * directe sur l'objet outil vivant — même pattern que `togglePalette`.
-     */
-    #syncToggleStates() {
-        const tools = ui.controls?.controls?.[CONTROL]?.tools;
-        if (tools) {
-            const states = toggleActiveStates(this.#displayMode);
-            if (tools[TOOL_SHOW]) tools[TOOL_SHOW].active = states.pc;
-            if (tools[TOOL_SHOW_DC]) tools[TOOL_SHOW_DC].active = states.dc;
-        }
-        ui.controls?.render();
-    }
-
-    /** (Re)dessine l'overlay selon le mode courant, ou l'efface. */
+    /** (Re)dessine l'overlay des nombres si mode pc/dc, sinon l'efface. */
     #refreshOverlay() {
-        if (this.#displayMode !== "none" && this.#activeTool) this.#renderOverlay();
-        else this.#clearOverlay();
+        if ((this.#displayMode === "pc" || this.#displayMode === "dc") && this.#activeTool) {
+            this.#renderOverlay();
+        } else {
+            this.#clearOverlay();
+        }
+    }
+
+    /** (Re)dessine les boules de chips si mode "chips", sinon les efface. */
+    #refreshChips() {
+        if (this.#displayMode === "chips" && this.#activeTool) {
+            renderChipOverlay(this.scene, (offset, chipId) => removeChip(this.scene, offset, chipId));
+        } else {
+            clearChipOverlay();
+        }
+    }
+
+    /** Dialogue de choix de l'information à afficher sur les Hex (MJ). */
+    async promptDisplay() {
+        if (!game.user.isGM || !isHexScene(this.scene)) return;
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const mode = await foundry.applications.api.DialogV2.wait({
+            window: { title: t("displayPrompt.title") },
+            content: `<p>${t("displayPrompt.label")}</p>`,
+            buttons: [
+                { action: "pc", label: t("displayPrompt.pc"), callback: () => "pc" },
+                { action: "dc", label: t("displayPrompt.dc"), callback: () => "dc" },
+                { action: "chips", label: t("displayPrompt.chips"), callback: () => "chips" },
+                { action: "none", label: t("displayPrompt.none"), default: true, callback: () => "none" }
+            ]
+        });
+        if (mode == null) return;
+        this.#displayMode = mode;
+        this.#applyDisplay();
     }
 
     // --- Écouteurs pointeur ---
@@ -578,24 +510,42 @@ export class MappingPointsController {
         clearAllChips(this.scene);
     }
 
-    /** Menu de sélection de l'Aspect de la scène (MJ). */
-    async promptSetAspect() {
+    /** Dialogue « Nettoyer la Scène » : choisir une remise à zéro (MJ). */
+    async promptCleanScene() {
         if (!game.user.isGM || !isHexScene(this.scene)) return;
         const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
-        const current = aspectOf(this.scene) ?? "";
-        const opts = aspectOptions().map(({ value, labelKey }) => {
-            const selected = value === current ? " selected" : "";
-            return `<option value="${value}"${selected}>${game.i18n.localize(labelKey)}</option>`;
-        }).join("");
-        const raw = await foundry.applications.api.DialogV2.prompt({
-            window: { title: t("setAspectPrompt.title") },
-            content: `<p>${t("setAspectPrompt.label")}</p>`
-                + `<select name="aspect" autofocus>${opts}</select>`,
-            ok: { callback: (event, button) => button.form.elements.aspect.value },
+        const action = await foundry.applications.api.DialogV2.wait({
+            window: { title: t("cleanPrompt.title") },
+            content: `<p>${t("cleanPrompt.label")}</p>`,
+            buttons: [
+                { action: "pc", label: t("cleanPrompt.pc"), callback: () => "pc" },
+                { action: "dc", label: t("cleanPrompt.dc"), callback: () => "dc" },
+                { action: "chips", label: t("cleanPrompt.chips"), callback: () => "chips" },
+                { action: "camps", label: t("cleanPrompt.camps"), callback: () => "camps" },
+                { action: "all", label: t("cleanPrompt.all"), default: true, callback: () => "all" }
+            ]
+        });
+        if (action == null) return;
+        if (action === "pc") return this.resetAllPoints();
+        if (action === "dc") return this.resetAllDC();
+        if (action === "chips") return this.resetAllChips();
+        if (action === "camps") return this.resetAllCamps();
+        if (action === "all") return this.#resetAll();
+    }
+
+    /** « Tout réinitialiser » : une confirmation unique, puis purge PC + DC + Chips + camps. */
+    async #resetAll() {
+        const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
+        const confirmed = await foundry.applications.api.DialogV2.confirm({
+            window: { title: t("cleanPrompt.allTitle") },
+            content: `<p>${t("cleanPrompt.allConfirm")}</p>`,
             modal: true
         });
-        if (raw == null) return;
-        setAspect(this.scene, raw || null);
+        if (!confirmed) return;
+        clearAllPoints(this.scene);
+        clearAllDC(this.scene);
+        clearAllChips(this.scene);
+        clearAllCamps(this.scene);
     }
 
     #resolvePartyToken() {
@@ -610,7 +560,7 @@ export class MappingPointsController {
     #renderOverlay() {
         if (!game.user.isGM) return; // confidentialité : jamais d'overlay côté joueur
         this.#clearOverlay();
-        if (!this.scene || this.#displayMode === "none") return;
+        if (!this.scene || (this.#displayMode !== "pc" && this.#displayMode !== "dc")) return;
         const isDC = this.#displayMode === "dc";
         const data = isDC ? readDC(this.scene) : readPoints(this.scene);
         const fill = isDC ? 0x5fd0ff : 0xffffff;
@@ -642,8 +592,4 @@ export class MappingPointsController {
         }
     }
 
-    /** (Re)dessine les boules de chips, avec retrait au clic du ✕. */
-    #renderChips() {
-        renderChipOverlay(this.scene, (offset, chipId) => removeChip(this.scene, offset, chipId));
-    }
 }
