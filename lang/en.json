@@ -24,8 +24,10 @@
                 "resetDC": "Remettre à 0 tous les DC de la scène",
                 "setAspect": "Définir l'Aspect de la scène",
                 "resetCamps": "Démonter tous les camps",
-                "setChip": "Place a chip on the selected hexes",
-                "resetChips": "Reset the scene's chips"
+                "setChip": "Placer des Chips sur les Hex sélectionnés",
+                "resetChips": "Réinitialiser les chips de la scène",
+                "showInfo": "Afficher des informations sur les Hex",
+                "cleanScene": "Nettoyer la Scène"
             },
             "reset": {
                 "title": "Réinitialiser les Points de Cartographie",
@@ -50,26 +52,45 @@
                 "confirm": "Démonter tous les camps de la scène ?"
             },
             "setChipPrompt": {
-                "title": "Place a chip",
-                "label": "Chip to apply to the selection:",
-                "noSelection": "Select one or more hexes first.",
+                "title": "Poser un chip",
+                "label": "Chip à appliquer à la sélection :",
+                "noSelection": "Sélectionnez d'abord un ou plusieurs Hex.",
                 "terrains": "Terrains",
-                "markers": "Markers"
+                "markers": "Marqueurs"
             },
             "resetChips": {
-                "title": "Reset chips",
-                "confirm": "Remove all chips from every hex on this scene?"
+                "title": "Réinitialiser les chips",
+                "confirm": "Retirer tous les chips de tous les Hex de cette scène ?"
+            },
+            "displayPrompt": {
+                "title": "Afficher des informations sur les Hex",
+                "label": "Quelle information afficher sur les Hex ?",
+                "none": "Aucune",
+                "pc": "PC",
+                "dc": "Hex DC",
+                "chips": "Chips"
+            },
+            "cleanPrompt": {
+                "title": "Nettoyer la Scène",
+                "label": "Quelle action de nettoyage effectuer ?",
+                "pc": "Remettre à 0 les PC",
+                "dc": "Remettre à 0 les Hex DC",
+                "chips": "Remettre à 0 les Chips",
+                "camps": "Démonter tous les camps",
+                "all": "Tout réinitialiser",
+                "allTitle": "Tout réinitialiser",
+                "allConfirm": "Remettre à 0 les PC, les Hex DC et les Chips, et démonter tous les camps de cette scène ? Cette action est irréversible."
             },
             "chips": {
-                "plaines": "Grassy Plains",
-                "marais": "Marsh",
-                "foret": "Forest",
-                "foret-ancienne": "Ancient Forest",
-                "montagne": "Mountain",
-                "ancre": "Anchor",
-                "orme-blanc": "White Elm"
+                "plaines": "Plaines herbeuses",
+                "marais": "Marais",
+                "foret": "Forêt",
+                "foret-ancienne": "Forêt ancienne",
+                "montagne": "Montagne",
+                "ancre": "Ancre",
+                "orme-blanc": "Orme Blanc"
             },
-            "removeChip": "Remove this chip"
+            "removeChip": "Retirer ce chip"
         },
         "makeCamp": {
             "title": "Monter le camp",
@@ -92,26 +113,26 @@
                 "criticalFailure": "échec critique",
                 "none": "indéterminé"
             },
-            "scoutApplied": "Scout effect applied to {count} adventurer(s).",
-            "scoutAlready": "The whole party is already scouting.",
-            "scoutMissing": "Scout effect not found (PF2E UUID).",
-            "partyEffectApplied": "Effect applied to the party.",
-            "partyEffectAlready": "That effect is already active on the party.",
-            "partyEffectRemoved": "Effect removed from the party.",
-            "consumeTitle": "Resource consumption",
-            "consumePrompt": "The party performed {activity} ({skill}), result {outcome}: remove {amount} {resource}?",
-            "consumeEffectSuffix": " An effect will also be applied to the party."
+            "scoutApplied": "Effet Reconnaissance appliqué à {count} aventurier(s).",
+            "scoutAlready": "Tout le groupe est déjà en reconnaissance.",
+            "scoutMissing": "Effet Reconnaissance introuvable (UUID PF2E).",
+            "partyEffectApplied": "Effet appliqué au groupe.",
+            "partyEffectAlready": "Cet effet est déjà actif sur le groupe.",
+            "partyEffectRemoved": "Effet retiré du groupe.",
+            "consumeTitle": "Consommation de ressources",
+            "consumePrompt": "Le groupe a {activity} ({skill}), résultat {outcome} : retirer {amount} {resource} ?",
+            "consumeEffectSuffix": " Un effet sera aussi appliqué au groupe."
         },
-        "cook": { "label": "Cook" },
+        "cook": { "label": "Cuisiner" },
         "craft": {
-            "label": "Craft",
-            "pickTitle": "Craft an item",
-            "pickDrop": "Drop the item (or formula) to craft here.",
-            "pickConfirm": "Craft",
-            "pickCancel": "Cancel",
-            "notPhysical": "This is not a craftable item.",
-            "noMaterials": "You don't have enough crafting materials.",
-            "tooHighLevel": "This item's level is higher than yours: you can only craft items of your level or lower."
+            "label": "Fabriquer",
+            "pickTitle": "Fabriquer un objet",
+            "pickDrop": "Glissez ici l'objet (ou la recette) à fabriquer.",
+            "pickConfirm": "Fabriquer",
+            "pickCancel": "Annuler",
+            "notPhysical": "Cet élément n'est pas un objet fabricable.",
+            "noMaterials": "Vous n'avez pas suffisamment de matériaux de fabrication.",
+            "tooHighLevel": "Cet objet est d'un niveau supérieur au vôtre : vous ne pouvez fabriquer que des objets de votre niveau ou inférieur."
         },
         "mapArea": {
             "agPrompt": {
@@ -186,17 +207,17 @@
         },
         "notes": {
             "legend": "Forgotten Woods",
-            "fwPin": "Forgotten Woods Marker",
+            "fwPin": "Repère Forgotten Woods",
             "secret": "Secret",
             "description": "Description",
-            "noDescription": "(No description.)",
-            "untitled": "Marker",
-            "close": "Close",
-            "name": "Name",
-            "createTitle": "Create a marker",
-            "create": "Create marker",
+            "noDescription": "(Aucune description.)",
+            "untitled": "Repère",
+            "close": "Fermer",
+            "name": "Nom",
+            "createTitle": "Créer un repère",
+            "create": "Créer le repère",
             "preset": "Preset",
-            "presetNone": "— None —"
+            "presetNone": "— Aucun —"
         }
     }
 }

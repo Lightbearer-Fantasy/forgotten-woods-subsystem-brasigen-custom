@@ -24,8 +24,10 @@
                 "resetDC": "Remettre à 0 tous les DC de la scène",
                 "setAspect": "Définir l'Aspect de la scène",
                 "resetCamps": "Démonter tous les camps",
-                "setChip": "Poser un chip sur les Hex sélectionnés",
-                "resetChips": "Réinitialiser les chips de la scène"
+                "setChip": "Placer des Chips sur les Hex sélectionnés",
+                "resetChips": "Réinitialiser les chips de la scène",
+                "showInfo": "Afficher des informations sur les Hex",
+                "cleanScene": "Nettoyer la Scène"
             },
             "reset": {
                 "title": "Réinitialiser les Points de Cartographie",
@@ -59,6 +61,25 @@
             "resetChips": {
                 "title": "Réinitialiser les chips",
                 "confirm": "Retirer tous les chips de tous les Hex de cette scène ?"
+            },
+            "displayPrompt": {
+                "title": "Afficher des informations sur les Hex",
+                "label": "Quelle information afficher sur les Hex ?",
+                "none": "Aucune",
+                "pc": "PC",
+                "dc": "Hex DC",
+                "chips": "Chips"
+            },
+            "cleanPrompt": {
+                "title": "Nettoyer la Scène",
+                "label": "Quelle action de nettoyage effectuer ?",
+                "pc": "Remettre à 0 les PC",
+                "dc": "Remettre à 0 les Hex DC",
+                "chips": "Remettre à 0 les Chips",
+                "camps": "Démonter tous les camps",
+                "all": "Tout réinitialiser",
+                "allTitle": "Tout réinitialiser",
+                "allConfirm": "Remettre à 0 les PC, les Hex DC et les Chips, et démonter tous les camps de cette scène ? Cette action est irréversible."
             },
             "chips": {
                 "plaines": "Plaines herbeuses",
