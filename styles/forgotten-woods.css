@@ -269,9 +269,12 @@
 
 .fw-hexploration-label { text-align: center; font-weight: bold; letter-spacing: 0.05em; padding: 0.25em; color: #3aa0ff; text-transform: uppercase; }
 
-/* Dialogue « Créer un repère » : le corps du formulaire défile en interne pour que le
-   bouton Créer reste atteignable sur les petits écrans (sinon le contenu déborde sans scroll). */
-.fw-note-dialog-body {
-    max-height: 70vh;
+/* Dialogue « Créer un repère » : on borne la fenêtre à la hauteur du viewport et on fait
+   défiler TOUT le contenu (footer + bouton Créer inclus). Sinon, sur petit écran (barre de
+   navigateur), le bouton est rogné par le bas sans scroll possible pour l'atteindre. */
+.fw-note-create-dialog {
+    max-height: 100vh;
+}
+.fw-note-create-dialog .window-content {
     overflow-y: auto;
 }
