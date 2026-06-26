@@ -13,6 +13,7 @@ import { FWNote } from "./notes/fw-note.js";
 import { refreshPinReveals } from "./notes/reveal-watcher.js";
 import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
 import { installWorldExplorerRevealWrap } from "./mapping/we-reveal-wrap.js";
+import { onRenderSceneConfig } from "./mapping/aspect-scene-config.js";
 import { isPartyToken } from "./utils/scene.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
@@ -74,6 +75,7 @@ Hooks.on("getSceneControlButtons", (controls) => mapping?.getControls(controls))
 Hooks.on("activateSceneControls", (controls) => mapping?.onActivateControls(controls));
 Hooks.on("updateScene", (scene) => mapping?.onUpdateScene(scene));
 Hooks.on("canvasReady", () => mapping?.destroy());
+Hooks.on("renderSceneConfig", (app, html) => onRenderSceneConfig(app, html));
 
 // --- Marqueurs de camp sur la scène (visibles par tous) ---
 Hooks.on("canvasReady", () => renderCampOverlay());
