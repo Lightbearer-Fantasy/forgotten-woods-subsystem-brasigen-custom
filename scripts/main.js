@@ -63,7 +63,8 @@ Hooks.on("updateToken", (doc, changes) => {
 // Les chips d'un Hex changent → recalcule le halo (plaines/marais).
 Hooks.on("updateScene", (scene, changes) => {
     if (scene?.id !== canvas?.scene?.id) return;
-    if (changes?.flags?.[MODULE_ID] && ("hexChips" in changes.flags[MODULE_ID])) {
+    const m = changes?.flags?.[MODULE_ID];
+    if (m && ("hexChips" in m || "-=hexChips" in m)) {
         fwRefreshWorldExplorer();
     }
 });

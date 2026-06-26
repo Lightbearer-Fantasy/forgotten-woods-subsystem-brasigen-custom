@@ -52,7 +52,7 @@ export function buildApplyChip(scene, keys, chipId) {
     return updates;
 }
 
-/** Applica un chip à une sélection et persiste (MJ). */
+/** Applique un chip à une sélection et persiste (MJ). */
 export function applyChip(scene, keys, chipId) {
     if (!game.user.isGM || !scene || !keys?.length) return;
     const updates = buildApplyChip(scene, keys, chipId);
