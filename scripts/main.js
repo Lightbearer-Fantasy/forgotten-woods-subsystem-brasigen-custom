@@ -14,7 +14,7 @@ import { refreshPinReveals } from "./notes/reveal-watcher.js";
 import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
 import { installWorldExplorerRevealWrap } from "./mapping/we-reveal-wrap.js";
 import { onRenderSceneConfig } from "./mapping/aspect-scene-config.js";
-import { isPartyToken, tokenRevealCenter } from "./utils/scene.js";
+import { isPartyToken, tokenRevealCenter, weGridDataChanged } from "./utils/scene.js";
 import { spacesInRange } from "./utils/hex.js";
 import { chipsAt } from "./mapping/hex-chips-store.js";
 import { effectiveRange } from "./mapping/reveal-modifiers.js";
@@ -55,9 +55,14 @@ Hooks.once("ready", () => { registerSocket(); registerGmActions(); registerCraft
 Hooks.once("ready", () => installWorldExplorerRevealWrap());
 
 // --- Révélation dynamique World Explorer (fix B) ---
-const fwRefreshWorldExplorer = foundry.utils.debounce(
-    () => canvas.worldExplorer?.refreshMask?.(), 50
-);
+// Vide le cache _gridDataMap avant de redessiner : sinon refreshMask repart d'un cache
+// périmé d'AVANT le flush de la persistance, laissant des trous (cf. weGridDataChanged).
+const fwRefreshWorldExplorer = foundry.utils.debounce(() => {
+    const we = canvas.worldExplorer;
+    if (!we) return;
+    we._gridDataMap = null;
+    we.refreshMask?.();
+}, 50);
 
 // Persiste INDIVIDUELLEMENT l'empreinte de révélation du Party (Hex + anneau modulé par
 // les chips), au lieu de ne mémoriser que le centre et de peindre les voisins via un halo
@@ -77,16 +82,18 @@ function fwPersistPartyReveal(tokenDoc, changes) {
     }
 }
 
-// Le Token Party se déplace → persiste l'empreinte (qui déclenche aussi le refresh du masque).
+// Le Token Party se déplace → persiste l'empreinte. Le refresh du masque NE se fait PAS ici
+// (gridData pas encore flushé) mais sur le hook updateScene ci-dessous, après l'écriture.
 Hooks.on("updateToken", (doc, changes) => {
     if (("x" in (changes ?? {}) || "y" in (changes ?? {})) && isPartyToken(doc)) {
         fwPersistPartyReveal(doc, changes);
-        fwRefreshWorldExplorer();
     }
 });
 // Les chips d'un Hex changent → recalcule le halo (plaines/marais).
+// Les révélations persistées (WE gridData) changent → refresh fiable APRÈS l'écriture.
 Hooks.on("updateScene", (scene, changes) => {
     if (scene?.id !== canvas?.scene?.id) return;
+    if (weGridDataChanged(changes)) fwRefreshWorldExplorer();
     const m = changes?.flags?.[MODULE_ID];
     if (m && ("hexChips" in m || "-=hexChips" in m)) {
         fwRefreshWorldExplorer();

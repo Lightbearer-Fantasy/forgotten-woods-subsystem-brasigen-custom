@@ -41,6 +41,18 @@ export function tokenRevealCenter(doc, changes, gridSize) {
 }
 
 /**
+ * Vrai si un diff de scène (hook `updateScene`) modifie le `gridData` de World Explorer
+ * (révélations persistées). Sert à redéclencher NOTRE refresh du masque APRÈS l'écriture
+ * des données : le refresh throttlé de WE peut sauter l'appel final → masque figé (trous).
+ * @param {object|null} changes  2e argument du hook `updateScene`.
+ * @returns {boolean}
+ */
+export function weGridDataChanged(changes) {
+    const we = changes?.flags?.["world-explorer"];
+    return !!we && "gridData" in we;
+}
+
+/**
  * Détermine le Token Party à ancrer au HUD à partir de l'état du canvas.
  *
  * Deux chemins, car un joueur non-propriétaire ne PEUT PAS sélectionner
