@@ -4,6 +4,8 @@ import { sumDeltas } from "./skill-outcome.js";
 import { aspectOf } from "./aspect-store.js";
 import { effectiveDefault, writeDefault } from "../data/skill-memory.js";
 import { buildSignedRangeDeltas, applyDeltas } from "./mapping-points-store.js";
+import { readChips } from "./hex-chips-store.js";
+import { filterMappableDeltas } from "./mountain-occlusion.js";
 
 /**
  * Associe chaque membre PJ à un propriétaire connecté (joueur), sinon null
@@ -78,9 +80,15 @@ export class SkillRound {
         const tally = tallySkills([...this.#choices.values()]);
         const results = await this.#rollAll(members, participants, aspect, tally, ctx.dc);
 
-        // 4. Agrégation et application unique.
+        // 4. Agrégation et application unique. Filtre Montagne : pas de PC posé sur une
+        // Montagne tant que le Party n'est pas lui-même sur une Montagne.
         const total = ctx.autoDelta + sumDeltas(results);
-        const deltas = buildSignedRangeDeltas(ctx.offset, ctx.radius, total);
+        const raw = buildSignedRangeDeltas(ctx.offset, ctx.radius, total);
+        const chipMap = readChips(scene);
+        const originIsMountain = (chipMap[`${ctx.offset.i},${ctx.offset.j}`] ?? []).includes("montagne");
+        const deltas = filterMappableDeltas(
+            raw, originIsMountain, (key) => chipMap[key]?.includes("montagne") ?? false
+        );
         if (deltas.size > 0) applyDeltas(scene, deltas);
 
         // 5. Mémorisation des choix et libération.
