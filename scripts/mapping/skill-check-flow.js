@@ -3,6 +3,8 @@ import { dcAt } from "./mapping-dc-store.js";
 import { rollMapSkill, resolveSkillStatistic } from "./skill-roll.js";
 import { actorSkillChoices } from "../data/activity-actions.js";
 import { ResourceFlow } from "./resource-flow.js";
+import { chipsAt } from "./hex-chips-store.js";
+import { harvestDelta } from "./harvest-modifiers.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.skillCheck.${key}`);
 
@@ -47,7 +49,9 @@ export class SkillCheckFlow {
         }
         const outcome = await rollMapSkill(actor, skill, dc, []);
         if (activity?.resource) {
-            ResourceFlow.report(activity, skillLabel(skill), outcome);
+            const chips = chipsAt(canvas.scene, coordsToOffset(token.center));
+            const bonus = harvestDelta(activity.resource, chips);
+            ResourceFlow.report(activity, skillLabel(skill), outcome, bonus);
         }
     }
 

@@ -18,3 +18,15 @@ const AMOUNT = {
 export function resourceAmountForOutcome(outcome) {
     return AMOUNT[outcome] ?? 0;
 }
+
+/**
+ * Variation de ressources avec bonus de chip, appliqué UNIQUEMENT sur un gain
+ * (montant de base > 0). Échec (0) et échec critique (−1) ne reçoivent pas le bonus.
+ * @param {string} outcome
+ * @param {number} [bonus=0]
+ * @returns {number}
+ */
+export function resourceAmountWithBonus(outcome, bonus = 0) {
+    const base = resourceAmountForOutcome(outcome);
+    return base > 0 ? base + bonus : base;
+}

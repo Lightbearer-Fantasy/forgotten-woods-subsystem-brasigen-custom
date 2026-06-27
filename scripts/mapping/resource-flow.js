@@ -10,13 +10,14 @@ export class ResourceFlow {
      * @param {string} skillLabel  libellé FR de la compétence utilisée
      * @param {string} outcome     clé d'outcome ("success"…)
      */
-    static report(activity, skillLabel, outcome) {
+    static report(activity, skillLabel, outcome, bonus = 0) {
         if (!activity?.resource || !outcome) return;
         requestResource({
             resourceKey: activity.resource,
             activityLabel: activity.label,
             skillLabel,
-            outcome
+            outcome,
+            bonus
         });
     }
 }

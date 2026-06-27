@@ -1,6 +1,6 @@
 import { setCamp } from "./camp-store.js";
 import { restHealAmount } from "./rest-heal.js";
-import { resourceAmountForOutcome } from "./resource-amount.js";
+import { resourceAmountWithBonus } from "./resource-amount.js";
 import { addOrIncrement, RESOURCE_LABELS } from "./gpc-bridge.js";
 import { membersNeedingScout } from "./scout-targets.js";
 import { PARTY_EFFECTS, withEffect, withoutEffect } from "../data/party-effects.js";
@@ -196,7 +196,7 @@ async function handleRest({ partyActorId }) {
     ui.notifications.info(t("rested"));
 }
 
-async function handleResource({ resourceKey, activityLabel, skillLabel, outcome }) {
+async function handleResource({ resourceKey, activityLabel, skillLabel, outcome, bonus = 0 }) {
     const confirmed = await foundry.applications.api.DialogV2.confirm({
         window: { title: t("resourceTitle") },
         content: `<p>${t("resourcePrompt", {
@@ -206,7 +206,7 @@ async function handleResource({ resourceKey, activityLabel, skillLabel, outcome 
         modal: true
     });
     if (!confirmed) return;
-    addOrIncrement(resourceKey, resourceAmountForOutcome(outcome));
+    addOrIncrement(resourceKey, resourceAmountWithBonus(outcome, bonus));
 }
 
 async function handleApplyScout({ partyActorId }) {
