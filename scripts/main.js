@@ -73,6 +73,9 @@ const fwRefreshWorldExplorer = foundry.utils.debounce(() => {
 function fwPersistPartyReveal(tokenDoc, changes) {
     const we = canvas.worldExplorer;
     if (!game.user.isGM || !we?.enabled) return;
+    // Centre lu depuis le PAYLOAD de changement (position neuve) : au hook updateToken le
+    // document ET le placeable sont encore à l'ancienne position pendant l'animation →
+    // sinon on persiste l'anneau autour de l'ANCIEN Hex (cf. tokenRevealCenter).
     const origin = canvas.grid.getOffset(tokenRevealCenter(tokenDoc, changes, canvas.grid.size));
     const base = we.settings?.tokenReveal?.value ?? 1;
     const chips = chipsAt(we.scene, origin);
