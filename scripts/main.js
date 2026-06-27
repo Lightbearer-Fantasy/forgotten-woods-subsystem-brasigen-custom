@@ -5,6 +5,7 @@ import { registerSocket } from "./mapping/map-lock.js";
 import { registerResourceClocks } from "./mapping/gpc-bridge.js";
 import { registerGmActions } from "./mapping/gm-actions.js";
 import { renderCampOverlay } from "./canvas/camp-overlay.js";
+import { renderAncreOverlay, clearAncreOverlay } from "./canvas/ancre-overlay.js";
 import { registerCraftTempHooks } from "./mapping/craft-temp-card.js";
 import { onCombatRoundAdvance, onCombatEnd } from "./mapping/round-flow.js";
 import { markHexplorationTracker } from "./hud/hexploration-label.js";
@@ -82,11 +83,23 @@ function fwPersistPartyReveal(tokenDoc, changes) {
     }
 }
 
+// Trouve le Token Party sur le canvas courant (placeable), s'il existe.
+function fwCurrentPartyTokenDoc() {
+    const p = canvas?.tokens?.placeables?.find((t) => isPartyToken(t.document));
+    return p?.document ?? null;
+}
+// Recalcule la lueur Ancre pour le Party au repos (chips changés, canvas prêt).
+function fwRefreshAncre() {
+    const doc = fwCurrentPartyTokenDoc();
+    if (doc) renderAncreOverlay(doc); else clearAncreOverlay();
+}
+
 // Le Token Party se déplace → persiste l'empreinte. Le refresh du masque NE se fait PAS ici
 // (gridData pas encore flushé) mais sur le hook updateScene ci-dessous, après l'écriture.
 Hooks.on("updateToken", (doc, changes) => {
     if (("x" in (changes ?? {}) || "y" in (changes ?? {})) && isPartyToken(doc)) {
         fwPersistPartyReveal(doc, changes);
+        renderAncreOverlay(doc, changes);
     }
 });
 // Les chips d'un Hex changent → recalcule le halo (plaines/marais).
@@ -97,6 +110,7 @@ Hooks.on("updateScene", (scene, changes) => {
     const m = changes?.flags?.[MODULE_ID];
     if (m && ("hexChips" in m || "-=hexChips" in m)) {
         fwRefreshWorldExplorer();
+        fwRefreshAncre();
     }
 });
 
@@ -112,6 +126,9 @@ Hooks.on("canvasReady", () => renderCampOverlay());
 Hooks.on("updateScene", (scene) => {
     if (scene?.id === canvas?.scene?.id) renderCampOverlay();
 });
+
+// --- Lueur Ancre sur le Hex du Party (visible par tous) ---
+Hooks.on("canvasReady", () => fwRefreshAncre());
 
 Hooks.on("updateCombat", (combat, change) => {
     onCombatRoundAdvance(combat, change);
