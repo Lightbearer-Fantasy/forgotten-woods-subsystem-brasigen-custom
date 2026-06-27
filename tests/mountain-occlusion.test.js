@@ -13,6 +13,7 @@ describe("filterMappableDeltas", () => {
         const deltas = new Map([["1,1", 1], ["2,2", 1]]);
         const out = filterMappableDeltas(deltas, true, isMountainKey);
         expect([...out.keys()]).toEqual(["1,1", "2,2"]);
+        expect(out).not.toBe(deltas);
     });
     it("renvoie une nouvelle Map (n'altère pas l'entrée)", () => {
         const deltas = new Map([["2,2", 1]]);

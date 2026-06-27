@@ -13,7 +13,7 @@
  * @returns {Map<string,number>}  nouvelle Map
  */
 export function filterMappableDeltas(deltas, originIsMountain, isMountainKey) {
-    if (originIsMountain) return deltas;
+    if (originIsMountain) return new Map(deltas);
     const out = new Map();
     for (const [key, delta] of deltas) {
         if (!isMountainKey(key)) out.set(key, delta);
