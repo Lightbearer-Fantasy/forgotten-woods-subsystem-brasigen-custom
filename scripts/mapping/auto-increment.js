@@ -1,4 +1,4 @@
-import { effectiveRange } from "./reveal-modifiers.js";
+import { effectiveMapRadius } from "./map-radius-modifiers.js";
 
 /**
  * Incrément automatique de PC pour « Cartographier la zone ».
@@ -25,7 +25,7 @@ export function autoIncrement(ag, radiusIncreased) {
  */
 export function mapAreaPlan(choice, radiusIncreased, chipIds) {
     const { radius: base } = autoIncrement(choice, radiusIncreased);
-    const radius = effectiveRange(base, chipIds);
+    const radius = effectiveMapRadius(base, chipIds);
     return { radius, autoDelta: choice - radius };
 }
 
