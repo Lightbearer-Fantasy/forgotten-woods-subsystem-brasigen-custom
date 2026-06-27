@@ -14,7 +14,7 @@ import { refreshPinReveals } from "./notes/reveal-watcher.js";
 import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
 import { installWorldExplorerRevealWrap } from "./mapping/we-reveal-wrap.js";
 import { onRenderSceneConfig } from "./mapping/aspect-scene-config.js";
-import { isPartyToken } from "./utils/scene.js";
+import { isPartyToken, tokenRevealCenter } from "./utils/scene.js";
 import { spacesInRange } from "./utils/hex.js";
 import { chipsAt } from "./mapping/hex-chips-store.js";
 import { effectiveRange } from "./mapping/reveal-modifiers.js";
@@ -63,18 +63,13 @@ const fwRefreshWorldExplorer = foundry.utils.debounce(
 // les chips), au lieu de ne mémoriser que le centre et de peindre les voisins via un halo
 // gridReveal. Chaque Hex révélé a ainsi son propre état → le MJ peut en cacher n'importe
 // lequel (central ou adjacent). Requiert gridReveal=0 côté scène (sinon les halos persistent).
-function fwPersistPartyReveal(tokenDoc) {
+function fwPersistPartyReveal(tokenDoc, changes) {
     const we = canvas.worldExplorer;
     if (!game.user.isGM || !we?.enabled) return;
-    // Centre calculé depuis le DOCUMENT (déjà à jour) et non depuis le placeable, dont la
-    // position est encore l'ancienne pendant l'animation de déplacement → sinon on persiste
-    // l'anneau autour de l'ANCIEN Hex et l'Hex d'arrivée n'est jamais mémorisé (trous).
-    const gs = canvas.grid.size;
-    const center = {
-        x: tokenDoc.x + (tokenDoc.width * gs) / 2,
-        y: tokenDoc.y + (tokenDoc.height * gs) / 2
-    };
-    const origin = canvas.grid.getOffset(center);
+    // Centre lu depuis le PAYLOAD de changement (position neuve) : au hook updateToken le
+    // document ET le placeable sont encore à l'ancienne position pendant l'animation →
+    // sinon on persiste l'anneau autour de l'ANCIEN Hex (cf. tokenRevealCenter).
+    const origin = canvas.grid.getOffset(tokenRevealCenter(tokenDoc, changes, canvas.grid.size));
     const base = we.settings?.tokenReveal?.value ?? 1;
     const steps = effectiveRange(base, chipsAt(we.scene, origin));
     for (const offset of spacesInRange(origin, steps)) {
@@ -85,7 +80,7 @@ function fwPersistPartyReveal(tokenDoc) {
 // Le Token Party se déplace → persiste l'empreinte (qui déclenche aussi le refresh du masque).
 Hooks.on("updateToken", (doc, changes) => {
     if (("x" in (changes ?? {}) || "y" in (changes ?? {})) && isPartyToken(doc)) {
-        fwPersistPartyReveal(doc);
+        fwPersistPartyReveal(doc, changes);
         fwRefreshWorldExplorer();
     }
 });

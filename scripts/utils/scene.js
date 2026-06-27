@@ -20,6 +20,27 @@ export function isPartyToken(token) {
 }
 
 /**
+ * Centre pixel à révéler autour d'un token qui vient de bouger.
+ *
+ * On lit le PAYLOAD de changement (`changes.x/y`, valeur neuve) en priorité : au
+ * moment du hook `updateToken`, le document ET le placeable sont encore à l'ANCIENNE
+ * position (l'animation de déplacement n'est pas appliquée), donc s'y fier persiste
+ * l'anneau autour de la case quittée, jamais de la case atteinte. Même approche que
+ * World Explorer (`updateForToken`, index.js). Demi-grid : centre d'une case, valable
+ * quelle que soit la taille du token.
+ *
+ * @param {{x:number,y:number}} doc       TokenDocument (position courante, possiblement périmée).
+ * @param {{x?:number,y?:number}|null} changes  Payload du hook `updateToken`.
+ * @param {number} gridSize               `canvas.grid.size`, en pixels.
+ * @returns {{x:number,y:number}}
+ */
+export function tokenRevealCenter(doc, changes, gridSize) {
+    const x = (changes?.x ?? doc.x) + gridSize / 2;
+    const y = (changes?.y ?? doc.y) + gridSize / 2;
+    return { x, y };
+}
+
+/**
  * Détermine le Token Party à ancrer au HUD à partir de l'état du canvas.
  *
  * Deux chemins, car un joueur non-propriétaire ne PEUT PAS sélectionner
