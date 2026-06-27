@@ -66,9 +66,15 @@ const fwRefreshWorldExplorer = foundry.utils.debounce(
 function fwPersistPartyReveal(tokenDoc) {
     const we = canvas.worldExplorer;
     if (!game.user.isGM || !we?.enabled) return;
-    const token = tokenDoc.object;
-    if (!token) return;
-    const origin = canvas.grid.getOffset(token.center);
+    // Centre calculé depuis le DOCUMENT (déjà à jour) et non depuis le placeable, dont la
+    // position est encore l'ancienne pendant l'animation de déplacement → sinon on persiste
+    // l'anneau autour de l'ANCIEN Hex et l'Hex d'arrivée n'est jamais mémorisé (trous).
+    const gs = canvas.grid.size;
+    const center = {
+        x: tokenDoc.x + (tokenDoc.width * gs) / 2,
+        y: tokenDoc.y + (tokenDoc.height * gs) / 2
+    };
+    const origin = canvas.grid.getOffset(center);
     const base = we.settings?.tokenReveal?.value ?? 1;
     const steps = effectiveRange(base, chipsAt(we.scene, origin));
     for (const offset of spacesInRange(origin, steps)) {
