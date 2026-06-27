@@ -15,8 +15,9 @@ export function autoIncrement(ag, radiusIncreased) {
 
 /**
  * Plan de cartographie en tenant compte des chips du Hex du Party.
- * Le rayon de base (autoIncrement) est modulé par le delta de révélation des
- * chips (Plaines +1, Marais −1, planché à 0), et l'incrément automatique reste
+ * Le rayon de base (autoIncrement) est modulé par le delta de rayon de
+ * Cartographier des chips (Plaines +1, Marais −1, Orme Blanc +1, planché à 0),
+ * et l'incrément automatique reste
  * fidèle à Ia(r) = Ag − r (avec le rayon ajusté).
  * @param {number} choice  Activités de Groupe dépensées (Ag)
  * @param {boolean} radiusIncreased  réponse « Oui » au prompt rayon
