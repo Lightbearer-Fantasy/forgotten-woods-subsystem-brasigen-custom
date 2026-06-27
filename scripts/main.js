@@ -16,9 +16,10 @@ import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
 import { installWorldExplorerRevealWrap } from "./mapping/we-reveal-wrap.js";
 import { onRenderSceneConfig } from "./mapping/aspect-scene-config.js";
 import { isPartyToken, tokenRevealCenter, weGridDataChanged } from "./utils/scene.js";
-import { spacesInRange } from "./utils/hex.js";
-import { chipsAt } from "./mapping/hex-chips-store.js";
+import { spacesInRange, offsetToKey } from "./utils/hex.js";
+import { chipsAt, readChips } from "./mapping/hex-chips-store.js";
 import { effectiveRange } from "./mapping/reveal-modifiers.js";
+import { occludeBehindMountains } from "./mapping/mountain-occlusion.js";
 
 const MODULE_ID = "forgotten-woods-brasigen";
 
@@ -72,13 +73,27 @@ const fwRefreshWorldExplorer = foundry.utils.debounce(() => {
 function fwPersistPartyReveal(tokenDoc, changes) {
     const we = canvas.worldExplorer;
     if (!game.user.isGM || !we?.enabled) return;
-    // Centre lu depuis le PAYLOAD de changement (position neuve) : au hook updateToken le
-    // document ET le placeable sont encore à l'ancienne position pendant l'animation →
-    // sinon on persiste l'anneau autour de l'ANCIEN Hex (cf. tokenRevealCenter).
     const origin = canvas.grid.getOffset(tokenRevealCenter(tokenDoc, changes, canvas.grid.size));
     const base = we.settings?.tokenReveal?.value ?? 1;
-    const steps = effectiveRange(base, chipsAt(we.scene, origin));
-    for (const offset of spacesInRange(origin, steps)) {
+    const chips = chipsAt(we.scene, origin);
+    const steps = effectiveRange(base, chips);
+    let offsets = spacesInRange(origin, steps);
+    // Occlusion Montagne : pas de révélation au-delà d'une Montagne, sauf si le Party
+    // est lui-même sur une Montagne.
+    if (!chips.includes("montagne")) {
+        const chipMap = readChips(we.scene);
+        const originCenter = canvas.grid.getCenterPoint(origin);
+        const a = canvas.grid.getCenterPoint({ i: 0, j: 0 });
+        const adj = canvas.grid.getAdjacentOffsets({ i: 0, j: 0 })[0];
+        const corridor = Math.hypot(canvas.grid.getCenterPoint(adj).x - a.x,
+                                    canvas.grid.getCenterPoint(adj).y - a.y) / 2;
+        const candidates = offsets.map((off) => ({
+            off, center: canvas.grid.getCenterPoint(off),
+            mountain: chipMap[offsetToKey(off)]?.includes("montagne") ?? false
+        }));
+        offsets = occludeBehindMountains(originCenter, candidates, corridor).map((c) => c.off);
+    }
+    for (const offset of offsets) {
         we.setRevealed({ offset, coords: canvas.grid.getCenterPoint(offset) }, true);
     }
 }

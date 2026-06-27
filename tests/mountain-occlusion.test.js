@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { filterMappableDeltas } from "../scripts/mapping/mountain-occlusion.js";
+import { filterMappableDeltas, occludeBehindMountains } from "../scripts/mapping/mountain-occlusion.js";
 
 describe("filterMappableDeltas", () => {
     const isMountainKey = (key) => key === "2,2"; // seule "2,2" est une Montagne
@@ -20,5 +20,43 @@ describe("filterMappableDeltas", () => {
         const out = filterMappableDeltas(deltas, false, isMountainKey);
         expect(out).not.toBe(deltas);
         expect(deltas.size).toBe(1);
+    });
+});
+
+describe("occludeBehindMountains", () => {
+    const origin = { x: 0, y: 0 };
+    const corridor = 50;
+
+    it("retire un Hex aligné derrière une Montagne", () => {
+        const candidates = [
+            { key: "m", center: { x: 100, y: 0 }, mountain: true },
+            { key: "behind", center: { x: 200, y: 0 }, mountain: false }
+        ];
+        const kept = occludeBehindMountains(origin, candidates, corridor).map((c) => c.key);
+        expect(kept).toEqual(["m"]); // la Montagne reste, l'Hex derrière disparaît
+    });
+    it("conserve un Hex de biais (hors couloir de la Montagne)", () => {
+        const candidates = [
+            { key: "m", center: { x: 100, y: 0 }, mountain: true },
+            { key: "oblique", center: { x: 100, y: 200 }, mountain: false }
+        ];
+        const kept = occludeBehindMountains(origin, candidates, corridor).map((c) => c.key);
+        expect(kept.sort()).toEqual(["m", "oblique"]);
+    });
+    it("ne retire pas un Hex plus PROCHE que la Montagne", () => {
+        const candidates = [
+            { key: "near", center: { x: 50, y: 0 }, mountain: false },
+            { key: "m", center: { x: 100, y: 0 }, mountain: true }
+        ];
+        const kept = occludeBehindMountains(origin, candidates, corridor).map((c) => c.key);
+        expect(kept.sort()).toEqual(["m", "near"]);
+    });
+    it("sans Montagne, tout est conservé", () => {
+        const candidates = [
+            { key: "a", center: { x: 100, y: 0 }, mountain: false },
+            { key: "b", center: { x: 200, y: 0 }, mountain: false }
+        ];
+        const kept = occludeBehindMountains(origin, candidates, corridor).map((c) => c.key);
+        expect(kept.sort()).toEqual(["a", "b"]);
     });
 });
