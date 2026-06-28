@@ -3,6 +3,7 @@ import { coordsToOffset, offsetToKey, offsetsInRect } from "../utils/hex.js";
 import { readPoints, applyDeltas, clearAllPoints, buildRangeDeltas } from "./mapping-points-store.js";
 import { readDC, setDC, clearAllDC, dcAt } from "./mapping-dc-store.js";
 import { clearAllCamps } from "./camp-store.js";
+import { clearAllGroundwork } from "./groundwork-store.js";
 import { applyChip, clearAllChips, removeChip } from "./hex-chips-store.js";
 import { getChip, terrains, markers } from "../data/hex-chips.js";
 import { renderChipOverlay, clearChipOverlay } from "../canvas/chip-overlay.js";
@@ -534,7 +535,7 @@ export class MappingPointsController {
         if (action === "all") return this.#resetAll();
     }
 
-    /** « Tout réinitialiser » : une confirmation unique, puis purge PC + DC + Chips + camps. */
+    /** « Tout réinitialiser » : une confirmation unique, puis purge PC + DC + Chips + camps + Progression. */
     async #resetAll() {
         const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapping.${key}`);
         const confirmed = await foundry.applications.api.DialogV2.confirm({
@@ -547,6 +548,7 @@ export class MappingPointsController {
         clearAllDC(this.scene);
         clearAllChips(this.scene);
         clearAllCamps(this.scene);
+        clearAllGroundwork(this.scene);
     }
 
     #resolvePartyToken() {
