@@ -6,7 +6,7 @@
  * @param {{id:string}} activity
  * @param {{craftingTrained:boolean, medicineTrained:boolean, campPresent:boolean,
  *          ingredientCount:number, characterCount:number, hasCharacter:boolean,
- *          isGM:boolean}} ctx
+ *          isGM:boolean, partyPoints:number}} ctx
  * @returns {boolean}
  */
 export function activityDisabled(activity, ctx) {
@@ -22,6 +22,8 @@ export function activityDisabled(activity, ctx) {
             return !ctx.campPresent;
         case "make-camp":
             return ctx.campPresent; // grisé si un camp est déjà sur le Hex du Party
+        case "prepare-ground":
+            return ctx.hasCharacter && (ctx.partyPoints ?? 0) < 2;
         default:
             return false; // repair inclus : jamais grisé
     }

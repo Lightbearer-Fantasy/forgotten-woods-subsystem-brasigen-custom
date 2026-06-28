@@ -4,6 +4,7 @@ import { slowestLandSpeed, groupActivityCount, characterCount } from "./party-co
 import { roundCountModifier, roundCountColor, roundSymbols, partyFatigued, isCookRound } from "../data/round-effects.js";
 import { activityDisabled } from "../data/activity-gating.js";
 import { campAt } from "../mapping/camp-store.js";
+import { pointsAt } from "../mapping/mapping-points-store.js";
 import { counterValue } from "../mapping/gpc-bridge.js";
 import { coordsToOffset } from "../utils/hex.js";
 import { MapAreaFlow } from "../mapping/map-area-flow.js";
@@ -141,7 +142,8 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             medicineTrained: (character?.skills?.medicine?.rank ?? 0) >= 1,
             campPresent,
             ingredientCount: counterValue("ingredients"),
-            characterCount: characterCount(actor)
+            characterCount: characterCount(actor),
+            partyPoints: scene && offset ? pointsAt(scene, offset) : 0
         };
         const withDisabled = (list) => list.map((a) => ({ ...a, disabled: activityDisabled(a, ctx) }));
         const baseIndividual = characterCount(actor);

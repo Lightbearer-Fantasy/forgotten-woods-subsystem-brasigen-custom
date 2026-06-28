@@ -61,3 +61,16 @@ describe("activityDisabled", () => {
         expect(activityDisabled({ id: "make-camp" }, { ...base, isGM: true, campPresent: true })).toBe(false);
     });
 });
+
+describe("activityDisabled — prepare-ground", () => {
+    const act = { id: "prepare-ground" };
+    it("grisé si le Hex Party a moins de 2 PC", () => {
+        expect(activityDisabled(act, { hasCharacter: true, partyPoints: 1 })).toBe(true);
+    });
+    it("actif si le Hex Party a au moins 2 PC", () => {
+        expect(activityDisabled(act, { hasCharacter: true, partyPoints: 2 })).toBe(false);
+    });
+    it("jamais grisé pour le MJ", () => {
+        expect(activityDisabled(act, { isGM: true, partyPoints: 0 })).toBe(false);
+    });
+});
