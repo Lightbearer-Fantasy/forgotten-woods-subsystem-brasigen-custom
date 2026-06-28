@@ -121,7 +121,9 @@
             "partyEffectRemoved": "Effet retiré du groupe.",
             "consumeTitle": "Consommation de ressources",
             "consumePrompt": "Le groupe a {activity} ({skill}), résultat {outcome} : retirer {amount} {resource} ?",
-            "consumeEffectSuffix": " Un effet sera aussi appliqué au groupe."
+            "consumeEffectSuffix": " Un effet sera aussi appliqué au groupe.",
+            "groundworkProgress": "Préparer le terrain — Hex {hex} : Progression {count}/{cost}.",
+            "groundworkDiscount": "Préparer le terrain — Hex {hex} : le prochain Voyage vers cet Hex est réduit de 1."
         },
         "cook": { "label": "Cuisiner" },
         "craft": {

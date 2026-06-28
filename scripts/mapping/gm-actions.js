@@ -7,6 +7,10 @@ import { PARTY_EFFECTS, withEffect, withoutEffect } from "../data/party-effects.
 import { searchPointsDeltas } from "./search-targets.js";
 import { applyDeltas } from "./mapping-points-store.js";
 import { temporaryItemName } from "./craft-logic.js";
+import { chipsAt } from "./hex-chips-store.js";
+import { getChip } from "../data/hex-chips.js";
+import { travelCost } from "../data/terrain-travel.js";
+import { readGroundwork, resolveGroundwork, buildSetGroundwork } from "./groundwork-store.js";
 
 const SCOUT_UUID = "Compendium.pf2e.other-effects.Item.EMqGwUi3VMhCjTlF";
 
@@ -162,6 +166,27 @@ async function handleConsumeResource({ resourceKey, activityLabel, skillLabel, o
     if (effectKey && partyActorId) await setPartyEffect(partyActorId, effectKey);
 }
 
+/** Joueur → MJ : appliquer un delta de Progression de terrain sur un Hex (Préparer le terrain). */
+export function requestApplyGroundwork(sceneId, offsetKey, delta) {
+    if (isActiveGM()) return handleApplyGroundwork({ sceneId, offsetKey, delta });
+    game.socket.emit(CHANNEL, { type: "groundwork", sceneId, offsetKey, delta });
+}
+
+async function handleApplyGroundwork({ sceneId, offsetKey, delta }) {
+    const scene = game.scenes.get(sceneId);
+    if (!scene || delta === 0) return; // échec simple : aucune écriture
+    const offset = parseKey(offsetKey);
+    const terrainId = (chipsAt(scene, offset) ?? []).find((id) => getChip(id)?.category === "terrain");
+    const cost = travelCost(terrainId);
+    const current = readGroundwork(scene)[offsetKey] ?? 0;
+    const { count, discount } = resolveGroundwork(current, delta, cost);
+    await scene.update(buildSetGroundwork(offsetKey, count));
+    const content = discount
+        ? t("groundworkDiscount", { hex: offsetKey })
+        : t("groundworkProgress", { hex: offsetKey, count, cost });
+    await ChatMessage.create({ content, whisper: ChatMessage.getWhisperRecipients("GM") });
+}
+
 async function handleApplySearchPoints({ sceneId, offsetKey, delta }) {
     const scene = game.scenes.get(sceneId);
     if (!scene) return;
@@ -243,6 +268,7 @@ export function registerGmActions() {
         else if (data?.type === "partyEffectClear") clearPartyEffect(data.partyActorId, data.key);
         else if (data?.type === "consumeRequest") handleConsumeResource(data);
         else if (data?.type === "searchPoints") handleApplySearchPoints(data);
+        else if (data?.type === "groundwork") handleApplyGroundwork(data);
         else if (data?.type === "receiveTempRequest") handleReceiveTemp(data);
     });
 }
