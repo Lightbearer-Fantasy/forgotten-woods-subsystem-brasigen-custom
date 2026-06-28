@@ -25,7 +25,8 @@ export class PrepareGroundFlow {
         if (!isHexScene(scene) || !isPartyToken(token)) { ui.notifications.warn(t("noParty")); return; }
 
         const origin = coordsToOffset(token.center);
-        const validKeys = validSearchKeys(spacesInRange(origin, 1));
+        const neighbors = spacesInRange(origin, 1).filter((o) => offsetToKey(o) !== offsetToKey(origin));
+        const validKeys = validSearchKeys(neighbors);
 
         hud?.close?.();
         PrepareGroundFlow.selecting = true;

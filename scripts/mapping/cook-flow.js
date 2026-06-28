@@ -45,7 +45,8 @@ async function promptCookDc(defaultDc) {
         content: `<p>${t("cookDc.label")}</p>`
             + `<input type="number" name="dc" value="${defaultDc}" min="1" autofocus>`,
         ok: { callback: (event, button) => button.form.elements.dc.value },
-        modal: true
+        modal: true,
+        rejectClose: false
     });
     const n = Number(value);
     return Number.isFinite(n) && n > 0 ? n : null;
