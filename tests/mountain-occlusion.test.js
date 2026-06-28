@@ -59,4 +59,25 @@ describe("occludeBehindMountains", () => {
         const kept = occludeBehindMountains(origin, candidates, corridor).map((c) => c.key);
         expect(kept.sort()).toEqual(["a", "b"]);
     });
+    it("occulte un Hex pris en tenaille entre deux Montagnes (couture pleine)", () => {
+        // ligne de vue exactement entre deux Montagnes adjacentes (perp = corridor des deux
+        // côtés) : c'est un mur, on ne voit pas par la couture (cas réel 34,13).
+        const candidates = [
+            { key: "mL", center: { x: -50, y: 100 }, mountain: true },
+            { key: "mR", center: { x: 50, y: 100 }, mountain: true },
+            { key: "behind", center: { x: 0, y: 200 }, mountain: false }
+        ];
+        const kept = occludeBehindMountains(origin, candidates, corridor).map((c) => c.key);
+        expect(kept.sort()).toEqual(["mL", "mR"]);
+    });
+    it("conserve un Hex qui ne frôle qu'UNE Montagne (passage ouvert de l'autre côté)", () => {
+        // frôlement d'un seul côté (perp = corridor) : il y a un trou de l'autre côté,
+        // on voit au travers (cas réel 35,15, plaines ouverte en face).
+        const candidates = [
+            { key: "m", center: { x: 50, y: 100 }, mountain: true },
+            { key: "through", center: { x: 0, y: 200 }, mountain: false }
+        ];
+        const kept = occludeBehindMountains(origin, candidates, corridor).map((c) => c.key);
+        expect(kept.sort()).toEqual(["m", "through"]);
+    });
 });

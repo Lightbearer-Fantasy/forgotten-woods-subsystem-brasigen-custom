@@ -5,7 +5,8 @@ import { aspectOf } from "./aspect-store.js";
 import { effectiveDefault, writeDefault } from "../data/skill-memory.js";
 import { buildSignedRangeDeltas, applyDeltas } from "./mapping-points-store.js";
 import { readChips } from "./hex-chips-store.js";
-import { filterMappableDeltas } from "./mountain-occlusion.js";
+import { filterMappableDeltas, occludeBehindMountains } from "./mountain-occlusion.js";
+import { gridCorridor } from "../utils/hex.js";
 
 /**
  * Associe chaque membre PJ à un propriétaire connecté (joueur), sinon null
@@ -80,15 +81,24 @@ export class SkillRound {
         const tally = tallySkills([...this.#choices.values()]);
         const results = await this.#rollAll(members, participants, aspect, tally, ctx.dc);
 
-        // 4. Agrégation et application unique. Filtre Montagne : pas de PC posé sur une
-        // Montagne tant que le Party n'est pas lui-même sur une Montagne.
+        // 4. Agrégation et application unique. Montagne : pas de PC posé SUR une Montagne,
+        // ni AU-DELÀ d'une Montagne (occlusion), tant que le Party n'est pas sur une Montagne.
         const total = ctx.autoDelta + sumDeltas(results);
         const raw = buildSignedRangeDeltas(ctx.offset, ctx.radius, total);
         const chipMap = readChips(scene);
-        const originIsMountain = (chipMap[`${ctx.offset.i},${ctx.offset.j}`] ?? []).includes("montagne");
-        const deltas = filterMappableDeltas(
-            raw, originIsMountain, (key) => chipMap[key]?.includes("montagne") ?? false
-        );
+        const isMtn = (key) => chipMap[key]?.includes("montagne") ?? false;
+        const originIsMountain = isMtn(`${ctx.offset.i},${ctx.offset.j}`);
+        let visible = raw;
+        if (!originIsMountain) {
+            const originCenter = canvas.grid.getCenterPoint(ctx.offset);
+            const candidates = [...raw.keys()].map((key) => {
+                const [i, j] = key.split(",").map(Number);
+                return { key, center: canvas.grid.getCenterPoint({ i, j }), mountain: isMtn(key) };
+            });
+            const keep = new Set(occludeBehindMountains(originCenter, candidates, gridCorridor()).map((c) => c.key));
+            visible = new Map([...raw].filter(([key]) => keep.has(key)));
+        }
+        const deltas = filterMappableDeltas(visible, originIsMountain, isMtn);
         if (deltas.size > 0) applyDeltas(scene, deltas);
 
         // 5. Mémorisation des choix et libération.

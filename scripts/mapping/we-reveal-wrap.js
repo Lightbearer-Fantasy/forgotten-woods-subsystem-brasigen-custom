@@ -8,7 +8,7 @@
 import { chipsAt, readChips } from "./hex-chips-store.js";
 import { effectiveRange } from "./reveal-modifiers.js";
 import { occludeBehindMountains } from "./mountain-occlusion.js";
-import { offsetToKey } from "../utils/hex.js";
+import { offsetToKey, gridCorridor } from "../utils/hex.js";
 
 /** Vrai si un token visible (ami/joueur) occupe l'Hex `originOffset`. */
 function tokenOnHex(layer, originOffset) {
@@ -17,14 +17,6 @@ function tokenOnHex(layer, originOffset) {
         if (o.i === originOffset.i && o.j === originOffset.j) return true;
     }
     return false;
-}
-
-/** Demi-largeur du couloir de blocage = moitié de la distance entre centres adjacents. */
-function gridCorridor() {
-    const a = canvas.grid.getCenterPoint({ i: 0, j: 0 });
-    const adj = canvas.grid.getAdjacentOffsets({ i: 0, j: 0 })[0];
-    const b = canvas.grid.getCenterPoint(adj);
-    return Math.hypot(b.x - a.x, b.y - a.y) / 2;
 }
 
 /** Retire les Hex occultés par une Montagne. `spaces` = itérable d'offsets {i,j}. */

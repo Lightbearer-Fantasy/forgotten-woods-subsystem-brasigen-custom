@@ -17,6 +17,17 @@ export function coordsToOffset(coords) {
 }
 
 /**
+ * Demi-distance entre centres d'Hex adjacents = demi-largeur du couloir d'occlusion
+ * des Montagnes (cf. occludeBehindMountains).
+ * @returns {number}
+ */
+export function gridCorridor() {
+    const a = canvas.grid.getCenterPoint({ i: 0, j: 0 });
+    const b = canvas.grid.getCenterPoint(canvas.grid.getAdjacentOffsets({ i: 0, j: 0 })[0]);
+    return Math.hypot(b.x - a.x, b.y - a.y) / 2;
+}
+
+/**
  * Tous les offsets à au plus `steps` sauts d'adjacence de l'origine, centre inclus.
  * Parcours en anneau via canvas.grid.getAdjacentOffsets (indépendant du type de grille).
  * @param {{i: number, j: number}} originOffset

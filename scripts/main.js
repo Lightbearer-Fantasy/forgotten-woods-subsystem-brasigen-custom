@@ -16,7 +16,7 @@ import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
 import { installWorldExplorerRevealWrap } from "./mapping/we-reveal-wrap.js";
 import { onRenderSceneConfig } from "./mapping/aspect-scene-config.js";
 import { isPartyToken, tokenRevealCenter, weGridDataChanged } from "./utils/scene.js";
-import { spacesInRange, offsetToKey } from "./utils/hex.js";
+import { spacesInRange, offsetToKey, gridCorridor } from "./utils/hex.js";
 import { chipsAt, readChips } from "./mapping/hex-chips-store.js";
 import { effectiveRange } from "./mapping/reveal-modifiers.js";
 import { occludeBehindMountains } from "./mapping/mountain-occlusion.js";
@@ -86,10 +86,7 @@ function fwPersistPartyReveal(tokenDoc, changes) {
     if (!chips.includes("montagne")) {
         const chipMap = readChips(we.scene);
         const originCenter = canvas.grid.getCenterPoint(origin);
-        const a = canvas.grid.getCenterPoint({ i: 0, j: 0 });
-        const adj = canvas.grid.getAdjacentOffsets({ i: 0, j: 0 })[0];
-        const corridor = Math.hypot(canvas.grid.getCenterPoint(adj).x - a.x,
-                                    canvas.grid.getCenterPoint(adj).y - a.y) / 2;
+        const corridor = gridCorridor();
         const candidates = offsets.map((off) => ({
             off, center: canvas.grid.getCenterPoint(off),
             mountain: chipMap[offsetToKey(off)]?.includes("montagne") ?? false
