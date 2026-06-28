@@ -13,7 +13,7 @@ import { onRenderNoteConfig } from "./notes/note-config.js";
 import { FWNote } from "./notes/fw-note.js";
 import { refreshPinReveals } from "./notes/reveal-watcher.js";
 import { installNoteCreateOverride } from "./notes/note-create-dialog.js";
-import { installWorldExplorerRevealWrap } from "./mapping/we-reveal-wrap.js";
+import { installWorldExplorerRevealWrap, installPartyOnlyReveal } from "./mapping/we-reveal-wrap.js";
 import { onRenderSceneConfig } from "./mapping/aspect-scene-config.js";
 import { isPartyToken, tokenRevealCenter, weGridDataChanged } from "./utils/scene.js";
 import { spacesInRange, offsetToKey, gridCorridor } from "./utils/hex.js";
@@ -55,6 +55,8 @@ Hooks.once("ready", () => { registerSocket(); registerGmActions(); registerCraft
 
 // World Explorer : applique le delta de révélation des chips (plaines/marais).
 Hooks.once("ready", () => installWorldExplorerRevealWrap());
+// World Explorer : restreint la révélation vivante au Token Party uniquement.
+Hooks.once("ready", () => installPartyOnlyReveal());
 
 // --- Révélation dynamique World Explorer (fix B) ---
 // Vide le cache _gridDataMap avant de redessiner : sinon refreshMask repart d'un cache

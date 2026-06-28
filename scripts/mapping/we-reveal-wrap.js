@@ -9,6 +9,7 @@ import { chipsAt, readChips } from "./hex-chips-store.js";
 import { effectiveRange } from "./reveal-modifiers.js";
 import { occludeBehindMountains } from "./mountain-occlusion.js";
 import { offsetToKey, gridCorridor } from "../utils/hex.js";
+import { isPartyToken } from "../utils/scene.js";
 
 /** Vrai si un token visible (ami/joueur) occupe l'Hex `originOffset`. */
 function tokenOnHex(layer, originOffset) {
@@ -49,4 +50,16 @@ export function installWorldExplorerRevealWrap() {
         return occludeSpaces(this.scene, originOffset, spaces);
     };
     layerClass.prototype._fwChipsRevealPatched = true;
+}
+
+/** Restreint la révélation vivante de WE aux seuls Token(s) Party. No-op si WE absent. */
+export function installPartyOnlyReveal() {
+    const layerClass = CONFIG?.Canvas?.layers?.worldExplorer?.layerClass;
+    if (!layerClass || layerClass.prototype._fwPartyOnlyReveal) return;
+    const orig = layerClass.prototype._getViewableTokens;
+    if (typeof orig !== "function") return;
+    layerClass.prototype._getViewableTokens = function () {
+        return orig.call(this).filter((token) => isPartyToken(token));
+    };
+    layerClass.prototype._fwPartyOnlyReveal = true;
 }
