@@ -190,6 +190,17 @@
             "noDC": "Aucun DC de zone n'est défini sur ce hex. Le MJ doit d'abord fixer le DC.",
             "noSkill": "Ce personnage ne possède pas cette compétence. Choisissez-en une autre."
         },
+        "prepareGround": {
+            "noParty": "Sélectionnez d'abord le Token du groupe sur une scène Hex.",
+            "noDC": "Cet Hex n'a pas de DC défini.",
+            "noSkill": "Ce personnage ne possède pas cette compétence.",
+            "selectPrompt": {
+                "title": "Préparer le terrain",
+                "label": "Choisissez un Hex adjacent à préparer, puis confirmez.",
+                "confirm": "Confirmer",
+                "cancel": "Annuler"
+            }
+        },
         "skills": {
             "crafting": "Crafting",
             "society": "Society",
