@@ -19,8 +19,9 @@ export class CookFlow {
             : await promptSkill(slugs.map((s) => ({ value: s, label: skillLabel(s) })));
         if (!skill) return;
         if (!resolveSkillStatistic(actor, skill)) { ui.notifications.warn(t("noSkill")); return; }
-        const dc = dcAt(canvas.scene, coordsToOffset(token.center));
-        if (!dc) { ui.notifications.warn(t("noDC")); return; }
+        const defaultDc = dcAt(canvas.scene, coordsToOffset(token.center)) ?? 15;
+        const dc = await promptCookDc(defaultDc);
+        if (dc == null) return;
         const outcome = await rollMapSkill(actor, skill, dc, []);
         if (!outcome) return;
         const amount = cookIngredientCost(outcome, characterCount(token.actor));
@@ -35,4 +36,17 @@ export class CookFlow {
             effectKey: applyEffect ? "cook" : null
         });
     }
+}
+
+/** Demande le DC de Cuisiner au MJ, pré-rempli au DC du Hex Party (ou 15). */
+async function promptCookDc(defaultDc) {
+    const value = await foundry.applications.api.DialogV2.prompt({
+        window: { title: t("cookDc.title") },
+        content: `<p>${t("cookDc.label")}</p>`
+            + `<input type="number" name="dc" value="${defaultDc}" min="1" autofocus>`,
+        ok: { callback: (event, button) => button.form.elements.dc.value },
+        modal: true
+    });
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : null;
 }

@@ -177,6 +177,10 @@
             "prompt": {
                 "title": "Jet de compétence",
                 "label": "Choisissez la compétence à utiliser :"
+            },
+            "cookDc": {
+                "title": "DC de la recette",
+                "label": "Définissez le DC de Cuisiner (les ingrédients de la zone influent sur la recette) :"
             }
         },
         "search": {
