@@ -88,13 +88,13 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: "icons/environment/wilderness/tree-spruce.webp",
         traits: ["exploration"],
         description:
-            "Vous essayez de trouver des ingrédients frais sur le trajet. Effectuez un @Check[nature] ou @Check[survival] contre le DC de la zone.",
+            "Vous essayez de trouver des ingrédients frais sur le trajet. Effectuez un @Check[nature], @Check[survival] ou @Check[hunting-lore] contre le DC de la zone.",
         outcomes: {
             criticalSuccess: "Vous trouvez 3 ingrédients frais.",
             success: "Vous trouvez 2 ingrédients frais.",
             criticalFailure: "Vous ramenez un ingrédient moisi qui vous force à trier ceux que vous avez déjà ramenés. Vous perdez 1 ingrédient frais."
         },
-        check: { skills: ["nature", "survival"], vsHexDC: true },
+        check: { skills: ["nature", "survival", "hunting-lore"], vsHexDC: true },
         resource: "ingredients"
     },
     {
