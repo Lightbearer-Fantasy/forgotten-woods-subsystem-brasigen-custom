@@ -19,6 +19,7 @@ import { requestApplyScout, requestSetPartyEffect, requestClearPartyEffect } fro
 import { CookFlow } from "../mapping/cook-flow.js";
 import { CraftFlow } from "../mapping/craft-flow.js";
 import { SearchFlow } from "../mapping/search-flow.js";
+import { PrepareGroundFlow } from "../mapping/prepare-ground-flow.js";
 import { PARTY_EFFECTS } from "../data/party-effects.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -84,7 +85,7 @@ export class PartyActivitiesHUD extends HandlebarsApplicationMixin(ApplicationV2
             // alors qu'un outil Hex Controls (selectHex/editPoints…) est actif ne
             // doit jamais ouvrir le Party HUD. Sinon, en mode Sélection de hex,
             // cliquer le hex du Token Party l'ouvrait (≠ Token Actor, qui reste muet).
-            if (!canvasClickOpensHud(game?.activeTool, SearchFlow.selecting, ui?.controls?.control?.name)) return;
+            if (!canvasClickOpensHud(game?.activeTool, SearchFlow.selecting || PrepareGroundFlow.selecting, ui?.controls?.control?.name)) return;
             // Détermine le Token Party sous le curseur au moment du clic par
             // hit-test (canvas.mousePosition est en coordonnées de scène, comme
             // token.bounds). Cliquer dans le vide → null → fermeture ; un autre
@@ -371,6 +372,10 @@ async function onRollD20(event, target) {
     // On passe le HUD pour qu'il se ferme pendant la sélection (libère l'espace).
     if (activity.id === "search") {
         return SearchFlow.start(this.token, actor, this);
+    }
+    // Préparer le terrain : sélection 1-hex joueur + jet vs DC + Progression sur le hex.
+    if (activity.id === "prepare-ground") {
+        return PrepareGroundFlow.start(this.token, actor, this);
     }
     // Activité « à check » : jet de compétence (vs Hex DC si zone, sinon simple),
     // sans application de PC. Le jet est porté par le personnage du joueur qui

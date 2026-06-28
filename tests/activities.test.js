@@ -21,9 +21,9 @@ describe("activitySortKey", () => {
 });
 
 describe("données d'activités", () => {
-    it("contient 5 activités de groupe et 12 individuelles", () => {
+    it("contient 5 activités de groupe et 13 individuelles", () => {
         expect(GROUP_ACTIVITIES).toHaveLength(5);
-        expect(INDIVIDUAL_ACTIVITIES).toHaveLength(12);
+        expect(INDIVIDUAL_ACTIVITIES).toHaveLength(13);
     });
 
     it("chaque activité a id, label, img, traits (array), description, et une propriété slug", () => {

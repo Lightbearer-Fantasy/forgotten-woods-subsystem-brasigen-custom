@@ -189,6 +189,21 @@ export const INDIVIDUAL_ACTIVITIES = [
             "Vous patrouillez en tout temps dans les environs pour avoir un coup d'avance. Vous déterminez si des créatures hostiles, cachées ou non, sont présentes sur une Hex adjacente. Vous et vos compagnons gagnez un bonus de circonstance de +1 à tous vos jets d'initiative."
     },
     {
+        id: "prepare-ground",
+        label: "Préparer le terrain",
+        slug: null,
+        img: "icons/tools/hand/shovel-spade-brown.webp",
+        traits: ["exploration"],
+        description:
+            "Vous préparez le terrain pour faciliter le voyage vers un terrain adjacent. Choisissez un Hex adjacent. Effectuez un jet de compétence contre le DC de la zone, en fonction de l'Aspect de la zone. Par exemple, dans l'Aspect Sauvage ce serait Athletics, Nature ou Survival, et dans l'Aspect du Donjon ce serait Society ou Thievery. Vous accumulez de la Progression en fonction du résultat du jet. Si vous obtenez autant de Progression que le coût de Voyage du terrain du Hex adjacent (par exemple 2 Progressions pour se rendre dans un Marais ou une Montagne), vous réduisez le coût du prochain Voyage vers ce Hex de 1.",
+        outcomes: {
+            criticalSuccess: "Vous gagnez 2 Points de Progression.",
+            success: "Vous gagnez 1 Point de Progression.",
+            criticalFailure: "Vous perdez 1 Point de Progression."
+        },
+        check: { allSkills: true, vsHexDC: true }
+    },
+    {
         id: "gather-materials",
         label: "Récupérer des matériaux",
         slug: null,
