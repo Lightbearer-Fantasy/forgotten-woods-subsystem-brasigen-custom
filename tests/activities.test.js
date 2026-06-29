@@ -162,7 +162,7 @@ describe("contenu reformaté PF2E", () => {
 
     it("les activités de zone ont check.skills + vsHexDC:true", () => {
         expect(byId("hunt-and-gather").check).toEqual({ skills: ["nature", "survival", "hunting-lore"], vsHexDC: true });
-        expect(byId("search").check).toEqual({ skills: ["perception", "stealth", "survival"], vsHexDC: true });
+        expect(byId("search").check).toEqual({ skills: ["perception", "stealth", "survival", "scouting-lore"], vsHexDC: true });
         expect(byId("cook").check).toEqual({ skills: ["crafting", "cooking-lore"], vsHexDC: true });
     });
 
@@ -189,6 +189,7 @@ describe("contenu reformaté PF2E", () => {
         expect(byId("hunt-and-gather").description).toContain("@Check[nature]");
         expect(byId("hunt-and-gather").description).toContain("@Check[survival]");
         expect(byId("search").description).toContain("@Check[perception]");
+        expect(byId("search").description).toContain("@Check[scouting-lore]");
         expect(byId("cook").description).toContain("@Check[crafting]");
         expect(byId("cook").description).toContain("@Check[cooking-lore]");
     });

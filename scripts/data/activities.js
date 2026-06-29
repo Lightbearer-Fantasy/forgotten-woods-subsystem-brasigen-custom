@@ -171,13 +171,13 @@ export const INDIVIDUAL_ACTIVITIES = [
         img: "icons/tools/navigation/compass-brass-blue-red.webp",
         traits: ["exploration", "concentrate"],
         description:
-            "Choisissez un Hex adjacent. Vous faites un @Check[perception], @Check[stealth] ou @Check[survival] contre le DC de la zone pour essayer de glaner des informations dans la zone. Le Hex gagne des PC comme pour Cartographier la zone. Si vous avez la Boussole de Courant, vous apprenez si une Ancre se trouve sur le Hex ou à proximité du Hex.",
+            "Choisissez un Hex adjacent. Vous faites un @Check[perception], @Check[stealth], @Check[survival] ou @Check[scouting-lore] contre le DC de la zone pour essayer de glaner des informations dans la zone. Le Hex gagne des PC comme pour Cartographier la zone. Si vous avez la Boussole de Courant, vous apprenez si une Ancre se trouve sur le Hex ou à proximité du Hex.",
         outcomes: {
             criticalSuccess: "Le Hex gagne 2 PC.",
             success: "Le Hex gagne 1 PC.",
             criticalFailure: "Le Hex perd 1 PC."
         },
-        check: { skills: ["perception", "stealth", "survival"], vsHexDC: true }
+        check: { skills: ["perception", "stealth", "survival", "scouting-lore"], vsHexDC: true }
     },
     {
         id: "scout",
