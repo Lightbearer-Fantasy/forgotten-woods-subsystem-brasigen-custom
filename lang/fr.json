@@ -212,7 +212,8 @@
             "crafting": "Crafting",
             "society": "Society",
             "nature": "Nature",
-            "survival": "Survival"
+            "survival": "Survival",
+            "scouting-lore": "Scouting Lore"
         },
         "aspects": {
             "none": "Aucun",
