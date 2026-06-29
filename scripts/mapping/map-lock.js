@@ -17,6 +17,8 @@ let activeRound = null;
 const rollResolvers = new Map();
 /** Handle de la fenêtre d'attente côté client. */
 let waitingHandle = null;
+/** Vrai tant que la collecte de compétences du round courant est vivante (côté client). */
+let roundActive = false;
 
 /**
  * Vrai si le verrou de cartographie est libre ou expiré.
@@ -88,10 +90,11 @@ function onSocketMessage(data) {
     }
     // Messages adressés à un utilisateur précis (client destinataire).
     if (data?.type === "askSkill" && data.toUserId === game.user.id) {
+        roundActive = true;
         openSkillPrompt(data.defaultSkill, game.actors.get(data.actorId)).then((res) => {
             if (res.type === "skill") {
                 game.socket.emit(CHANNEL, { type: "skillChosen", actorId: data.actorId, skill: res.skill });
-                waitingHandle = showWaiting();
+                if (roundActive) waitingHandle = showWaiting();
             } else if (res.type === "pass") {
                 game.socket.emit(CHANNEL, { type: "skillPass", actorId: data.actorId });
             } else { // "closed"
@@ -110,18 +113,13 @@ function onSocketMessage(data) {
         return;
     }
     if (data?.type === "cancelRound") {
+        roundActive = false;
         waitingHandle?.close();
         waitingHandle = null;
         return;
     }
     if (data?.type === "askRestart" && data.toUserId === game.user.id) {
-        promptRestart().then(async (again) => {
-            if (again) {
-                const { MapAreaFlow } = await import("./map-area-flow.js");
-                const token = canvas.scene?.tokens?.get(data.tokenId);
-                if (token?.actor) MapAreaFlow.start(token, token.actor);
-            }
-        });
+        startRestartPrompt(data.tokenId);
         return;
     }
     // Requêtes : seul le MJ actif arbitre.
@@ -199,7 +197,15 @@ function roundDeps() {
         rollLocal: (actor, skill, dc, modifiers) => rollMapSkill(actor, skill, dc, modifiers),
         roundClosed: (initiatorId, tokenId) => {
             game.socket.emit(CHANNEL, { type: "cancelRound" });
-            game.socket.emit(CHANNEL, { type: "askRestart", toUserId: initiatorId, tokenId });
+            if (initiatorId === game.user.id) {
+                // L'arbitre est l'initiateur : les sockets ne bouclent pas vers soi-même.
+                roundActive = false;
+                waitingHandle?.close();
+                waitingHandle = null;
+                startRestartPrompt(tokenId);
+            } else {
+                game.socket.emit(CHANNEL, { type: "askRestart", toUserId: initiatorId, tokenId });
+            }
         }
     };
 }
@@ -227,6 +233,16 @@ function promptRestart() {
         ],
         rejectClose: false
     }).then((v) => v === true);
+}
+
+/** Demande à l'initiateur de relancer Cartographier, puis relance le flux complet si Oui. */
+function startRestartPrompt(tokenId) {
+    promptRestart().then(async (again) => {
+        if (!again) return;
+        const { MapAreaFlow } = await import("./map-area-flow.js");
+        const token = canvas.scene?.tokens?.get(tokenId);
+        if (token?.actor) MapAreaFlow.start(token, token.actor);
+    });
 }
 
 /** Enregistre l'écouteur socket et la libération du verrou à la déconnexion. À appeler sur "ready". */
