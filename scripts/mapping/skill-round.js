@@ -36,6 +36,8 @@ export class SkillRound {
     /** @type {Function|null} résolveur quand tous ont répondu */
     #resolveAll = null;
     #ctx = null;
+    /** Vrai si le round a été interrompu par une fermeture (croix). */
+    #aborted = false;
 
     /**
      * @param {object} deps  injection des helpers socket (Task 13) :
@@ -70,11 +72,12 @@ export class SkillRound {
             const actor = members.find((m) => m.id === actorId);
             const def = effectiveDefault(actor);
             if (ownerId) this.deps.askSkill(ownerId, actorId, def);
-            else void this.#promptOrphan(actorId, def); // fire-and-forget : résolution via onChosen/onAbandon
+            else void this.#promptOrphan(actorId, def); // fire-and-forget : résolution via onChosen/onPass/onClosed
         }
         if (this.#pending.size === 0) this.#resolveAll();
         await allChosen;
         clearInterval(heartbeat);
+        if (this.#aborted) { this.deps.releaseLock(); return; }
 
         // 3. Malus/aspect puis jets simultanés.
         const aspect = aspectOf(scene);
@@ -110,9 +113,10 @@ export class SkillRound {
 
     /** Le MJ ouvre lui-même le prompt d'un PJ orphelin. */
     async #promptOrphan(actorId, def) {
-        const skill = await this.deps.promptLocal(actorId, def);
-        if (skill == null) this.onAbandon(actorId);
-        else this.onChosen(actorId, skill);
+        const res = await this.deps.promptLocal(actorId, def);
+        if (res.type === "skill") this.onChosen(actorId, res.skill);
+        else if (res.type === "pass") this.onPass(actorId);
+        else this.onClosed(actorId); // "closed"
     }
 
     /** Reçu via socket (ou local) : un participant a choisi. */
@@ -123,11 +127,20 @@ export class SkillRound {
         if (this.#pending.size === 0) this.#resolveAll?.();
     }
 
-    /** Reçu via socket (ou déconnexion) : un participant abandonne → exclu. */
-    onAbandon(actorId) {
+    /** Un participant passe son tour → exclu, le round continue. */
+    onPass(actorId) {
         if (!this.#pending.has(actorId)) return;
         this.#pending.delete(actorId);
         if (this.#pending.size === 0) this.#resolveAll?.();
+    }
+
+    /** Un participant ferme la fenêtre (croix) → abort immédiat du round. */
+    onClosed(actorId) {
+        if (!this.#pending.has(actorId)) return;
+        this.#aborted = true;
+        this.#pending.clear();
+        this.#resolveAll?.();
+        this.deps.roundClosed?.(this.#ctx.initiatorId, this.#ctx.tokenId);
     }
 
     /** Lance tous les jets (propriétaires via socket, orphelins en local) et collecte les degrés. */

@@ -159,12 +159,17 @@
                 "title": "Cartographier la zone",
                 "label": "Choisissez la compétence à utiliser :",
                 "confirm": "Valider",
-                "abandon": "Quitter",
                 "pass": "Je passe mon tour"
             },
             "waiting": {
                 "title": "En attente du groupe",
                 "message": "Les autres membres de votre groupe n'ont pas encore choisi une Compétence."
+            },
+            "restart": {
+                "title": "Cartographier la zone",
+                "message": "Un participant a fermé la fenêtre de Cartographier la zone. Voulez-vous recommencer ?",
+                "yes": "Oui",
+                "no": "Non"
             },
             "modifiers": {
                 "aspect": "Aspect",

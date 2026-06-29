@@ -109,6 +109,21 @@ function onSocketMessage(data) {
         });
         return;
     }
+    if (data?.type === "cancelRound") {
+        waitingHandle?.close();
+        waitingHandle = null;
+        return;
+    }
+    if (data?.type === "askRestart" && data.toUserId === game.user.id) {
+        promptRestart().then(async (again) => {
+            if (again) {
+                const { MapAreaFlow } = await import("./map-area-flow.js");
+                const token = canvas.scene?.tokens?.get(data.tokenId);
+                if (token?.actor) MapAreaFlow.start(token, token.actor);
+            }
+        });
+        return;
+    }
     // Requêtes : seul le MJ actif arbitre.
     if (!isLockArbiter()) return;
     switch (data?.type) {
@@ -134,7 +149,8 @@ function onSocketMessage(data) {
             activeRound = new SkillRound(roundDeps());
             activeRound.run({
                 sceneId: data.sceneId, tokenId: data.tokenId, offset: data.offset,
-                radius: data.radius, autoDelta: data.autoDelta, dc: data.dc
+                radius: data.radius, autoDelta: data.autoDelta, dc: data.dc,
+                initiatorId: data.initiatorId
             });
             break;
         }
@@ -142,8 +158,12 @@ function onSocketMessage(data) {
             activeRound?.onChosen(data.actorId, data.skill);
             break;
         }
-        case "skillAbandon": {
-            activeRound?.onAbandon(data.actorId);
+        case "skillPass": {
+            activeRound?.onPass(data.actorId);
+            break;
+        }
+        case "skillClosed": {
+            activeRound?.onClosed(data.actorId);
             break;
         }
         case "rollResult": {
@@ -176,7 +196,11 @@ function roundDeps() {
             game.socket.emit(CHANNEL, { type: "rollNow", toUserId: ownerId, actorId, skill, dc, modifiers });
         }),
         promptLocal: (actorId, defaultSkill) => openSkillPrompt(defaultSkill, game.actors.get(actorId)),
-        rollLocal: (actor, skill, dc, modifiers) => rollMapSkill(actor, skill, dc, modifiers)
+        rollLocal: (actor, skill, dc, modifiers) => rollMapSkill(actor, skill, dc, modifiers),
+        roundClosed: (initiatorId, tokenId) => {
+            game.socket.emit(CHANNEL, { type: "cancelRound" });
+            game.socket.emit(CHANNEL, { type: "askRestart", toUserId: initiatorId, tokenId });
+        }
     };
 }
 
@@ -188,6 +212,21 @@ export function startRound(payload) {
     } else {
         game.socket.emit(CHANNEL, { type: "startRound", ...payload });
     }
+}
+
+const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapArea.${key}`);
+
+/** Demande à l'initiateur s'il veut relancer Cartographier après une fermeture. */
+function promptRestart() {
+    return foundry.applications.api.DialogV2.wait({
+        window: { title: t("restart.title") },
+        content: `<p>${t("restart.message")}</p>`,
+        buttons: [
+            { action: "yes", label: t("restart.yes"), callback: () => true },
+            { action: "no", label: t("restart.no"), default: true, callback: () => false }
+        ],
+        rejectClose: false
+    }).then((v) => v === true);
 }
 
 /** Enregistre l'écouteur socket et la libération du verrou à la déconnexion. À appeler sur "ready". */

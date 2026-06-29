@@ -54,7 +54,8 @@ export class MapAreaFlow {
         // 4. Plan (rayon modulé par les chips du Hex du Party) → délégation au MJ.
         const { radius, autoDelta } = mapAreaPlan(choice, increased, chipsAt(scene, offset));
         startRound({
-            sceneId: scene.id, tokenId: token.id, offset, radius, autoDelta, dc
+            sceneId: scene.id, tokenId: token.id, offset, radius, autoDelta, dc,
+            initiatorId: game.user.id
         });
     }
 
