@@ -159,7 +159,8 @@
                 "title": "Cartographier la zone",
                 "label": "Choisissez la compétence à utiliser :",
                 "confirm": "Valider",
-                "abandon": "Quitter"
+                "abandon": "Quitter",
+                "pass": "Je passe mon tour"
             },
             "waiting": {
                 "title": "En attente du groupe",

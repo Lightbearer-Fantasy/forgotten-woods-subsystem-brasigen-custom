@@ -5,14 +5,15 @@ const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapArea.${key}`);
 /**
  * Ouvre la fenêtre de sélection de compétence.
  * @param {string} defaultSkill  slug présélectionné
- * @returns {Promise<string|null>} slug choisi, ou null si l'utilisateur quitte
+ * @param {Actor|undefined} actor  acteur dont les compétences sont proposées
+ * @returns {Promise<{type:"skill",skill:string}|{type:"pass"}|{type:"closed"}>}
  */
-export function openSkillPrompt(defaultSkill, actor) {
+export async function openSkillPrompt(defaultSkill, actor) {
     const options = mapSkillChoices(actor).map((slug) => {
         const selected = slug === defaultSkill ? " selected" : "";
         return `<option value="${slug}"${selected}>${game.i18n.localize(skillLabelKey(slug))}</option>`;
     }).join("");
-    return foundry.applications.api.DialogV2.wait({
+    const result = await foundry.applications.api.DialogV2.wait({
         window: { title: t("skillPrompt.title") },
         content: `<p>${t("skillPrompt.label")}</p>`
             + `<select name="skill" autofocus>${options}</select>`,
@@ -21,13 +22,14 @@ export function openSkillPrompt(defaultSkill, actor) {
                 action: "confirm",
                 label: t("skillPrompt.confirm"),
                 default: true,
-                callback: (event, button) => button.form.elements.skill.value
+                callback: (event, button) => ({ type: "skill", skill: button.form.elements.skill.value })
             },
-            { action: "abandon", label: t("skillPrompt.abandon"), callback: () => null }
+            { action: "pass", label: t("skillPrompt.pass"), callback: () => ({ type: "pass" }) }
         ],
-        // Fermeture via la croix = abandon.
+        // Fermeture via la croix (X) = signal d'erreur → restart côté initiateur.
         rejectClose: false
     });
+    return result ?? { type: "closed" };
 }
 
 /**

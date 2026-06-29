@@ -88,12 +88,14 @@ function onSocketMessage(data) {
     }
     // Messages adressés à un utilisateur précis (client destinataire).
     if (data?.type === "askSkill" && data.toUserId === game.user.id) {
-        openSkillPrompt(data.defaultSkill, game.actors.get(data.actorId)).then((skill) => {
-            if (skill == null) {
-                game.socket.emit(CHANNEL, { type: "skillAbandon", actorId: data.actorId });
-            } else {
-                game.socket.emit(CHANNEL, { type: "skillChosen", actorId: data.actorId, skill });
+        openSkillPrompt(data.defaultSkill, game.actors.get(data.actorId)).then((res) => {
+            if (res.type === "skill") {
+                game.socket.emit(CHANNEL, { type: "skillChosen", actorId: data.actorId, skill: res.skill });
                 waitingHandle = showWaiting();
+            } else if (res.type === "pass") {
+                game.socket.emit(CHANNEL, { type: "skillPass", actorId: data.actorId });
+            } else { // "closed"
+                game.socket.emit(CHANNEL, { type: "skillClosed", actorId: data.actorId });
             }
         });
         return;
