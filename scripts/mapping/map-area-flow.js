@@ -1,6 +1,6 @@
 import { mapAreaPlan } from "./auto-increment.js";
 import { coordsToOffset } from "../utils/hex.js";
-import { dcAt } from "./mapping-dc-store.js";
+import { dcAt, effectiveHexDc } from "./mapping-dc-store.js";
 import { chipsAt } from "./hex-chips-store.js";
 import { slowestLandSpeed, groupActivityCount } from "../hud/party-counts.js";
 import {
@@ -48,8 +48,8 @@ export class MapAreaFlow {
         // 3. Position du Party (détermine les chips de terrain) + garde Hex DC.
         const scene = canvas.scene;
         const offset = coordsToOffset(token.center);
-        const dc = dcAt(scene, offset);
-        if (!dc) { ui.notifications.warn(t("noDC")); release(); return; }
+        if (!dcAt(scene, offset)) { ui.notifications.warn(t("noDC")); release(); return; }
+        const dc = effectiveHexDc(scene, offset);
 
         // 4. Plan (rayon modulé par les chips du Hex du Party) → délégation au MJ.
         const { radius, autoDelta } = mapAreaPlan(choice, increased, chipsAt(scene, offset));

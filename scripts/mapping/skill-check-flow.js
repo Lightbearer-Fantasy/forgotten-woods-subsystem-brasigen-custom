@@ -1,5 +1,5 @@
 import { coordsToOffset } from "../utils/hex.js";
-import { dcAt } from "./mapping-dc-store.js";
+import { dcAt, effectiveHexDc } from "./mapping-dc-store.js";
 import { rollMapSkill, resolveSkillStatistic } from "./skill-roll.js";
 import { actorSkillChoices } from "../data/activity-actions.js";
 import { ResourceFlow } from "./resource-flow.js";
@@ -44,8 +44,8 @@ export class SkillCheckFlow {
         let dc = null;
         if (activity.check.vsHexDC) {
             const offset = coordsToOffset(token.center);
-            dc = dcAt(canvas.scene, offset);
-            if (!dc) { ui.notifications.warn(t("noDC")); return; }
+            if (!dcAt(canvas.scene, offset)) { ui.notifications.warn(t("noDC")); return; }
+            dc = effectiveHexDc(canvas.scene, offset);
         }
         const outcome = await rollMapSkill(actor, skill, dc, []);
         if (activity?.resource) {

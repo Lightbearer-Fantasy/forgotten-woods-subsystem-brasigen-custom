@@ -5,7 +5,7 @@
 import { HexSelection } from "../canvas/hex-selection.js";
 import { spacesInRange, coordsToOffset, offsetToKey } from "../utils/hex.js";
 import { validSearchKeys, isValidSearchHex } from "./search-targets.js";
-import { dcAt } from "./mapping-dc-store.js";
+import { dcAt, effectiveHexDc } from "./mapping-dc-store.js";
 import { rollMapSkill, resolveSkillStatistic } from "./skill-roll.js";
 import { deltaForDegree } from "./skill-outcome.js";
 import { promptSkill } from "./skill-prompt.js";
@@ -56,8 +56,8 @@ export class PrepareGroundFlow {
             cleanup();
             if (!confirmed || !chosen) return;
 
-            const dc = dcAt(scene, chosen);
-            if (!dc) { ui.notifications.warn(t("noDC")); return; }
+            if (!dcAt(scene, chosen)) { ui.notifications.warn(t("noDC")); return; }
+            const dc = effectiveHexDc(scene, chosen) + 2;
 
             const choices = actorSkillChoices(actor);
             if (!choices.length) return;

@@ -2,7 +2,7 @@
 import { HexSelection } from "../canvas/hex-selection.js";
 import { spacesInRange, coordsToOffset, offsetToKey } from "../utils/hex.js";
 import { validSearchKeys, isValidSearchHex } from "./search-targets.js";
-import { dcAt } from "./mapping-dc-store.js";
+import { dcAt, effectiveHexDc } from "./mapping-dc-store.js";
 import { rollMapSkill, resolveSkillStatistic } from "./skill-roll.js";
 import { deltaForDegree } from "./skill-outcome.js";
 import { promptSkill, skillLabel } from "./skill-prompt.js";
@@ -82,8 +82,8 @@ export class SearchFlow {
             if (!confirmed || !chosen) return;
 
             // 5. DC du Hex choisi.
-            const dc = dcAt(scene, chosen);
-            if (!dc) { ui.notifications.warn(t("noDC")); return; }
+            if (!dcAt(scene, chosen)) { ui.notifications.warn(t("noDC")); return; }
+            const dc = effectiveHexDc(scene, chosen);
 
             // 6. Compétence + jet (publicroll) sur le perso du Joueur.
             const choices = SEARCH_SKILLS.map((s) => ({ value: s, label: skillLabel(s) }));
