@@ -11,6 +11,7 @@ import { chipsAt } from "./hex-chips-store.js";
 import { getChip } from "../data/hex-chips.js";
 import { travelCost } from "../data/terrain-travel.js";
 import { readGroundwork, resolveGroundwork, buildSetGroundwork } from "./groundwork-store.js";
+import { showWaiting } from "../hud/skill-prompt.js";
 
 const SCOUT_UUID = "Compendium.pf2e.other-effects.Item.EMqGwUi3VMhCjTlF";
 
@@ -141,6 +142,46 @@ async function handleReceiveTemp({ messageId, actorId, itemUuid, quantity }) {
     }
 }
 
+/** Résolveurs en attente d'une réponse cookDc, côté client demandeur. requestId -> Function */
+const pendingCookDc = new Map();
+
+/**
+ * Joueur → MJ : demander le DC de Cuisiner. Le MJ saisit le DC pendant que le
+ * joueur reste « en pause » (fenêtre d'attente), exactement comme Cartographier.
+ * @returns {Promise<number|null>} DC saisi par le MJ, ou null si annulé / aucun MJ.
+ */
+export function requestCookDc(defaultDc) {
+    if (isActiveGM()) return promptCookDc(defaultDc);
+    if (!game.users.activeGM) { ui.notifications.warn(t("noGM")); return Promise.resolve(null); }
+    return new Promise((resolve) => {
+        const requestId = foundry.utils.randomID();
+        const waiting = showWaiting();
+        pendingCookDc.set(requestId, (dc) => { waiting.close(); resolve(dc); });
+        game.socket.emit(CHANNEL, { type: "cookDcRequest", requestId, userId: game.user.id, defaultDc });
+    });
+}
+
+/** MJ : demande le DC de Cuisiner au joueur ayant cliqué, puis lui renvoie la réponse. */
+async function handleCookDcRequest({ requestId, userId, defaultDc }) {
+    const dc = await promptCookDc(defaultDc);
+    game.socket.emit(CHANNEL, { type: "cookDcResponse", toUserId: userId, requestId, dc });
+}
+
+/** Prompt DC de Cuisiner (MJ), pré-rempli au DC du Hex Party (ou 15). @returns {Promise<number|null>} */
+async function promptCookDc(defaultDc) {
+    const sk = (key) => game.i18n.localize(`FORGOTTEN_WOODS.skillCheck.cookDc.${key}`);
+    const value = await foundry.applications.api.DialogV2.prompt({
+        window: { title: sk("title") },
+        content: `<p>${sk("label")}</p>`
+            + `<input type="number" name="dc" value="${defaultDc}" min="1" autofocus>`,
+        ok: { callback: (event, button) => button.form.elements.dc.value },
+        modal: true,
+        rejectClose: false
+    });
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 /** Joueur → MJ : appliquer un delta de PC sur un seul Hex (Fouiller). */
 export function requestApplySearchPoints(sceneId, offsetKey, delta) {
     if (isActiveGM()) return handleApplySearchPoints({ sceneId, offsetKey, delta });
@@ -259,6 +300,12 @@ async function handleApplyScout({ partyActorId }) {
 /** Écouteur socket : seul le MJ actif traite les requêtes. À appeler au ready. */
 export function registerGmActions() {
     game.socket.on(CHANNEL, (data) => {
+        // Réponse adressée au joueur demandeur (traitée par tout client, MJ ou non).
+        if (data?.type === "cookDcResponse" && data.toUserId === game.user.id) {
+            const resolve = pendingCookDc.get(data.requestId);
+            if (resolve) { pendingCookDc.delete(data.requestId); resolve(data.dc ?? null); }
+            return;
+        }
         if (!isActiveGM()) return;
         if (data?.type === "campRequest") handleMakeCamp(data);
         else if (data?.type === "restRequest") handleRest(data);
@@ -269,6 +316,7 @@ export function registerGmActions() {
         else if (data?.type === "consumeRequest") handleConsumeResource(data);
         else if (data?.type === "searchPoints") handleApplySearchPoints(data);
         else if (data?.type === "groundwork") handleApplyGroundwork(data);
+        else if (data?.type === "cookDcRequest") handleCookDcRequest(data);
         else if (data?.type === "receiveTempRequest") handleReceiveTemp(data);
     });
 }

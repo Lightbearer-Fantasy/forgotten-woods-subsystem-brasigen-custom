@@ -21,7 +21,8 @@ export function activityDisabled(activity, ctx) {
         case "rest":
             return !ctx.campPresent;
         case "make-camp":
-            return ctx.campPresent; // grisé si un camp est déjà sur le Hex du Party
+            // grisé si un camp est déjà là, ou si le Hex du Party a moins de 2 PC
+            return ctx.campPresent || (ctx.partyPoints ?? 0) < 2;
         case "prepare-ground":
             return ctx.hasCharacter && (ctx.partyPoints ?? 0) < 2;
         default:

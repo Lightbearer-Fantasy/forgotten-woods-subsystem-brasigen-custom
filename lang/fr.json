@@ -102,6 +102,7 @@
             "confirm": "Voulez-vous vous Reposer avec vos compagnons ?"
         },
         "gm": {
+            "noGM": "Aucun MJ connecté : action impossible pour le moment.",
             "madeCamp": "Les Joueurs Montent le camp.",
             "rested": "Les Joueurs se Reposent.",
             "resourceTitle": "Ressources d'exploration",
@@ -200,7 +201,7 @@
             "noSkill": "Ce personnage ne possède pas cette compétence.",
             "selectPrompt": {
                 "title": "Préparer le terrain",
-                "label": "Choisissez un Hex adjacent à préparer, puis confirmez.",
+                "label": "Choisissez un Hex adjacent à préparer.",
                 "confirm": "Confirmer",
                 "cancel": "Annuler"
             }

@@ -3,7 +3,7 @@ import { activityDisabled } from "../scripts/data/activity-gating.js";
 
 const base = {
     craftingTrained: true, medicineTrained: true, campPresent: true,
-    ingredientCount: 4, characterCount: 4, hasCharacter: true
+    ingredientCount: 4, characterCount: 4, hasCharacter: true, partyPoints: 2
 };
 
 describe("activityDisabled", () => {
@@ -56,6 +56,9 @@ describe("activityDisabled", () => {
     });
     it("Monter le camp actif s'il n'y a pas de camp", () => {
         expect(activityDisabled({ id: "make-camp" }, { ...base, campPresent: false })).toBe(false);
+    });
+    it("Monter le camp grisé si le Hex Party a moins de 2 PC", () => {
+        expect(activityDisabled({ id: "make-camp" }, { ...base, campPresent: false, partyPoints: 1 })).toBe(true);
     });
     it("Monter le camp jamais grisé pour le MJ, même avec un camp", () => {
         expect(activityDisabled({ id: "make-camp" }, { ...base, isGM: true, campPresent: true })).toBe(false);

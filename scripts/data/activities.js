@@ -192,8 +192,8 @@ export const INDIVIDUAL_ACTIVITIES = [
         id: "prepare-ground",
         label: "Préparer le terrain",
         slug: null,
-        img: "icons/tools/hand/shovel-spade-brown.webp",
-        traits: ["exploration"],
+        img: "icons/tools/hand/shovel-hand.webp",
+        traits: ["exploration", "manipulate"],
         description:
             "Vous préparez le terrain pour faciliter le voyage vers un terrain adjacent. Choisissez un Hex adjacent. Effectuez un jet de compétence contre le DC de la zone, en fonction de l'Aspect de la zone. Par exemple, dans l'Aspect Sauvage ce serait Athletics, Nature ou Survival, et dans l'Aspect du Donjon ce serait Society ou Thievery. Vous accumulez de la Progression en fonction du résultat du jet. Si vous obtenez autant de Progression que le coût de Voyage du terrain du Hex adjacent (par exemple 2 Progressions pour se rendre dans un Marais ou une Montagne), vous réduisez le coût du prochain Voyage vers ce Hex de 1.",
         outcomes: {
