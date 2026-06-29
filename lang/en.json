@@ -183,7 +183,7 @@
                 "title": "DC de la recette",
                 "label": "Définissez le DC de Cuisiner (les ingrédients de la zone influent sur la recette) :",
                 "waitingTitle": "Cuisiner",
-                "waitingMessage": "Le MJ choisit le DC pour Cuisiner…"
+                "waitingMessage": "Le MJ choisit le DC pour Cuisiner."
             }
         },
         "search": {
