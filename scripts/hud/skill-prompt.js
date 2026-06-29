@@ -1,4 +1,4 @@
-import { MAP_SKILLS, skillLabelKey } from "../data/map-skills.js";
+import { mapSkillChoices, skillLabelKey } from "../data/map-skills.js";
 
 const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapArea.${key}`);
 
@@ -7,8 +7,8 @@ const t = (key) => game.i18n.localize(`FORGOTTEN_WOODS.mapArea.${key}`);
  * @param {string} defaultSkill  slug présélectionné
  * @returns {Promise<string|null>} slug choisi, ou null si l'utilisateur quitte
  */
-export function openSkillPrompt(defaultSkill) {
-    const options = MAP_SKILLS.map((slug) => {
+export function openSkillPrompt(defaultSkill, actor) {
+    const options = mapSkillChoices(actor).map((slug) => {
         const selected = slug === defaultSkill ? " selected" : "";
         return `<option value="${slug}"${selected}>${game.i18n.localize(skillLabelKey(slug))}</option>`;
     }).join("");

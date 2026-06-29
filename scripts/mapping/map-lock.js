@@ -88,7 +88,7 @@ function onSocketMessage(data) {
     }
     // Messages adressés à un utilisateur précis (client destinataire).
     if (data?.type === "askSkill" && data.toUserId === game.user.id) {
-        openSkillPrompt(data.defaultSkill).then((skill) => {
+        openSkillPrompt(data.defaultSkill, game.actors.get(data.actorId)).then((skill) => {
             if (skill == null) {
                 game.socket.emit(CHANNEL, { type: "skillAbandon", actorId: data.actorId });
             } else {
@@ -173,7 +173,7 @@ function roundDeps() {
             rollResolvers.set(actorId, resolve);
             game.socket.emit(CHANNEL, { type: "rollNow", toUserId: ownerId, actorId, skill, dc, modifiers });
         }),
-        promptLocal: (actorId, defaultSkill) => openSkillPrompt(defaultSkill),
+        promptLocal: (actorId, defaultSkill) => openSkillPrompt(defaultSkill, game.actors.get(actorId)),
         rollLocal: (actor, skill, dc, modifiers) => rollMapSkill(actor, skill, dc, modifiers)
     };
 }
