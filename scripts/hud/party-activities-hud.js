@@ -20,6 +20,7 @@ import { CookFlow } from "../mapping/cook-flow.js";
 import { CraftFlow } from "../mapping/craft-flow.js";
 import { SearchFlow } from "../mapping/search-flow.js";
 import { PrepareGroundFlow } from "../mapping/prepare-ground-flow.js";
+import { AidFlow } from "../mapping/aid-flow.js";
 import { PARTY_EFFECTS } from "../data/party-effects.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -376,6 +377,10 @@ async function onRollD20(event, target) {
     // Préparer le terrain : sélection 1-hex joueur + jet vs DC + Progression sur le hex.
     if (activity.id === "prepare-ground") {
         return PrepareGroundFlow.start(this.token, actor, this);
+    }
+    // S'entraider : jusqu'à 2× Aid natif PF2E, alliés choisis en liste déroulante.
+    if (activity.id === "aid") {
+        return AidFlow.start(this.token, actor);
     }
     // Activité « à check » : jet de compétence (vs Hex DC si zone, sinon simple),
     // sans application de PC. Le jet est porté par le personnage du joueur qui
