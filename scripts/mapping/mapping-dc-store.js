@@ -2,6 +2,8 @@
  * Stockage des DC de zone par hex, dans un flag séparé des PC.
  * Valeur absolue (fixée par le MJ), sans plafond ; 0 supprime la clé.
  */
+import { pointsAt } from "./mapping-points-store.js";
+
 export const MODULE_ID = "forgotten-woods-brasigen";
 export const DC_FLAG = "mappingDC";
 
@@ -20,6 +22,20 @@ export function readDC(scene) {
  */
 export function dcAt(scene, offset) {
     return readDC(scene)[`${offset.i},${offset.j}`] ?? 0;
+}
+
+/**
+ * DC effectif d'un Hex : DC de base − 2 si le Hex porte 2+ PC (dynamique).
+ * dynamic:false rend le DC brut (cas Cuisiner, exclu de la réduction).
+ * @param {object} scene
+ * @param {{i:number,j:number}} offset
+ * @param {{dynamic?:boolean}} [opts]
+ * @returns {number}
+ */
+export function effectiveHexDc(scene, offset, { dynamic = true } = {}) {
+    const base = dcAt(scene, offset);
+    if (!base) return 0;
+    return base - (dynamic && pointsAt(scene, offset) >= 2 ? 2 : 0);
 }
 
 /**
