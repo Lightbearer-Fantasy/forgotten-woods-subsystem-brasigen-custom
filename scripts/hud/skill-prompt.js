@@ -31,13 +31,15 @@ export function openSkillPrompt(defaultSkill) {
 }
 
 /**
- * Affiche la fenêtre d'attente (verrouillée) jusqu'au lancement des jets.
+ * Affiche la fenêtre d'attente (verrouillée) jusqu'au déblocage.
+ * Titre/message par défaut = Cartographier ; surchargés pour d'autres usages (ex. Cuisiner).
+ * @param {{ title?: string, message?: string }} [opts]
  * @returns {{ close: () => Promise<void> }}
  */
-export function showWaiting() {
+export function showWaiting({ title = t("waiting.title"), message = t("waiting.message") } = {}) {
     const dialog = new foundry.applications.api.DialogV2({
-        window: { title: t("waiting.title") },
-        content: `<p>${t("waiting.message")}</p>`,
+        window: { title },
+        content: `<p>${message}</p>`,
         buttons: [{ action: "wait", label: "…", disabled: true }]
     });
     dialog.render({ force: true });

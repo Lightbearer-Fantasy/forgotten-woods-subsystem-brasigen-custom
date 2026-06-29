@@ -155,7 +155,10 @@ export function requestCookDc(defaultDc) {
     if (!game.users.activeGM) { ui.notifications.warn(t("noGM")); return Promise.resolve(null); }
     return new Promise((resolve) => {
         const requestId = foundry.utils.randomID();
-        const waiting = showWaiting();
+        const waiting = showWaiting({
+            title: game.i18n.localize("FORGOTTEN_WOODS.skillCheck.cookDc.waitingTitle"),
+            message: game.i18n.localize("FORGOTTEN_WOODS.skillCheck.cookDc.waitingMessage")
+        });
         pendingCookDc.set(requestId, (dc) => { waiting.close(); resolve(dc); });
         game.socket.emit(CHANNEL, { type: "cookDcRequest", requestId, userId: game.user.id, defaultDc });
     });
